@@ -1,79 +1,67 @@
 <!-- 
-  KERTASES PRO V8.7.1 - SELECTABLE MODE EDITION (MOBILE OPTIMIZED)
-  Fitur: Start Screen Selection (Cloud vs Local), HD File Transfer, Fully Responsive
+  KERTASES PRO V8.7.1 - FINAL MASTER EDITION
+  Security: Password & PIN | Logic: Full P2P + Grid Calculation | UI: Fully Responsive
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kertases Sync Data</title>
+    <title>Kertases Data Sync</title>
+    
+    <!-- LIBRARIES -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        :root { --bg: #111827; --card-bg: #1f2937; --text: #f3f4f6; --accent: #f59e0b; --btn-hover: #d97706; }
+        :root { --bg: #111827; --card-bg: #1f2937; --text: #f3f4f6; --accent: #f59e0b; --op: #10b981; }
         body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* --- SCREEN 1: CONNECTION SELECTOR --- */
-        #connection-selector { position: fixed; top:0; left:0; width:100%; height:100%; z-index: 10000; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        .conn-container { display: flex; gap: 20px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
-        .conn-card { width: 300px; background: var(--card-bg); padding: 30px; border-radius: 15px; border: 2px solid #374151; cursor: pointer; transition: 0.3s; text-align: center; box-sizing: border-box; }
-        .conn-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2); }
-        .conn-icon { font-size: 50px; margin-bottom: 20px; display: block; }
-        .conn-title { font-size: 20px; font-weight: bold; color: var(--accent); margin-bottom: 10px; }
-        .conn-desc { font-size: 13px; color: #9ca3af; line-height: 1.5; }
+        /* --- OVERLAYS (Connection & Role) --- */
+        .selector-screen { position: fixed; top:0; left:0; width:100%; height:100%; z-index: 10000; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .card-grid { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .card { width: 280px; background: var(--card-bg); padding: 25px; border-radius: 15px; border: 2px solid #374151; cursor: pointer; text-align: center; transition: 0.3s; }
+        .card:hover { border-color: var(--accent); transform: translateY(-5px); }
         
-        #manual-ip-box { display: none; margin-top: 15px; text-align: left; background: #111; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .ip-input { width: 100%; padding: 10px; margin-top: 5px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; box-sizing: border-box;}
+        .role-admin { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+        .role-designer { background: linear-gradient(135deg, #6b21a8, #a855f7); }
+        .role-operator { background: linear-gradient(135deg, #059669, #10b981); }
 
-        /* --- SCREEN 2: ROLE SELECTOR --- */
-        #role-selector { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9000; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .role-wrapper { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .role-card { width: 220px; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; color: white; box-sizing: border-box; }
-        .role-card:hover { transform: scale(1.05); filter: brightness(1.2); }
-        .card-admin { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
-        .card-designer { background: linear-gradient(135deg, #6b21a8, #a855f7); }
-        .card-operator { background: linear-gradient(135deg, #059669, #10b981); }
-
-        /* --- SCREEN 3: APP SHELL --- */
+        /* --- APP STRUCTURE --- */
         #app-shell { display: none; height: 100vh; flex-direction: row; background: #f0f2f5; color: #333; }
         .sidebar { width: 280px; background: #1f2937; color: white; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; flex-shrink: 0; }
         .content { flex: 1; display: flex; flex-direction: column; background: white; overflow: hidden; position: relative; }
-        
-        /* Utils */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; box-sizing: border-box; }
+
+        /* --- UI ELEMENTS --- */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; font-size: 14px; }
         .btn-primary { background: var(--accent); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #6b7280; color: white; }
         .btn-danger { background: #dc2626; color: white; }
-        .status-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; }
-        .indicator-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .online { background: #10b981; box-shadow: 0 0 5px #10b981; } .offline { background: #ef4444; }
+        
+        .status-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online { background: #10b981; } .offline { background: #ef4444; }
 
-        /* Chat & Print Area */
         .chat-container { flex: 1; overflow-y: auto; padding: 15px; background: #e5ddd5; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 12px; border-radius: 8px; max-width: 85%; font-size: 13px; background: white; align-self: flex-start; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+        .msg { padding: 12px; border-radius: 8px; max-width: 85%; font-size: 13px; background: white; align-self: flex-start; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg.me { align-self: flex-end; background: #dcf8c6; }
-        .print-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 15px; }
-        .print-card { background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
+        
+        .print-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 15px; }
+        .print-card { background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; text-align: center; }
         .print-card img { width: 100%; height: 120px; object-fit: cover; }
 
-        /* Modal Responsive */
-        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 10000; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
-        .modal-box { background:white; padding:20px; border-radius:15px; width:100%; max-width:500px; max-height: 90vh; overflow-y: auto; color: #333; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 20000; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
+        .modal-box { background:white; padding:20px; border-radius:15px; width:100%; max-width:480px; max-height: 95vh; overflow-y: auto; color: #333; }
+        .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
         .form-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
-        /* --- MOBILE RESPONSIVE QUERIES --- */
+        /* --- MOBILE ADAPTATION --- */
         @media (max-width: 768px) {
             #app-shell { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; padding: 10px; border-bottom: 2px solid var(--accent); }
-            .conn-container, .role-wrapper { flex-direction: column; align-items: center; width: 100%; }
-            .conn-card, .role-card { width: 100%; max-width: 320px; }
-            .form-row { flex-direction: column; gap: 5px; }
-            h1 { font-size: 24px !important; text-align: center; }
-            .chat-container { padding: 10px; }
+            .sidebar { width: 100%; height: auto; border-bottom: 3px solid var(--accent); }
+            .card { width: 100%; }
+            .form-row { flex-direction: column; }
         }
     </style>
 </head>
@@ -81,86 +69,82 @@
 
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
 
-    <!-- SCREEN 1 -->
-    <div id="connection-selector">
-        <h1 style="color:white; letter-spacing: 1px;">KERTASES SYNC DATA</h1>
-        <p style="color:#9ca3af; margin-top:-10px; text-align: center;">Pilih Mode Koneksi Sebelum Masuk</p>
-        
-        <div class="conn-container">
-            <div class="conn-card" onclick="selectConnection('cloud')">
-                <span class="conn-icon">🌍</span>
-                <div class="conn-title">INTERNET / HYBRID</div>
-                <div class="conn-desc">Tanpa Setting IP. Otomatis deteksi WiFi. Paling Mudah.</div>
+    <!-- STEP 1: KONEKSI -->
+    <div id="connection-selector" class="selector-screen">
+        <h1 style="color:white;">KERTASES DATA SYNC</h1>
+        <div class="card-grid">
+            <div class="card" onclick="selectConnection('cloud')">
+                <span style="font-size:40px;">🌍</span>
+                <h3>INTERNET / HYBRID</h3>
+                <p style="font-size:11px; color:#9ca3af;">Otomatis deteksi WiFi & Internet.</p>
             </div>
-
-            <div class="conn-card" onclick="showLocalInput()">
-                <span class="conn-icon">🏠</span>
-                <div class="conn-title">LOKAL (MANUAL)</div>
-                <div class="conn-desc">Full Offline. Wajib Setting IP Server Operator.</div>
-                <div id="manual-ip-box" onclick="event.stopPropagation()">
-                    <input type="text" id="input-host" class="ip-input" value="192.168.1.X" placeholder="IP Server">
-                    <input type="text" id="input-port" class="ip-input" value="9000">
-                    <button class="btn btn-primary" style="margin-top:10px;" onclick="selectConnection('local')">MASUK OFFLINE</button>
+            <div class="card" onclick="document.getElementById('manual-ip-box').style.display='block'">
+                <span style="font-size:40px;">🏠</span>
+                <h3>LOKAL (MANUAL)</h3>
+                <p style="font-size:11px; color:#9ca3af;">Jaringan Tanpa Internet.</p>
+                <div id="manual-ip-box" style="display:none; margin-top:10px;" onclick="event.stopPropagation()">
+                    <input type="text" id="input-host" class="form-input" placeholder="IP Server (Cth: 192.168.1.5)" style="background:#333; color:white;">
+                    <button class="btn btn-primary" onclick="selectConnection('local')">MASUK</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- SCREEN 2 -->
-    <div id="role-selector">
-        <h1 style="color: var(--accent); margin-bottom: 20px;">SIAPA ANDA?</h1>
-        <div id="mode-badge" style="background:#374151; padding:5px 15px; border-radius:20px; font-size:11px; margin-bottom:20px; color:#ccc;">Mode: Menunggu...</div>
-        <div class="role-wrapper">
-            <div class="role-card card-admin" onclick="enterRole('admin')"><h2>ADMIN</h2></div>
-            <div class="role-card card-designer" onclick="enterRole('designer')"><h2>DESIGNER</h2></div>
-            <div class="role-card card-operator" onclick="enterRole('operator')"><h2>OPERATOR</h2></div>
+    <!-- STEP 2: ROLE -->
+    <div id="role-selector" class="selector-screen" style="display:none;">
+        <h1 style="color:var(--accent);">LOGIN</h1>
+        <div id="mode-label" style="font-size:11px; color:#888; margin-bottom:20px;">Mode: ...</div>
+        <div class="card-grid">
+            <div class="card role-admin" onclick="enterRole('admin')"><h2>ADMIN</h2></div>
+            <div class="card role-designer" onclick="enterRole('designer')"><h2>DESIGNER</h2></div>
+            <div class="card role-operator" onclick="enterRole('operator')"><h2>OPERATOR</h2></div>
         </div>
-        <button onclick="location.reload()" style="background:none; border:none; color:#666; margin-top:20px; cursor:pointer;">Kembali ke awal</button>
     </div>
 
-    <!-- SCREEN 3 -->
+    <!-- STEP 3: MAIN APP -->
     <div id="app-shell">
         <div class="sidebar">
-            <div style="text-align:center; padding-bottom:10px; border-bottom:1px solid #374151; margin-bottom:10px;">
-                <div id="role-tag" style="background:var(--accent); color:black; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:bold; display:inline-block;">ROLE</div>
-                <div style="font-size:18px; font-weight:bold; margin-top:5px;">KERTASES PRO</div>
+            <div style="text-align:center; margin-bottom:15px;">
+                <div id="role-badge" style="background:var(--accent); color:black; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:bold; display:inline-block;">...</div>
+                <h3 style="margin:5px 0;">KERTASES DATA SYNC</h3>
             </div>
             <div class="status-box">
-                <div style="display:flex; justify-content:space-between;">
-                    <span>Sinyal: <b id="text-signal">...</b></span>
-                    <span id="dot-signal" class="indicator-dot offline"></span>
-                </div>
-                <div style="margin-top:5px;">ID SAYA:</div>
-                <input type="text" id="my-id-input" style="width:100%; background:#111; border:none; color:white; padding:8px; margin-top:3px; font-size:12px; border-radius:4px;">
-                <button class="btn btn-primary" style="font-size:10px; padding:5px; margin-top:8px;" onclick="saveId()">💾 Simpan ID</button>
+                <div>Status: <span id="sig-text">Offline</span> <span id="sig-dot" class="dot offline"></span></div>
+                <div style="margin-top:10px;">ID SAYA:</div>
+                <input type="text" id="my-id-input" style="width:100%; background:#111; border:none; color:white; padding:8px; border-radius:4px; font-size:12px; margin-top:3px;">
+                <button class="btn btn-primary" style="font-size:10px; padding:6px; margin-top:5px;" onclick="saveId()">💾 SIMPAN ID</button>
             </div>
             <div id="conn-controls">
-                <input type="text" id="target-id" class="form-input" style="background:white; color:black; margin-bottom:5px;" placeholder="ID Target...">
-                <button class="btn btn-primary" onclick="connectToPeer()">🔗 CONNECT</button>
-                <div style="margin-top:5px; font-size:10px; text-align: center;">Status: <span id="text-conn">Putus</span></div>
+                <input type="text" id="target-id" class="form-input" style="background:white; margin-bottom:5px;" placeholder="ID Target...">
+                <button class="btn btn-primary" onclick="connectToPeer()">🔗 HUBUNGKAN</button>
             </div>
             <button class="btn btn-outline" style="margin-top:10px;" onclick="toggleHistory()">📜 RIWAYAT</button>
-            <button class="btn btn-danger" style="margin-top:auto; margin-bottom: 10px;" onclick="location.reload()">🔄 KELUAR</button>
+            <button class="btn btn-danger" style="margin-top:auto;" onclick="location.reload()">🔄 KELUAR</button>
         </div>
 
         <div class="content">
+            <!-- VIEW: CHAT (Admin/Designer) -->
             <div id="view-chat" style="display:none; flex-direction:column; height:100%;">
                 <div id="chat-box" class="chat-container"></div>
-                <div id="draft-area" style="display:none; padding:10px; border-top:2px solid var(--accent); background:white;">
-                    <div id="draft-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+                <div id="draft-area" style="display:none; padding:10px; background:white; border-top:2px solid var(--accent);">
+                    <div id="draft-list" style="font-size:11px; color:green; font-weight:bold;"></div>
                 </div>
-                <div style="padding:10px; background:white; border-top:1px solid #ddd;">
-                    <input type="text" id="cap-main" placeholder="Keterangan..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; margin-bottom:5px; box-sizing: border-box;">
+                <div style="padding:15px; background:white; border-top:1px solid #ddd;">
+                    <label style="font-size:11px; color:#666;"><input type="checkbox" id="hd-mode" checked> Mode HD (Asli)</label>
+                    <input type="text" id="inv-in" placeholder="No Invoice" class="form-input" style="margin:5px 0;">
+                    <input type="text" id="cap-in" placeholder="Keterangan..." class="form-input" style="margin-bottom:5px;">
                     <div style="display:flex; gap:5px;">
-                        <input type="file" id="file-input" multiple style="display:none;" onchange="prepareDraft(this)">
-                        <button class="btn btn-outline" style="color:#333; width:auto; border-color:#ccc;" onclick="document.getElementById('file-input').click()">📎</button>
-                        <button class="btn btn-primary" onclick="sendBatch()">KIRIM DATA</button>
+                        <input type="file" id="file-in" multiple style="display:none;" onchange="prepareFiles(this)">
+                        <button class="btn btn-outline" style="color:#333; width:auto; padding:0 20px;" onclick="document.getElementById('file-in').click()">📎</button>
+                        <button class="btn btn-primary" onclick="sendData()">KIRIM DATA</button>
                     </div>
                 </div>
             </div>
+
+            <!-- VIEW: OPERATOR -->
             <div id="view-operator" style="display:none; height:100%; overflow-y:auto;">
-                <div style="padding:15px; border-bottom:1px solid #ddd; background:white; display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="margin:0;">ANTREAN</h3>
+                <div style="padding:15px; border-bottom:1px solid #ddd; display:flex; justify-content:space-between; align-items:center; background:white; position:sticky; top:0; z-index:10;">
+                    <h3 style="margin:0;">ANTREAN CETAK</h3>
                     <button class="btn btn-outline" style="color:red; width:auto; padding:5px 15px;" onclick="clearQueue()">RESET</button>
                 </div>
                 <div id="print-queue" class="print-grid"></div>
@@ -168,134 +152,281 @@
         </div>
     </div>
 
-    <!-- SEMUA LOGIKA JAVASCRIPT TETAP SAMA -->
+    <!-- MODAL: PRINT SETUP -->
+    <div id="modal-print" class="modal">
+        <div class="modal-box">
+            <h3 style="border-bottom:2px solid var(--op); padding-bottom:10px;">SETUP CETAK</h3>
+            <div style="background:#f0f0f0; height:150px; display:flex; justify-content:center; align-items:center; margin-bottom:10px; border-radius:8px;">
+                <img id="p-img" style="max-width:90%; max-height:90%; object-fit:contain;">
+            </div>
+            <div class="form-row">
+                <input type="text" id="p-inv" class="form-input" placeholder="Invoice">
+                <select id="p-size" class="form-input" onchange="calc()">
+                    <option value="a3plus">A3+ (32x48)</option>
+                    <option value="a3">A3 (29.7x42)</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <select id="p-mat" class="form-input">
+                    <option>Chromo</option><option>Vinyl</option><option>Art Carton</option><option>HVS</option>
+                </select>
+                <input type="text" id="p-order" class="form-input" placeholder="Order Pcs">
+            </div>
+            <div class="form-row">
+                <div style="flex:1;"><label style="font-size:9px;">W (cm)</label><input type="number" id="p-w" value="5" step="0.1" class="form-input" oninput="updateRot()"></div>
+                <div style="flex:1;"><label style="font-size:9px;">H (cm)</label><input type="number" id="p-h" value="5" step="0.1" class="form-input" oninput="updateRot()"></div>
+                <button onclick="toggleRot()" style="padding:10px; margin-top:18px; border-radius:5px; border:1px solid #ccc;">🔄</button>
+            </div>
+            <div class="form-row">
+                <div style="flex:1;"><label style="font-size:9px;">Target Pcs</label><input type="number" id="p-target" value="100" class="form-input" oninput="calc()"></div>
+            </div>
+            <div id="p-res" style="background:var(--accent); color:black; padding:10px; text-align:center; font-weight:bold; font-size:12px; margin:10px 0; border-radius:5px;">...</div>
+            <button class="btn btn-primary" onclick="doPrint()">🖨️ PROSES CETAK</button>
+            <button class="btn btn-outline" style="color:#666; border:none;" onclick="document.getElementById('modal-print').style.display='none'">Batal</button>
+        </div>
+    </div>
+
+    <!-- MODAL: HISTORY -->
+    <div id="modal-hist" class="modal">
+        <div class="modal-box" style="max-width:700px;">
+            <h3>Laporan Produksi</h3>
+            <div style="overflow-x:auto; margin-bottom:15px;">
+                <table border="1" style="width:100%; border-collapse:collapse; font-size:11px;" cellpadding="5">
+                    <thead><tr style="background:#eee;"><th>Waktu</th><th>Inv</th><th>Bahan</th><th>Lbr</th><th>Order</th></tr></thead>
+                    <tbody id="hist-table"></tbody>
+                </table>
+            </div>
+            <button class="btn btn-primary" onclick="exportPDF()">Download PDF</button>
+            <button class="btn btn-outline" style="color:black;" onclick="toggleHistory()">Tutup</button>
+        </div>
+    </div>
+
+    <iframe id="p-frame" style="display:none;"></iframe>
+
     <script>
-        const ROLES = { admin: "calik", designer: "melengkung", operator: "nangtung" };
-        let appConfig = { mode: 'cloud', host: 'localhost', port: 9000 };
+        const PASS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
+        let cfg = { mode: 'cloud', host: 'localhost', port: 9000 };
         let myId = localStorage.getItem('kts_id') || 'KTS-' + Math.floor(Math.random()*10000);
-        let currentRole = null, peer, conn;
-        let tempFiles = []; 
-        let db; 
-        
+        let currentRole, peer, conn, db, activeJob, rotated = false, tempFiles = [];
+
         document.getElementById('my-id-input').value = myId;
-        initDB();
+        
+        // --- DATABASE ---
+        let req = indexedDB.open("KertasesV87Master", 1);
+        req.onupgradeneeded = e => {
+            let d = e.target.result;
+            d.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
+            d.createObjectStore("history", { keyPath: "id", autoIncrement:true });
+        };
+        req.onsuccess = e => db = e.target.result;
 
-        function initDB() {
-            let req = indexedDB.open("KertasesV871", 1);
-            req.onupgradeneeded = e => {
-                db = e.target.result;
-                db.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
-                db.createObjectStore("history", { keyPath: "id", autoIncrement:true });
-            };
-            req.onsuccess = e => db = e.target.result;
+        // --- NAVIGATION ---
+        function selectConnection(m) {
+            cfg.mode = m;
+            if(m==='local') cfg.host = document.getElementById('input-host').value;
+            document.getElementById('connection-selector').style.display='none';
+            document.getElementById('role-selector').style.display='flex';
+            document.getElementById('mode-label').innerText = "MODE: " + m.toUpperCase();
         }
 
-        function showLocalInput() { document.getElementById('manual-ip-box').style.display = 'block'; }
-
-        function selectConnection(mode) {
-            appConfig.mode = mode;
-            if (mode === 'local') {
-                appConfig.host = document.getElementById('input-host').value;
-                appConfig.port = document.getElementById('input-port').value;
-            }
-            document.getElementById('connection-selector').style.display = 'none';
-            document.getElementById('role-selector').style.display = 'flex';
-            document.getElementById('mode-badge').innerText = mode === 'local' ? "Mode: LOKAL" : "Mode: CLOUD";
-        }
-
-        function enterRole(role) {
-            const pass = prompt(`Pass ${role.toUpperCase()}:`);
-            if (pass === ROLES[role]) {
-                currentRole = role;
-                document.getElementById('role-selector').style.display = 'none';
-                document.getElementById('app-shell').style.display = 'flex';
-                document.getElementById('role-tag').innerText = role.toUpperCase();
-                if (currentRole === 'operator') {
-                    document.getElementById('conn-controls').style.display = 'none';
-                    document.getElementById('view-operator').style.display = 'block';
-                    renderQueue();
+        function enterRole(r) {
+            if(prompt(`Password ${r.toUpperCase()}:`) === PASS[r]) {
+                currentRole = r;
+                document.getElementById('role-selector').style.display='none';
+                document.getElementById('app-shell').style.display='flex';
+                document.getElementById('role-badge').innerText = r.toUpperCase();
+                if(r==='operator') {
+                    document.getElementById('view-operator').style.display='block';
+                    document.getElementById('conn-controls').style.display='none';
+                    renderQ();
                 } else {
-                    document.getElementById('view-chat').style.display = 'flex';
+                    document.getElementById('view-chat').style.display='flex';
                 }
                 initPeer();
-            } else alert("Salah!");
+            } else alert("Akses Ditolak!");
         }
 
+        // --- P2P CORE ---
         function initPeer() {
-            peer = appConfig.mode === 'local' ? 
-                new Peer(myId, { host: appConfig.host, port: appConfig.port, path: '/kertases-app' }) : 
+            peer = cfg.mode === 'local' ? 
+                new Peer(myId, { host: cfg.host, port: 9000, path: '/kertases-app' }) : 
                 new Peer(myId);
 
             peer.on('open', id => {
-                document.getElementById('text-signal').innerText = "Online";
-                document.getElementById('dot-signal').className = "indicator-dot online";
+                document.getElementById('sig-text').innerText = "Online";
+                document.getElementById('sig-dot').className = "dot online";
             });
             peer.on('connection', c => { conn = c; setupConn(c); });
+            peer.on('error', e => alert("Koneksi Error: " + e.type));
         }
 
         function connectToPeer() {
-            const target = document.getElementById('target-id').value;
-            conn = peer.connect(target);
+            let t = document.getElementById('target-id').value;
+            if(!t) return alert("Isi ID!");
+            conn = peer.connect(t);
             setupConn(conn);
         }
 
         function setupConn(c) {
             c.on('open', () => document.getElementById('text-conn').innerText = "Aktif: " + c.peer);
-            c.on('data', data => {
+            c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
-                if(currentRole === 'operator') addToQueue(data);
-                else renderChat(data, 'them');
+                if(currentRole === 'operator' && d.type === 'job') pushToDB(d, c.peer);
+                else if(d.type === 'done') markDone(d.id);
+                else renderMsg(d, 'them');
             });
+            c.on('close', () => document.getElementById('text-conn').innerText = "Putus");
         }
 
-        async function prepareDraft(input) {
+        // --- APP LOGIC ---
+        async function prepareFiles(input) {
             tempFiles = [];
-            for (let f of input.files) tempFiles.push(await fileToBase64(f));
-            document.getElementById('draft-area').style.display = 'block';
+            let hd = document.getElementById('hd-mode').checked;
+            for(let f of input.files) tempFiles.push(hd ? await toBase64(f) : await compress(f));
+            document.getElementById('draft-area').style.display='block';
+            document.getElementById('draft-list').innerText = `✅ ${input.files.length} File terpilih`;
         }
 
-        function sendBatch() {
+        function sendData() {
             if(!conn || !conn.open) return alert("Belum Terhubung!");
-            const payload = { type:'job', images:tempFiles, caption:document.getElementById('cap-main').value, time:Date.now() };
-            conn.send(payload);
-            renderChat(payload, 'me');
-            tempFiles = [];
-            document.getElementById('draft-area').style.display = 'none';
+            let d = { type:'job', id:Date.now(), imgs:tempFiles, inv:document.getElementById('inv-in').value, cap:document.getElementById('cap-in').value };
+            conn.send(d);
+            renderMsg(d, 'me');
+            tempFiles = []; document.getElementById('draft-area').style.display='none';
         }
 
-        function renderChat(data, who) {
-            const box = document.getElementById('chat-box');
-            const div = document.createElement('div');
+        function renderMsg(d, who) {
+            let b = document.getElementById('chat-box');
+            let div = document.createElement('div');
             div.className = `msg ${who}`;
-            div.innerHTML = `<div>${data.caption}</div><small>${new Date(data.time).toLocaleTimeString()}</small>`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
+            div.id = 'msg-' + d.id;
+            div.innerHTML = `<b>${d.inv || 'No Inv'}</b><br>${d.cap}<br><small>${new Date().toLocaleTimeString()}</small>`;
+            b.appendChild(div);
+            b.scrollTop = b.scrollHeight;
         }
 
-        function addToQueue(data) {
+        function markDone(id) {
+            let el = document.getElementById('msg-' + id);
+            if(el) el.style.borderLeft = "5px solid #10b981";
+        }
+
+        // --- OPERATOR LOGIC ---
+        function pushToDB(d, sender) {
             let tx = db.transaction("queue", "readwrite");
-            data.images.forEach(img => tx.objectStore("queue").add({ img, cap:data.caption }));
-            tx.oncomplete = renderQueue;
+            d.imgs.forEach(img => tx.objectStore("queue").add({ img, inv:d.inv, cap:d.cap, batchId:d.id, sender }));
+            tx.oncomplete = renderQ;
         }
 
-        function renderQueue() {
-            const q = document.getElementById('print-queue'); q.innerHTML = '';
+        function renderQ() {
+            let q = document.getElementById('print-queue'); q.innerHTML = '';
             db.transaction("queue").objectStore("queue").getAll().onsuccess = e => {
-                e.target.result.forEach(item => {
-                    q.innerHTML += `<div class="print-card">
-                        <img src="${item.img}">
-                        <div style="padding:10px; font-size:11px;">${item.cap}</div>
-                    </div>`;
+                e.target.result.reverse().forEach(i => {
+                    q.innerHTML += `<div class="print-card"><img src="${i.img}"><div style="padding:8px;"><button class="btn btn-primary" onclick="openP(${i.id})">CETAK</button></div></div>`;
                 });
             };
         }
 
-        function fileToBase64(file) {
-            return new Promise(r => { let f=new FileReader(); f.onload=()=>r(f.result); f.readAsDataURL(file); });
+        function openP(id) {
+            db.transaction("queue").objectStore("queue").get(id).onsuccess = e => {
+                activeJob = e.target.result;
+                document.getElementById('modal-print').style.display='flex';
+                document.getElementById('p-img').src = activeJob.img;
+                document.getElementById('p-inv').value = activeJob.inv;
+                calc();
+            };
         }
-        function saveId() { localStorage.setItem('kts_id', document.getElementById('my-id-input').value); location.reload(); }
-        function clearQueue() { db.transaction("queue","readwrite").objectStore("queue").clear().onsuccess = renderQueue; }
-        function toggleHistory() { alert("Fitur Riwayat Berjalan..."); }
+
+        function toggleRot() { rotated = !rotated; updateRot(); }
+        function updateRot() {
+            document.getElementById('p-img').style.transform = rotated ? "rotate(90deg)" : "none";
+            calc();
+        }
+
+        function calc() {
+            let s = document.getElementById('p-size').value;
+            let pW = s==='a3'?29.7:32, pH = s==='a3'?42:48;
+            let w = parseFloat(document.getElementById('p-w').value), h = parseFloat(document.getElementById('p-h').value);
+            let pcs = Math.max(Math.floor(pW/w)*Math.floor(pH/h), Math.floor(pW/h)*Math.floor(pH/w));
+            let sheets = Math.ceil(parseInt(document.getElementById('p-target').value)/pcs);
+            document.getElementById('p-res').innerText = `${pcs} Pcs/Lbr | Butuh: ${sheets} Lembar`;
+            return { pcs, sheets, pW, pH, w, h };
+        }
+
+        function doPrint() {
+            let c = calc();
+            let h = `<style>@page{size:${c.pW}cm ${c.pH}cm;margin:0;} body{margin:0.5cm;} .b{float:left;width:${c.w}cm;height:${c.h}cm;overflow:hidden;} img{width:100%;height:100%;object-fit:cover;${rotated?'transform:rotate(90deg)':''}}</style>`;
+            for(let s=0; s<c.sheets; s++) {
+                h += '<div style="page-break-after:always;">';
+                for(let i=0; i<c.pcs; i++) h += `<div class="b"><img src="${activeJob.img}"></div>`;
+                h += '</div>';
+            }
+            let f = document.getElementById('p-frame').contentWindow;
+            f.document.open(); f.document.write(h); f.document.close();
+            setTimeout(() => { 
+                f.print(); 
+                saveHist(c.sheets);
+                if(conn && conn.open) conn.send({type:'done', id:activeJob.batchId});
+                document.getElementById('modal-print').style.display='none';
+            }, 500);
+        }
+
+        // --- UTILS ---
+        function saveId() {
+            if(prompt("PIN Keamanan:") === "4869") {
+                localStorage.setItem('kts_id', document.getElementById('my-id-input').value);
+                location.reload();
+            } else alert("PIN Salah!");
+        }
+
+        function saveHist(l) {
+            db.transaction("history", "readwrite").objectStore("history").add({
+                time: new Date().toLocaleString(),
+                inv: document.getElementById('p-inv').value,
+                mat: document.getElementById('p-mat').value,
+                lbr: l,
+                order: document.getElementById('p-order').value
+            });
+        }
+
+        function toggleHistory() {
+            let m = document.getElementById('modal-hist');
+            m.style.display = m.style.display === 'none' ? 'flex' : 'none';
+            if(m.style.display === 'flex') {
+                db.transaction("history").objectStore("history").getAll().onsuccess = e => {
+                    let t = document.getElementById('hist-table'); t.innerHTML = '';
+                    e.target.result.reverse().forEach(r => {
+                        t.innerHTML += `<tr><td>${r.time}</td><td>${r.inv}</td><td>${r.mat}</td><td>${r.lbr}</td><td>${r.order}</td></tr>`;
+                    });
+                };
+            }
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let rows = [];
+            db.transaction("history").objectStore("history").getAll().onsuccess = e => {
+                e.target.result.forEach(r => rows.push([r.time, r.inv, r.mat, r.lbr, r.order]));
+                doc.autoTable({ head:[['Waktu','Inv','Bahan','Lbr','Order']], body:rows });
+                doc.save('Laporan_Kertases.pdf');
+            };
+        }
+
+        function clearQueue() { if(confirm("Hapus Antrean?")) db.transaction("queue","readwrite").objectStore("queue").clear().onsuccess = renderQ; }
+        function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
+        function compress(f) {
+            return new Promise(r => {
+                let fr=new FileReader(); fr.onload=e=>{
+                    let i=new Image(); i.onload=()=>{
+                        let c=document.createElement('canvas'); 
+                        let sc=Math.min(1000/i.width, 1);
+                        c.width=i.width*sc; c.height=i.height*sc;
+                        c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+                        r(c.toDataURL('image/jpeg',0.7));
+                    }; i.src=e.target.result;
+                }; fr.readAsDataURL(f);
+            });
+        }
     </script>
 </body>
 </html>
