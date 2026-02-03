@@ -1,6 +1,6 @@
 <!-- 
-  KERTASES PRO V8.7 - SELECTABLE MODE EDITION (MOBILE FRIENDLY)
-  Fitur: Start Screen Selection, HD File Transfer, Fully Responsive
+  KERTASES PRO V8.7.1 - SELECTABLE MODE EDITION (MOBILE OPTIMIZED)
+  Fitur: Start Screen Selection (Cloud vs Local), HD File Transfer, Fully Responsive
 -->
 <!DOCTYPE html>
 <html lang="id">
@@ -26,12 +26,12 @@
         .conn-desc { font-size: 13px; color: #9ca3af; line-height: 1.5; }
         
         #manual-ip-box { display: none; margin-top: 15px; text-align: left; background: #111; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .ip-input { width: 100%; padding: 10px; margin-top: 5px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; box-sizing: border-box; }
+        .ip-input { width: 100%; padding: 10px; margin-top: 5px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; box-sizing: border-box;}
 
         /* --- SCREEN 2: ROLE SELECTOR --- */
-        #role-selector { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9000; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        #role-selector { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9000; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .role-wrapper { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .role-card { width: 220px; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; color: white; box-sizing: border-box; }
+        .role-card { width: 220px; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; color: white; box-sizing: border-box; }
         .role-card:hover { transform: scale(1.05); filter: brightness(1.2); }
         .card-admin { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
         .card-designer { background: linear-gradient(135deg, #6b21a8, #a855f7); }
@@ -40,35 +40,40 @@
         /* --- SCREEN 3: APP SHELL --- */
         #app-shell { display: none; height: 100vh; flex-direction: row; background: #f0f2f5; color: #333; }
         .sidebar { width: 280px; background: #1f2937; color: white; display: flex; flex-direction: column; padding: 15px; overflow-y: auto; flex-shrink: 0; }
-        .content { flex: 1; display: flex; flex-direction: column; background: white; overflow: hidden; }
+        .content { flex: 1; display: flex; flex-direction: column; background: white; overflow: hidden; position: relative; }
         
         /* Utils */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; font-size: 14px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; box-sizing: border-box; }
         .btn-primary { background: var(--accent); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #6b7280; color: white; }
         .btn-danger { background: #dc2626; color: white; }
-        .status-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; }
+        .status-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; }
         .indicator-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .online { background: #10b981; } .offline { background: #ef4444; }
+        .online { background: #10b981; box-shadow: 0 0 5px #10b981; } .offline { background: #ef4444; }
 
         /* Chat & Print Area */
         .chat-container { flex: 1; overflow-y: auto; padding: 15px; background: #e5ddd5; display: flex; flex-direction: column; gap: 10px; }
         .msg { padding: 12px; border-radius: 8px; max-width: 85%; font-size: 13px; background: white; align-self: flex-start; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
         .msg.me { align-self: flex-end; background: #dcf8c6; }
         .print-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 15px; }
+        .print-card { background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
+        .print-card img { width: 100%; height: 120px; object-fit: cover; }
 
-        /* MODAL RESPONSIVE */
+        /* Modal Responsive */
         .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 10000; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
-        .modal-box { background:white; padding:20px; border-radius:15px; width:100%; max-width:500px; max-height: 90vh; overflow-y: auto; }
+        .modal-box { background:white; padding:20px; border-radius:15px; width:100%; max-width:500px; max-height: 90vh; overflow-y: auto; color: #333; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .form-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
         /* --- MOBILE RESPONSIVE QUERIES --- */
         @media (max-width: 768px) {
             #app-shell { flex-direction: column; }
             .sidebar { width: 100%; height: auto; padding: 10px; border-bottom: 2px solid var(--accent); }
-            .conn-container, .role-wrapper { flex-direction: column; width: 100%; align-items: center; }
+            .conn-container, .role-wrapper { flex-direction: column; align-items: center; width: 100%; }
             .conn-card, .role-card { width: 100%; max-width: 320px; }
             .form-row { flex-direction: column; gap: 5px; }
-            h1 { font-size: 22px !important; text-align: center; }
+            h1 { font-size: 24px !important; text-align: center; }
+            .chat-container { padding: 10px; }
         }
     </style>
 </head>
@@ -78,24 +83,24 @@
 
     <!-- SCREEN 1 -->
     <div id="connection-selector">
-        <h1 style="color:white; margin-bottom: 10px;">KERTASES SYNC DATA</h1>
-        <p style="color:#9ca3af; margin-bottom: 20px;">Pilih Mode Koneksi Sebelum Masuk</p>
+        <h1 style="color:white; letter-spacing: 1px;">KERTASES SYNC DATA</h1>
+        <p style="color:#9ca3af; margin-top:-10px; text-align: center;">Pilih Mode Koneksi Sebelum Masuk</p>
         
         <div class="conn-container">
             <div class="conn-card" onclick="selectConnection('cloud')">
                 <span class="conn-icon">🌍</span>
                 <div class="conn-title">INTERNET / HYBRID</div>
-                <div class="conn-desc">Cara Paling Mudah. Tanpa Setting IP. Otomatis deteksi WiFi.</div>
+                <div class="conn-desc">Tanpa Setting IP. Otomatis deteksi WiFi. Paling Mudah.</div>
             </div>
 
             <div class="conn-card" onclick="showLocalInput()">
                 <span class="conn-icon">🏠</span>
                 <div class="conn-title">LOKAL (MANUAL)</div>
-                <div class="conn-desc">Khusus Tanpa Internet. Wajib Setting IP Server Operator.</div>
+                <div class="conn-desc">Full Offline. Wajib Setting IP Server Operator.</div>
                 <div id="manual-ip-box" onclick="event.stopPropagation()">
                     <input type="text" id="input-host" class="ip-input" value="192.168.1.X" placeholder="IP Server">
                     <input type="text" id="input-port" class="ip-input" value="9000">
-                    <button class="btn btn-primary" onclick="selectConnection('local')">MASUK OFFLINE</button>
+                    <button class="btn btn-primary" style="margin-top:10px;" onclick="selectConnection('local')">MASUK OFFLINE</button>
                 </div>
             </div>
         </div>
@@ -104,7 +109,7 @@
     <!-- SCREEN 2 -->
     <div id="role-selector">
         <h1 style="color: var(--accent); margin-bottom: 20px;">SIAPA ANDA?</h1>
-        <div id="mode-badge" style="background:#374151; padding:5px 15px; border-radius:20px; font-size:11px; margin-bottom:20px; color:#ccc;">Mode: Memilih...</div>
+        <div id="mode-badge" style="background:#374151; padding:5px 15px; border-radius:20px; font-size:11px; margin-bottom:20px; color:#ccc;">Mode: Menunggu...</div>
         <div class="role-wrapper">
             <div class="role-card card-admin" onclick="enterRole('admin')"><h2>ADMIN</h2></div>
             <div class="role-card card-designer" onclick="enterRole('designer')"><h2>DESIGNER</h2></div>
@@ -116,42 +121,45 @@
     <!-- SCREEN 3 -->
     <div id="app-shell">
         <div class="sidebar">
-            <div style="text-align:center; margin-bottom:15px;">
-                <div id="role-tag" style="background:var(--accent); color:black; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:bold;">ROLE</div>
+            <div style="text-align:center; padding-bottom:10px; border-bottom:1px solid #374151; margin-bottom:10px;">
+                <div id="role-tag" style="background:var(--accent); color:black; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:bold; display:inline-block;">ROLE</div>
                 <div style="font-size:18px; font-weight:bold; margin-top:5px;">KERTASES PRO</div>
             </div>
             <div class="status-box">
                 <div style="display:flex; justify-content:space-between;">
-                    <span>Sinyal: <b id="text-signal">Offline</b></span>
+                    <span>Sinyal: <b id="text-signal">...</b></span>
                     <span id="dot-signal" class="indicator-dot offline"></span>
                 </div>
                 <div style="margin-top:5px;">ID SAYA:</div>
-                <input type="text" id="my-id-input" style="width:100%; background:#111; border:none; color:white; padding:8px; margin-top:3px; border-radius:4px;">
-                <button class="btn btn-primary" style="font-size:11px; padding:8px;" onclick="saveId()">Simpan ID</button>
+                <input type="text" id="my-id-input" style="width:100%; background:#111; border:none; color:white; padding:8px; margin-top:3px; font-size:12px; border-radius:4px;">
+                <button class="btn btn-primary" style="font-size:10px; padding:5px; margin-top:8px;" onclick="saveId()">💾 Simpan ID</button>
             </div>
             <div id="conn-controls">
-                <input type="text" id="target-id" class="ip-input" placeholder="Masukkan ID Target..." style="margin-bottom:5px;">
+                <input type="text" id="target-id" class="form-input" style="background:white; color:black; margin-bottom:5px;" placeholder="ID Target...">
                 <button class="btn btn-primary" onclick="connectToPeer()">🔗 CONNECT</button>
-                <div style="font-size:10px; margin-top:5px; text-align:center;">Status: <span id="text-conn">Putus</span></div>
+                <div style="margin-top:5px; font-size:10px; text-align: center;">Status: <span id="text-conn">Putus</span></div>
             </div>
             <button class="btn btn-outline" style="margin-top:10px;" onclick="toggleHistory()">📜 RIWAYAT</button>
-            <button class="btn btn-danger" style="margin-top:20px;" onclick="location.reload()">KELUAR</button>
+            <button class="btn btn-danger" style="margin-top:auto; margin-bottom: 10px;" onclick="location.reload()">🔄 KELUAR</button>
         </div>
 
         <div class="content">
             <div id="view-chat" style="display:none; flex-direction:column; height:100%;">
                 <div id="chat-box" class="chat-container"></div>
+                <div id="draft-area" style="display:none; padding:10px; border-top:2px solid var(--accent); background:white;">
+                    <div id="draft-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+                </div>
                 <div style="padding:10px; background:white; border-top:1px solid #ddd;">
-                    <input type="text" id="cap-main" placeholder="Keterangan..." style="width:100%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box;">
+                    <input type="text" id="cap-main" placeholder="Keterangan..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; margin-bottom:5px; box-sizing: border-box;">
                     <div style="display:flex; gap:5px;">
                         <input type="file" id="file-input" multiple style="display:none;" onchange="prepareDraft(this)">
-                        <button class="btn btn-outline" style="color:#333; border-color:#ccc;" onclick="document.getElementById('file-input').click()">📎</button>
+                        <button class="btn btn-outline" style="color:#333; width:auto; border-color:#ccc;" onclick="document.getElementById('file-input').click()">📎</button>
                         <button class="btn btn-primary" onclick="sendBatch()">KIRIM DATA</button>
                     </div>
                 </div>
             </div>
             <div id="view-operator" style="display:none; height:100%; overflow-y:auto;">
-                <div style="padding:15px; border-bottom:1px solid #ddd; background:white; display:flex; justify-content:space-between;">
+                <div style="padding:15px; border-bottom:1px solid #ddd; background:white; display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0;">ANTREAN</h3>
                     <button class="btn btn-outline" style="color:red; width:auto; padding:5px 15px;" onclick="clearQueue()">RESET</button>
                 </div>
@@ -160,11 +168,8 @@
         </div>
     </div>
 
-    <!-- SEMUA LOGIKA JAVASCRIPT TETAP SAMA SEPERTI KODE ANDA -->
+    <!-- SEMUA LOGIKA JAVASCRIPT TETAP SAMA -->
     <script>
-        // Copy seluruh logika <script> dari kode asli Anda ke sini
-        // (Saya tidak merubah logic JS agar fitur P2P tetap jalan seperti semula)
-        
         const ROLES = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let appConfig = { mode: 'cloud', host: 'localhost', port: 9000 };
         let myId = localStorage.getItem('kts_id') || 'KTS-' + Math.floor(Math.random()*10000);
@@ -173,18 +178,20 @@
         let db; 
         
         document.getElementById('my-id-input').value = myId;
-        
-        // Init DB
-        let dbReq = indexedDB.open("KertasesV87", 1);
-        dbReq.onupgradeneeded = e => {
-            db = e.target.result;
-            db.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
-            db.createObjectStore("history", { keyPath: "id", autoIncrement:true });
-        };
-        dbReq.onsuccess = e => { db = e.target.result; };
+        initDB();
+
+        function initDB() {
+            let req = indexedDB.open("KertasesV871", 1);
+            req.onupgradeneeded = e => {
+                db = e.target.result;
+                db.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
+                db.createObjectStore("history", { keyPath: "id", autoIncrement:true });
+            };
+            req.onsuccess = e => db = e.target.result;
+        }
 
         function showLocalInput() { document.getElementById('manual-ip-box').style.display = 'block'; }
-        
+
         function selectConnection(mode) {
             appConfig.mode = mode;
             if (mode === 'local') {
@@ -193,7 +200,7 @@
             }
             document.getElementById('connection-selector').style.display = 'none';
             document.getElementById('role-selector').style.display = 'flex';
-            document.getElementById('mode-badge').innerText = mode === 'local' ? "LOKAL" : "CLOUD";
+            document.getElementById('mode-badge').innerText = mode === 'local' ? "Mode: LOKAL" : "Mode: CLOUD";
         }
 
         function enterRole(role) {
@@ -203,8 +210,10 @@
                 document.getElementById('role-selector').style.display = 'none';
                 document.getElementById('app-shell').style.display = 'flex';
                 document.getElementById('role-tag').innerText = role.toUpperCase();
-                if(role === 'operator') {
+                if (currentRole === 'operator') {
+                    document.getElementById('conn-controls').style.display = 'none';
                     document.getElementById('view-operator').style.display = 'block';
+                    renderQueue();
                 } else {
                     document.getElementById('view-chat').style.display = 'flex';
                 }
@@ -231,9 +240,9 @@
         }
 
         function setupConn(c) {
-            c.on('open', () => { document.getElementById('text-conn').innerText = "Aktif: " + c.peer; });
+            c.on('open', () => document.getElementById('text-conn').innerText = "Aktif: " + c.peer);
             c.on('data', data => {
-                document.getElementById('notif-sound').play();
+                document.getElementById('notif-sound').play().catch(()=>{});
                 if(currentRole === 'operator') addToQueue(data);
                 else renderChat(data, 'them');
             });
@@ -242,15 +251,16 @@
         async function prepareDraft(input) {
             tempFiles = [];
             for (let f of input.files) tempFiles.push(await fileToBase64(f));
-            alert("File siap dikirim!");
+            document.getElementById('draft-area').style.display = 'block';
         }
 
         function sendBatch() {
+            if(!conn || !conn.open) return alert("Belum Terhubung!");
             const payload = { type:'job', images:tempFiles, caption:document.getElementById('cap-main').value, time:Date.now() };
             conn.send(payload);
             renderChat(payload, 'me');
             tempFiles = [];
-            document.getElementById('cap-main').value = '';
+            document.getElementById('draft-area').style.display = 'none';
         }
 
         function renderChat(data, who) {
@@ -272,8 +282,8 @@
             const q = document.getElementById('print-queue'); q.innerHTML = '';
             db.transaction("queue").objectStore("queue").getAll().onsuccess = e => {
                 e.target.result.forEach(item => {
-                    q.innerHTML += `<div class="print-card" style="background:white; border-radius:10px; overflow:hidden; border:1px solid #ddd;">
-                        <img src="${item.img}" style="width:100%; height:120px; object-fit:cover;">
+                    q.innerHTML += `<div class="print-card">
+                        <img src="${item.img}">
                         <div style="padding:10px; font-size:11px;">${item.cap}</div>
                     </div>`;
                 });
@@ -283,9 +293,9 @@
         function fileToBase64(file) {
             return new Promise(r => { let f=new FileReader(); f.onload=()=>r(f.result); f.readAsDataURL(file); });
         }
-        
         function saveId() { localStorage.setItem('kts_id', document.getElementById('my-id-input').value); location.reload(); }
         function clearQueue() { db.transaction("queue","readwrite").objectStore("queue").clear().onsuccess = renderQueue; }
+        function toggleHistory() { alert("Fitur Riwayat Berjalan..."); }
     </script>
 </body>
 </html>
