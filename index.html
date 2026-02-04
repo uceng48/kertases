@@ -1,13 +1,13 @@
 <!-- 
-  KERTASES PRO V8.7.1 - ULTIMATE MASTER (SAVE ALL ROLES EDITION)
-  Fitur: HD Sync, Thumbnails Chat, Save JPG/PDF (Admin, Designer, Operator), Security PIN
+  KERTASES PRO V8.7.4 - CONNECTED EDITION
+  Fitur: Real-time Status UI, Manual Order Data History, USB/WiFi Printer Support via OS
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kertases Pro Sync V8.7.1</title>
+    <title>Kertases Pro V8.7.4 (Connected)</title>
     
     <!-- LIBRARIES -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -15,7 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        :root { --bg: #111827; --card-bg: #1f2937; --text: #f3f4f6; --accent: #f59e0b; --op: #10b981; }
+        :root { --bg: #111827; --card-bg: #1f2937; --text: #f3f4f6; --accent: #f59e0b; --op: #10b981; --err: #ef4444; }
         body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
         /* --- SCREEN SELECTORS --- */
@@ -40,9 +40,12 @@
         .btn-success { background: #10b981; color: white; }
         .btn-danger { background: #dc2626; color: white; }
         
-        .status-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .online { background: #10b981; } .offline { background: #ef4444; }
+        /* STATUS BOX YANG DIPERBAIKI */
+        .status-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 11px; border-left: 4px solid var(--err); transition: 0.3s; }
+        .status-box.ready { border-left-color: var(--accent); }
+        .status-box.connected { border-left-color: var(--op); background: rgba(16, 185, 129, 0.1); }
+        
+        .status-indicator { font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px; }
 
         .chat-container { flex: 1; overflow-y: auto; padding: 15px; background: #e5ddd5; display: flex; flex-direction: column; gap: 10px; }
         .msg { padding: 12px; border-radius: 8px; max-width: 85%; font-size: 13px; background: white; align-self: flex-start; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
@@ -71,17 +74,17 @@
 
     <!-- STEP 1: KONEKSI -->
     <div id="connection-selector" class="selector-screen">
-        <h1 style="color:white; text-align:center;">KERTASES PRO V8.7.1</h1>
+        <h1 style="color:white; text-align:center;">KERTASES PRO V8.7.4</h1>
         <div class="card-grid">
             <div class="card" onclick="selectConnection('cloud')">
                 <span style="font-size:40px;">🌍</span>
-                <h3>INTERNET / HYBRID</h3>
-                <p style="font-size:11px; color:#9ca3af;">Otomatis deteksi WiFi & Internet. Paling Praktis.</p>
+                <h3>INTERNET / WIFI</h3>
+                <p style="font-size:11px; color:#9ca3af;">Paling Mudah. Gunakan ini jika ada Internet.</p>
             </div>
             <div class="card" onclick="document.getElementById('manual-ip-box').style.display='block'">
                 <span style="font-size:40px;">🏠</span>
-                <h3>LOKAL (MANUAL)</h3>
-                <p style="font-size:11px; color:#9ca3af;">Khusus Jaringan Tanpa Internet.</p>
+                <h3>LOKAL (NO INTERNET)</h3>
+                <p style="font-size:11px; color:#9ca3af;">Wajib install PeerJS Server di PC Utama.</p>
                 <div id="manual-ip-box" style="display:none; margin-top:10px;" onclick="event.stopPropagation()">
                     <input type="text" id="input-host" class="form-input" placeholder="IP Server (Cth: 192.168.1.5)" style="background:#333; color:white;">
                     <button class="btn btn-primary" onclick="selectConnection('local')">MASUK LOKAL</button>
@@ -109,24 +112,27 @@
                 <div id="role-badge" style="background:var(--accent); color:black; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:bold; display:inline-block;">...</div>
                 <h3 style="margin:5px 0;">KERTASES PRO</h3>
             </div>
-            <div class="status-box">
-                <div>Status: <span id="sig-text">Offline</span> <span id="sig-dot" class="dot offline"></span></div>
-                <div style="margin-top:10px;">ID SAYA:</div>
-                <input type="text" id="my-id-input" style="width:100%; background:#111; border:none; color:white; padding:8px; border-radius:4px; font-size:12px; margin-top:3px;">
-                <button class="btn btn-primary" style="font-size:10px; padding:6px; margin-top:5px;" onclick="saveId()">💾 SIMPAN ID</button>
+            
+            <!-- STATUS BOX BARU -->
+            <div id="main-status-box" class="status-box">
+                <span id="status-text" class="status-indicator" style="color:#ef4444;">Offline</span>
+                <div style="color:#aaa;">ID Saya:</div>
+                <div style="font-weight:bold; color:white; font-size:12px; margin-bottom:5px;" id="disp-my-id">-</div>
+                <button class="btn btn-outline" style="font-size:9px; padding:4px;" onclick="saveId()">GANTI ID (PIN)</button>
             </div>
+
             <div id="conn-controls">
                 <input type="text" id="target-id" class="form-input" style="background:white; margin-bottom:5px;" placeholder="ID Target...">
                 <button class="btn btn-primary" onclick="connectToPeer()">🔗 HUBUNGKAN</button>
             </div>
-            <button class="btn btn-outline" style="margin-top:10px;" onclick="toggleHistory()">📜 RIWAYAT</button>
+            <button class="btn btn-outline" style="margin-top:10px;" onclick="toggleHistory()">📜 RIWAYAT CETAK</button>
             <button class="btn btn-danger" style="margin-top:auto;" onclick="location.reload()">🔄 KELUAR</button>
         </div>
 
         <div class="content">
             <div id="view-chat" style="display:none; flex-direction:column; height:100%;">
                 <div id="chat-box" class="chat-container"></div>
-                <!-- DRAFT AREA WITH THUMBNAILS -->
+                <!-- DRAFT AREA -->
                 <div id="draft-area" style="display:none; padding:10px; background:white; border-top:2px solid var(--accent);">
                     <div id="draft-list" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:5px;"></div>
                 </div>
@@ -155,7 +161,7 @@
     <!-- MODAL: PRINT SETUP -->
     <div id="modal-print" class="modal">
         <div class="modal-box">
-            <h3 style="border-bottom:2px solid var(--op); padding-bottom:10px;">SETUP CETAK</h3>
+            <h3 style="border-bottom:2px solid var(--op); padding-bottom:10px;">SETUP CETAK (USB/WiFi)</h3>
             <div style="background:#f0f0f0; height:150px; display:flex; justify-content:center; align-items:center; margin-bottom:10px; border-radius:8px;">
                 <img id="p-img" style="max-width:90%; max-height:90%; object-fit:contain;">
             </div>
@@ -170,7 +176,8 @@
                 <select id="p-mat" class="form-input">
                     <option>Chromo</option><option>Vinyl</option><option>Art Carton</option><option>HVS</option>
                 </select>
-                <input type="text" id="p-order" class="form-input" placeholder="Order Pcs">
+                <!-- DATA ORDER MANUAL -->
+                <input type="text" id="p-order" class="form-input" placeholder="Order Pcs (Data)" style="border: 2px solid var(--accent);">
             </div>
             <div class="form-row">
                 <div style="flex:1;"><label style="font-size:9px;">W (cm)</label><input type="number" id="p-w" value="5" step="0.1" class="form-input" oninput="updateRot()"></div>
@@ -178,7 +185,7 @@
                 <button onclick="toggleRot()" style="padding:10px; margin-top:18px; border-radius:5px; border:1px solid #ccc;">🔄</button>
             </div>
             <div class="form-row">
-                <div style="flex:1;"><label style="font-size:9px;">Target Cetak (Pcs)</label><input type="number" id="p-target" value="100" class="form-input" oninput="calc()"></div>
+                <div style="flex:1;"><label style="font-size:9px;">Target Cetak (Untuk Hitung Lembar)</label><input type="number" id="p-target" value="100" class="form-input" oninput="calc()"></div>
             </div>
             <div id="p-res" style="background:var(--accent); color:black; padding:10px; text-align:center; font-weight:bold; font-size:12px; margin:10px 0; border-radius:5px;">...</div>
             <button class="btn btn-primary" onclick="doPrint()">🖨️ PROSES CETAK</button>
@@ -192,7 +199,7 @@
             <h3>Laporan Produksi</h3>
             <div style="overflow-x:auto; margin-bottom:15px;">
                 <table border="1" style="width:100%; border-collapse:collapse; font-size:11px;" cellpadding="5">
-                    <thead><tr style="background:#eee;"><th>Waktu</th><th>Inv</th><th>Bahan</th><th>Lbr</th><th>Order</th></tr></thead>
+                    <thead><tr style="background:#eee;"><th>Waktu</th><th>Inv</th><th>Bahan</th><th>Output(Lbr)</th><th>Order(Data)</th></tr></thead>
                     <tbody id="hist-table"></tbody>
                 </table>
             </div>
@@ -209,10 +216,10 @@
         let myId = localStorage.getItem('kts_id') || 'KTS-' + Math.floor(Math.random()*10000);
         let currentRole, peer, conn, db, activeJob, rotated = false, tempFiles = [];
 
-        document.getElementById('my-id-input').value = myId;
+        document.getElementById('disp-my-id').innerText = myId;
         
         // INDEXED DB
-        let req = indexedDB.open("KertasesV87Master", 1);
+        let req = indexedDB.open("KertasesV874Connect", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
@@ -246,18 +253,46 @@
             } else alert("Salah!");
         }
 
+        // --- NOTIFICATION & STATUS LOGIC ---
+        function setStatus(state, msg) {
+            const box = document.getElementById('main-status-box');
+            const txt = document.getElementById('status-text');
+            
+            box.classList.remove('ready', 'connected');
+            
+            if(state === 'offline') {
+                txt.innerText = "❌ OFFLINE";
+                txt.style.color = "#ef4444";
+            } else if (state === 'ready') {
+                box.classList.add('ready');
+                txt.innerText = "🟡 ONLINE (Siap)";
+                txt.style.color = "#f59e0b";
+            } else if (state === 'connected') {
+                box.classList.add('connected');
+                txt.innerText = "✅ TERKONEKSI: " + msg;
+                txt.style.color = "#10b981";
+            }
+        }
+
         // PEERJS CORE
         function initPeer() {
+            setStatus('offline', '');
             peer = cfg.mode === 'local' ? 
                 new Peer(myId, { host: cfg.host, port: 9000, path: '/kertases-app' }) : 
                 new Peer(myId);
 
             peer.on('open', id => {
-                document.getElementById('sig-text').innerText = "Online";
-                document.getElementById('sig-dot').className = "dot online";
+                setStatus('ready', '');
             });
-            peer.on('connection', c => { conn = c; setupConn(c); });
-            peer.on('error', e => alert("Koneksi Putus/ID Ganda"));
+            peer.on('connection', c => { 
+                conn = c; 
+                setupConn(c); 
+            });
+            peer.on('error', e => {
+                alert("Error Koneksi: " + e.type);
+                setStatus('offline', '');
+            });
+            peer.on('disconnected', () => setStatus('offline', ''));
         }
 
         function connectToPeer() {
@@ -268,16 +303,28 @@
         }
 
         function setupConn(c) {
-            c.on('open', () => document.getElementById('text-conn').innerText = "Terhubung: " + c.peer);
+            c.on('open', () => {
+                setStatus('connected', c.peer);
+                // Kirim ping agar lawan juga update status jadi connected
+                c.send({type:'ping', id:myId});
+            });
+            
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
-                if(currentRole === 'operator' && d.type === 'job') pushToDB(d, c.peer);
+                
+                if(d.type === 'ping') {
+                    setStatus('connected', d.id); // Update UI lawan bicara
+                }
+                else if(currentRole === 'operator' && d.type === 'job') pushToDB(d, c.peer);
                 else if(d.type === 'done') markDone(d.id);
-                else renderMsg(d, 'them');
+                else if(d.type !== 'ping') renderMsg(d, 'them');
             });
+
+            c.on('close', () => setStatus('ready', ''));
+            c.on('error', () => setStatus('ready', ''));
         }
 
-        // PREPARE FILES WITH THUMBNAILS
+        // FILE HANDLING
         async function prepareFiles(input) {
             const list = document.getElementById('draft-list');
             const area = document.getElementById('draft-area');
@@ -318,16 +365,13 @@
         function renderMsg(d, who) {
             let b = document.getElementById('chat-box');
             let imgsHtml = '';
-            
             if(d.imgs) {
                 d.imgs.forEach(src => {
-                    // Admin & Designer juga dapat tombol save di chat
                     let saveButtons = (who === 'them') ? `
                         <div style="display:flex; gap:2px; margin-top:2px;">
                             <button onclick="saveJPG('${src}', '${d.inv}')" style="background:#10b981; color:white; border:none; border-radius:3px; font-size:9px; padding:2px 5px; cursor:pointer;">JPG</button>
                             <button onclick="saveSinglePDF('${src}', '${d.inv}')" style="background:#4b5563; color:white; border:none; border-radius:3px; font-size:9px; padding:2px 5px; cursor:pointer;">PDF</button>
                         </div>` : '';
-
                     imgsHtml += `
                         <div style="margin-right:4px; margin-bottom:4px;">
                             <img src="${src}" style="width:80px; height:80px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(this.src)">
@@ -354,7 +398,6 @@
             if(el) el.style.borderLeft = "5px solid #10b981";
         }
 
-        // FUNGSI SIMPAN FILE (Global)
         function saveJPG(base64, name) {
             let link = document.createElement('a');
             link.href = base64;
@@ -424,15 +467,58 @@
 
         function doPrint() {
             let c = calc();
-            let h = `<style>@page{size:${c.pW}cm ${c.pH}cm;margin:0;} body{margin:0.5cm;} .b{float:left;width:${c.w}cm;height:${c.h}cm;overflow:hidden;} img{width:100%;height:100%;object-fit:cover;${rotated?'transform:rotate(90deg)':''}}</style>`;
+            
+            // KRES FUNCTION (+)
+            const mk = (t, l) => `
+                <div style="position:absolute; top:${t}; left:${l}; width:0; height:0; overflow:visible; z-index:99;">
+                    <div style="position:absolute; top:-2mm; left:-0.1mm; width:0.2mm; height:4mm; background:black;"></div>
+                    <div style="position:absolute; top:-0.1mm; left:-2mm; width:4mm; height:0.2mm; background:black;"></div>
+                </div>`;
+
+            let h = `
+            <style>
+                @page{size:${c.pW}cm ${c.pH}cm;margin:0;} 
+                body{margin:0.5cm; font-family:sans-serif;} 
+                .grid {
+                    display: flex;
+                    flex-wrap: wrap;
+                    width: 100%;
+                    align-content: flex-start;
+                }
+                .cell {
+                    position: relative;
+                    width: ${c.w}cm;
+                    height: ${c.h}cm;
+                    overflow: hidden;
+                    margin: 0; padding: 0;
+                    box-sizing: border-box;
+                }
+                .cell img {
+                    width:100%; height:100%; object-fit:cover; display:block;
+                    ${rotated ? 'transform:rotate(90deg);' : ''}
+                }
+            </style>`;
+
+            // Cell with Crop Marks
+            let cellHtml = `
+                <div class="cell">
+                    <img src="${activeJob.img}">
+                    ${mk('0','0')} ${mk('0','100%')} ${mk('100%','0')} ${mk('100%','100%')}
+                </div>`;
+
             for(let s=0; s<c.sheets; s++) {
                 h += '<div style="page-break-after:always;">';
-                for(let i=0; i<c.pcs; i++) h += `<div class="b"><img src="${activeJob.img}"></div>`;
+                h += '<div class="grid">';
+                for(let i=0; i<c.pcs; i++) h += cellHtml;
+                h += '</div>';
+                h += `<div style="margin-top:20px; font-size:10px;">${activeJob.inv} - ${document.getElementById('p-mat').value} - ${new Date().toLocaleString()}</div>`;
                 h += '</div>';
             }
+
             let f = document.getElementById('p-frame').contentWindow;
             f.document.open(); f.document.write(h); f.document.close();
             setTimeout(() => { 
+                // STEP PENTING: Dialog Print OS akan muncul (bisa pilih printer USB/WiFi)
                 f.print(); 
                 saveHist(c.sheets);
                 if(conn && conn.open) conn.send({type:'done', id:activeJob.batchId});
@@ -443,18 +529,21 @@
         // SECURITY & UTILS
         function saveId() {
             if(prompt("PIN Keamanan:") === "4869") {
-                localStorage.setItem('kts_id', document.getElementById('my-id-input').value);
+                localStorage.setItem('kts_id', prompt("ID Baru:", myId));
                 location.reload();
             } else alert("PIN Salah!");
         }
 
         function saveHist(l) {
+            // FIX: Mengambil data "Order" dari input Manual (Data)
+            let manualOrder = document.getElementById('p-order').value;
+            
             db.transaction("history", "readwrite").objectStore("history").add({
                 time: new Date().toLocaleString(),
                 inv: document.getElementById('p-inv').value,
                 mat: document.getElementById('p-mat').value,
-                lbr: l,
-                order: document.getElementById('p-order').value
+                lbr: l, // Output lembar (hasil hitungan komputer)
+                order: manualOrder || '-' // Data order murni manual
             });
         }
 
@@ -477,7 +566,7 @@
             let rows = [];
             db.transaction("history").objectStore("history").getAll().onsuccess = e => {
                 e.target.result.forEach(r => rows.push([r.time, r.inv, r.mat, r.lbr, r.order]));
-                doc.autoTable({ head:[['Waktu','Inv','Bahan','Lbr','Order']], body:rows });
+                doc.autoTable({ head:[['Waktu','Inv','Bahan','Output(Lbr)','Order(Data)']], body:rows });
                 doc.save('Laporan_Kertases.pdf');
             };
         }
