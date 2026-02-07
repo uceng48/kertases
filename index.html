@@ -1,13 +1,14 @@
 <!-- 
-  KERTASES PRO V10.7 - THE FINAL FIX
-  Fitur: Fixed Grid Print, Fixed PDF Invoice Label, Centered Layout, Physical Rotation
+  KERTASES PRO V10.8 - MASTER HYBRID EDITION
+  Fitur: PDF Anti-Blank (V10.5 Logic), Grid Print Working, Centered Layout, 
+         Editable Inv, Physical Rotation, Split History Operator.
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V10.7</title>
+    <title>Kertases Pro V10.8</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -71,14 +72,15 @@
         .modal-box { width: 550px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; color: var(--text-dim); }
-        th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; }
-        
+        th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; background: rgba(0,0,0,0.3); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
+
         .hist-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .hist-tab-btn { flex: 1; padding: 8px; background: #222; color: #666; cursor: pointer; border: none; font-weight: bold; }
         .hist-tab-btn.active { background: var(--accent); color: #000; }
 
         .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .preview-item { width: 100%; border: 1px solid #333; height: 80px; background: #000; }
+        .preview-item { width: 100%; border: 1px solid #333; height: 80px; background: #000; overflow: hidden; }
         .preview-item img, .preview-item iframe { width: 100%; height: 100%; object-fit: contain; border: none; }
     </style>
 </head>
@@ -87,9 +89,10 @@
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
     <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
 
+    <!-- LOGIN -->
     <div id="login-screen">
-        <h1 style="font-size:3.5rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.7 - THE FINAL FIX</div>
+        <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.8 MASTER HYBRID</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -216,7 +219,7 @@
         let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV';
 
         // DB SETUP
-        let req = indexedDB.open("KertasesV107", 1);
+        let req = indexedDB.open("KertasesV108", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -301,8 +304,7 @@
             const byteCharacters = atob(b64.split(',')[1]);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-            const byteArray = new Uint8Array(byteNumbers);
-            return new Blob([byteArray], {type: type});
+            return new Blob([new Uint8Array(byteNumbers)], {type: type});
         }
 
         async function prepareFiles(input) {
@@ -403,7 +405,6 @@
             };
         }
 
-        // --- PRINT ENGINE ---
         function openPrint(id) {
             db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => {
                 activeJob = e.target.result;
@@ -414,13 +415,11 @@
                     document.getElementById('p-img').style.display = 'none';
                     document.getElementById('p-pdf-badge').style.display = 'block';
                     document.getElementById('pdf-direct-box').style.display = 'block';
-                    document.getElementById('grid-controls').style.display = 'none';
                 } else {
                     document.getElementById('p-img').src = activeJob.files[0].data;
                     document.getElementById('p-img').style.display = 'block';
                     document.getElementById('p-pdf-badge').style.display = 'none';
                     document.getElementById('pdf-direct-box').style.display = 'none';
-                    document.getElementById('grid-controls').style.display = 'block';
                 }
                 calc();
             };
@@ -451,25 +450,26 @@
             document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
         }
 
+        // V10.5 PDF PRINTING LOGIC (Langsung tembak)
         function doPrintDirect() {
             const invLabel = document.getElementById('p-inv').value;
             const mat = document.getElementById('p-mat').value;
             const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
             const url = URL.createObjectURL(blob);
             
-            let html = `<style>@page{size:32cm 48cm; margin:0;} body{margin:0; padding:0; display:flex; align-items:center; justify-content:center; position:relative; width:32cm; height:48cm;} iframe{width:32cm; height:48cm; border:none;} .inv-text{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; background:white; padding:2px 10px; border:1px solid #ccc; z-index:99;}</style>`;
-            html += `<div style="position:relative; width:32cm; height:48cm; display:flex; align-items:center; justify-content:center;">`;
-            html += `<iframe src="${url}"></iframe>`;
-            if(invLabel) html += `<div class="inv-text">${invLabel} - ${mat}</div>`;
-            html += `</div>`;
-
+            // Konstruksi jendela cetak khusus PDF
             let f = document.getElementById('p-frame').contentWindow;
-            f.document.open(); f.document.write(html); f.document.close();
+            f.document.open();
+            f.document.write(`<style>@page{size:32cm 48cm; margin:0;} body{margin:0; padding:0; height:48cm; width:32cm; position:relative;} iframe{width:100%; height:100%; border:none;} .inv{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; background:white; padding:2px 10px; border:1px solid #000; z-index:99;}</style>`);
+            f.document.write(`<iframe src="${url}"></iframe>`);
+            if(invLabel) f.document.write(`<div class="inv">${invLabel} - ${mat}</div>`);
+            f.document.close();
+
             setTimeout(() => { 
                 f.print(); 
-                saveHistory({ inv: invLabel || 'PDF-DIRECT', cap: `PRODUKSI PDF FULL A3+`, typeLabel: 'OP_PROD' });
+                saveHistory({ inv: invLabel || 'PDF-DIRECT', cap: `PDF PRINT A3+`, typeLabel: 'OP_PROD' });
                 document.getElementById('modal-print').style.display='none';
-            }, 1200);
+            }, 1000);
         }
 
         function doPrint() {
@@ -489,11 +489,15 @@
             if(invLabel) gridHtml += `<div class="inv-text">${invLabel} - ${material}</div>`;
 
             let finalOutput = "";
-            for(let i=0; i<target; i++) finalOutput += `<div style="width:${pw}cm; height:${ph}cm; display:flex; align-items:center; justify-content:center; page-break-after:always; position:relative;">${gridHtml}</div>`;
+            for(let i=0; i<target; i++) finalOutput += `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; page-break-after:always; position:relative;">${gridHtml}</div>`;
 
             let f = document.getElementById('p-frame').contentWindow;
             f.document.open(); f.document.write(html + finalOutput); f.document.close();
-            setTimeout(() => { f.print(); saveHistory({ inv: invLabel || 'GRID', cap: `PROD ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' }); document.getElementById('modal-print').style.display='none'; }, 1200);
+            setTimeout(() => { 
+                f.print(); 
+                saveHistory({ inv: invLabel || 'GRID', cap: `PROD ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' }); 
+                document.getElementById('modal-print').style.display='none'; 
+            }, 1000);
         }
 
         function switchHistTab(tab) {
