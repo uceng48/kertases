@@ -1,13 +1,13 @@
 <!-- 
-  KERTASES PRO V10.3 - PHYSICAL ROTATION EDITION
-  Fitur: Canvas-Based Rotation (Anti-Distorsi), Zero Gap Grid, Direct PDF A3+, Split History
+  KERTASES PRO V10.4 - PRODUCTION FINAL REFINED
+  Fitur: Editable Inv, Centered Print, Bottom Inv Label, Physical Rotation, PDF Stable
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V10.3</title>
+    <title>Kertases Pro V10.4</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -50,7 +50,7 @@
 
         .main-view { flex: 1; display: grid; grid-template-columns: 1fr 340px; overflow: hidden; height: 100%; }
         .timeline { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border-right: 1px solid var(--border); overflow: hidden; }
-        .stream-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 25px; }
+        .stream-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 25px; scroll-behavior: smooth; }
         
         .msg-card { width: 100%; max-width: 420px; background: #111; border: 1px solid var(--border); }
         .msg-card.out { align-self: flex-end; border-color: var(--secondary); }
@@ -67,7 +67,7 @@
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; color: #666; cursor: pointer; margin-bottom: 15px; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { width: 550px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
+        .modal-box { width: 800px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; color: var(--text-dim); }
         th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; background: rgba(0,0,0,0.3); }
@@ -80,7 +80,7 @@
         .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
         .preview-item { width: 100%; aspect-ratio: 1; border: 1px solid #333; position: relative; overflow: hidden; background: #000; }
         .preview-item img { width: 100%; height: 100%; object-fit: contain; }
-        .pdf-box { height: 100%; display: flex; align-items: center; justify-content: center; background: #400; color: white; font-weight: bold; font-size: 0.7rem; }
+        .pdf-box { height: 100%; width: 100%; background: #400; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -89,8 +89,8 @@
     <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
 
     <div id="login-screen">
-        <h1 style="font-size:3.5rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.3 PRODUCTION MASTER</div>
+        <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.4 PRODUCTION REFINED</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -152,8 +152,8 @@
                     <div id="p-pdf-icon" style="display:none; font-size:2.5rem; font-weight:bold; color:var(--danger); text-align:center;">PDF<br><span style="font-size:0.6rem">A3+ READY</span></div>
                 </div>
                 <div style="flex:1;">
-                    <label style="font-size:0.7rem;">INV:</label>
-                    <input type="text" id="p-inv" class="cyber-input" readonly style="margin-bottom:10px; color:var(--success);">
+                    <label style="font-size:0.7rem;">INV (EDITABLE):</label>
+                    <input type="text" id="p-inv" class="cyber-input" style="margin-bottom:10px; color:var(--success);">
                     <label style="font-size:0.7rem;">JENIS BAHAN:</label>
                     <select id="p-mat" class="cyber-input">
                         <option>Chromo</option><option>Vinyl Glossy</option><option>Vinyl Matte</option><option>Transparan</option><option>HVS</option><option>Art Carton</option>
@@ -203,7 +203,7 @@
                 <div class="hist-tab-btn" id="tab-prod" onclick="switchHistTab('PROD')">LOG PRODUKSI</div>
             </div>
             <div style="max-height:400px; overflow-y:auto; background:#000; border:1px solid #222;">
-                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET / STATUS</th><th>SUMBER</th></tr></thead><tbody id="hist-body"></tbody></table>
+                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET</th><th>SUMBER</th></tr></thead><tbody id="hist-body"></tbody></table>
             </div>
             <button class="cyber-btn" style="width:100%; margin-top:20px;" onclick="toggleHistory()">TUTUP</button>
         </div>
@@ -218,7 +218,7 @@
         let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV';
 
         // DB SETUP
-        let req = indexedDB.open("KertasesV103", 1);
+        let req = indexedDB.open("KertasesV104", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -280,7 +280,7 @@
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
                 if(d.type === 'job') handleIncoming(d, c.peer);
-                if(d.type === 'done') alert(`DONE: ${d.inv} telah dicetak!`);
+                if(d.type === 'done') alert(`NOTIF: ${d.inv} telah dicetak!`);
             });
             c.on('close', () => {
                 activeConns = activeConns.filter(x => x.peer !== c.peer);
@@ -299,7 +299,6 @@
             txt.style.color = activeConns.length > 0 ? "var(--success)" : "var(--danger)";
         }
 
-        // PREPARE PREVIEW
         async function prepareFiles(input) {
             tempFiles = [];
             const grid = document.getElementById('preview-area'); grid.innerHTML = '';
@@ -318,7 +317,7 @@
         function sendDataStrict() {
             if(activeConns.length === 0) return alert("NO TARGET!");
             let d = { 
-                type: 'job', files: tempFiles, inv: document.getElementById('inv-in').value || 'NO-INV',
+                type: 'job', files: tempFiles, inv: document.getElementById('inv-in').value || '',
                 cap: document.getElementById('cap-in').value, id: Date.now(), senderRole: role, senderId: myId
             };
             activeConns.forEach(c => c.send(d));
@@ -362,11 +361,11 @@
 
                     let card = document.createElement('div');
                     card.className = `msg-card ${i.direction}`;
-                    let thumb = i.files[0].isPdf ? `<div style="height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#400; color:white; font-weight:bold;">📄 PDF FILE<br><span style="font-size:0.6rem;">${i.inv}</span></div>` : `<img src="${i.files[0].data}" class="msg-img">`;
+                    let thumb = i.files[0].isPdf ? `<div style="height:160px; display:flex; align-items:center; justify-content:center; background:#400; color:white; font-weight:bold;">📄 PDF DOKUMEN</div>` : `<img src="${i.files[0].data}" class="msg-img">`;
                     let actionBtn = "";
                     if(i.direction === 'in') {
                         if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="flex:1;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
-                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">DOWNLOAD ASSET</button>`;
+                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
                     }
                     card.innerHTML = `
                         <div class="msg-header">
@@ -375,7 +374,7 @@
                         </div>
                         <div class="msg-body">
                             ${thumb}
-                            <div class="msg-inv">${i.inv}</div>
+                            <div class="msg-inv">${i.inv || '(No Invoice)'}</div>
                             <div class="msg-cap" onclick="copyTxt(this.innerText)">${i.cap || '---'}</div>
                         </div>
                         <div class="msg-footer">${actionBtn}</div>`;
@@ -393,34 +392,22 @@
             };
         }
 
-        // --- PHYSICAL ROTATION ENGINE ---
+        // --- PHYSICAL ROTATION ---
         async function physicalRotate() {
             if(!activeJob || activeJob.files[0].isPdf) return;
-            
             let img = new Image();
             img.src = activeJob.files[0].data;
             await img.decode();
-            
             let canvas = document.createElement('canvas');
-            canvas.width = img.height;
-            canvas.height = img.width;
+            canvas.width = img.height; canvas.height = img.width;
             let ctx = canvas.getContext('2d');
-            
-            ctx.translate(canvas.width/2, canvas.height/2);
-            ctx.rotate(90 * Math.PI / 180);
+            ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(90 * Math.PI / 180);
             ctx.drawImage(img, -img.width/2, -img.height/2);
-            
             let newData = canvas.toDataURL('image/png');
             activeJob.files[0].data = newData;
             document.getElementById('p-img').src = newData;
-            
-            // Swap W & H Input agar kalkulasi muat tetap benar
-            let wInput = document.getElementById('p-w');
-            let hInput = document.getElementById('p-h');
-            let oldW = wInput.value;
-            wInput.value = hInput.value;
-            hInput.value = oldW;
-            
+            let wI = document.getElementById('p-w'), hI = document.getElementById('p-h');
+            let oldW = wI.value; wI.value = hI.value; hI.value = oldW;
             calc();
         }
 
@@ -428,7 +415,8 @@
             db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => {
                 activeJob = e.target.result;
                 document.getElementById('modal-print').style.display = 'flex';
-                document.getElementById('p-inv').value = activeJob.inv;
+                // Reset Inv to Empty for manual entry
+                document.getElementById('p-inv').value = ""; 
                 
                 if(activeJob.files[0].isPdf) {
                     document.getElementById('p-img').style.display = 'none';
@@ -454,8 +442,7 @@
             let w = parseFloat(document.getElementById('p-w').value) || 1;
             let h = parseFloat(document.getElementById('p-h').value) || 1;
             let target = parseInt(document.getElementById('p-target').value) || 1;
-            let nx = Math.floor(pw/w);
-            let ny = Math.floor(ph/h);
+            let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
             document.getElementById('p-res').innerText = `HASIL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
         }
 
@@ -466,7 +453,7 @@
             f.document.open(); f.document.write(html); f.document.close();
             setTimeout(() => { 
                 f.print(); 
-                saveHistory({ inv: activeJob.inv, cap: `PRODUKSI PDF FULL A3+`, typeLabel: 'OP_PROD' });
+                saveHistory({ inv: document.getElementById('p-inv').value || 'PDF-DIRECT', cap: `PRODUKSI PDF FULL A3+`, typeLabel: 'OP_PROD' });
                 document.getElementById('modal-print').style.display='none';
             }, 1000);
         }
@@ -475,27 +462,32 @@
             let pw = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-w').value : document.getElementById('p-paper').value.split(',')[0];
             let ph = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-h').value : document.getElementById('p-paper').value.split(',')[1];
             let w = document.getElementById('p-w').value, h = document.getElementById('p-h').value, target = document.getElementById('p-target').value;
-            
-            // Marks inside (Rapat Total)
+            let invLabel = document.getElementById('p-inv').value;
+            let material = document.getElementById('p-mat').value;
+
+            // KRES Marks
             const mk = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0;"><div style="position:absolute; top:-2mm; left:-0.05mm; width:0.1mm; height:4mm; background:#000;"></div><div style="position:absolute; top:-0.05mm; left:-2mm; width:4mm; height:0.1mm; background:#000;"></div></div>`;
             
-            // Strict CSS Grid for Print
-            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0;} .grid{display:grid; grid-template-columns:repeat(auto-fill, ${w}cm); width:${pw}cm; gap:0; margin:0;} .cell{position:relative; width:${w}cm; height:${h}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; display:block; border:none;}</style>`;
+            // CENTER LAYOUT CSS
+            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; height:${ph}cm; display:flex; align-items:center; justify-content:center; position:relative;} .grid{display:grid; grid-template-columns:repeat(${Math.floor(pw/w)}, ${w}cm); gap:0; margin:0; border:0.1mm solid transparent;} .cell{position:relative; width:${w}cm; height:${h}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; display:block;} .inv-text{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; color:#333;}</style>`;
             
             let gridHtml = `<div class="grid">`;
-            let nx = Math.floor(pw/w);
-            let ny = Math.floor(ph/h);
+            let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
             for(let i=0; i<(nx*ny); i++) gridHtml += `<div class="cell"><img src="${activeJob.files[0].data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
             gridHtml += `</div>`;
             
+            // Add Invoice Label if not empty
+            if(invLabel) gridHtml += `<div class="inv-text">${invLabel} - ${material}</div>`;
+
             let finalOutput = "";
-            for(let i=0; i<target; i++) finalOutput += `<div style="page-break-after:always;">${gridHtml}</div>`;
+            for(let i=0; i<target; i++) finalOutput += `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; page-break-after:always; position:relative;">${gridHtml}</div>`;
 
             let f = document.getElementById('p-frame').contentWindow;
             f.document.open(); f.document.write(html + finalOutput); f.document.close();
             setTimeout(() => { 
                 f.print(); 
-                saveHistory({ inv: activeJob.inv, cap: `CETAK GRID ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' });
+                saveHistory({ inv: invLabel || 'GRID-PRINT', cap: `CETAK ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' });
+                activeConns.forEach(c => c.send({type:'done', inv: invLabel}));
                 document.getElementById('modal-print').style.display='none';
             }, 1000);
         }
@@ -554,7 +546,7 @@
             };
         }
 
-        function copyTxt(t) { navigator.clipboard.writeText(t); alert("Catatan Disalin!"); }
+        function copyTxt(t) { navigator.clipboard.writeText(t); alert("Disalin!"); }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
     </script>
 </body>
