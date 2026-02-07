@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kertases Pro V8.8.6 - PDF & Rotation Fixed</title>
+    <title>Kertases Pro V8.8.7 - Final Connection Fix</title>
     
+    <!-- LIBRARIES -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
@@ -15,16 +16,31 @@
             --primary: #6366f1; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
             --dark: #0f172a; --slate: #1e293b; --light: #f8fafc;
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--light); color: var(--dark); height: 100vh; overflow: hidden; }
+        body, html { 
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
+            background: var(--light); color: var(--dark); height: 100vh; overflow: hidden;
+        }
 
-        .selector-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .role-card { background: var(--slate); border: 1px solid #334155; padding: 25px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; color: white; width: 100%; max-width: 300px; margin-bottom: 15px; }
+        /* --- ROLE SELECTOR --- */
+        .selector-screen { 
+            position: fixed; inset: 0; z-index: 9999; background: var(--dark);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        .role-card {
+            background: var(--slate); border: 1px solid #334155; padding: 25px;
+            border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; color: white;
+            width: 100%; max-width: 300px; margin-bottom: 15px;
+        }
+        .role-card:hover { transform: translateY(-5px); border-color: var(--primary); }
 
+        /* --- LAYOUT --- */
         #app-shell { display: none; height: 100vh; flex-direction: row; }
         .sidebar { width: 280px; background: var(--dark); color: white; display: flex; flex-direction: column; padding: 15px; transition: 0.3s; flex-shrink: 0; overflow-y: auto; }
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f1f5f9; }
 
+        /* --- COMPONENT --- */
         .btn { border: none; border-radius: 10px; padding: 12px; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
@@ -32,6 +48,7 @@
         .btn-outline { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
 
         .form-control { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+        
         .status-box { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--danger); }
         .status-box.ready { border-left-color: var(--warning); }
         .status-box.connected { border-left-color: var(--success); }
@@ -48,13 +65,17 @@
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 10px; }
         .modal-box { background: white; width: 100%; max-width: 550px; border-radius: 15px; padding: 20px; max-height: 95vh; overflow-y: auto; color: var(--dark); }
 
-        @media (max-width: 768px) { #app-shell { flex-direction: column; } .sidebar { width: 100%; height: auto; max-height: 250px; } }
+        @media (max-width: 768px) {
+            #app-shell { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; max-height: 250px; }
+        }
     </style>
 </head>
 <body>
 
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
 
+    <!-- ROLE SELECTOR -->
     <div id="role-selector" class="selector-screen">
         <h1 style="color:white; margin-bottom:20px;">KERTASES <span style="color:var(--primary)">PRO</span></h1>
         <div class="role-card" onclick="enterRole('admin')"><h2>ADMIN</h2></div>
@@ -65,23 +86,25 @@
     <div id="app-shell">
         <div class="sidebar">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h2 style="margin:0; font-size:16px;">KERTASES</h2>
+                <h2 style="margin:0; font-size:16px;">KERTASES V8.8</h2>
                 <span id="role-badge" style="background:var(--primary); padding:3px 8px; border-radius:5px; font-size:10px;">...</span>
             </div>
-            <button class="btn btn-success" style="width:100%; margin-bottom:10px;" onclick="toggleHistory()">📜 RIWAYAT</button>
+            <button class="btn btn-success" style="width:100%; margin-bottom:10px;" onclick="toggleHistory()">📜 LIHAT RIWAYAT</button>
             <div id="status-box" class="status-box">
                 <div id="status-text" style="font-weight:700; font-size:11px;">OFFLINE</div>
                 <div style="font-size:9px; color:#94a3b8; margin-top:5px;">ID SAYA: <span id="disp-my-id" style="color:var(--success); font-family:monospace;">...</span></div>
-                <button class="btn btn-outline" style="width:100%; margin-top:8px; font-size:9px; padding:4px;" onclick="changeId()">GANTI ID</button>
+                <button class="btn btn-outline" style="width:100%; margin-top:8px; font-size:9px; padding:4px;" onclick="changeId()">UBAH ID</button>
             </div>
             <div style="margin-top:10px;">
-                <label style="font-size:10px; color:#94a3b8;">HUBUNGKAN ID</label>
-                <input type="text" id="target-id" class="form-control" style="background:#0f172a; color:white; border:1px solid #334155; margin-top:5px;" placeholder="ID Tujuan...">
+                <label style="font-size:10px; color:#94a3b8;">HUBUNGKAN KE ID</label>
+                <input type="text" id="target-id" class="form-control" style="background:#0f172a; color:white; border:1px solid #334155; margin-top:5px;" placeholder="Masukkan ID Tujuan...">
                 <button class="btn btn-primary" style="width:100%;" onclick="connectToPeer()">CONNECT</button>
             </div>
+            <button class="btn btn-danger" style="width:100%; margin-top:10px; padding:8px; font-size:10px;" onclick="location.reload()">🔄 REFRESH SYSTEM</button>
         </div>
 
         <div class="main-content">
+            <!-- VIEW DESIGNER -->
             <div id="view-chat" style="display:none; flex-direction:column; height:100%;">
                 <div class="scroll-area" id="chat-box" style="display:flex; flex-direction:column;"></div>
                 <div id="draft-area" style="display:none; padding:10px; background:white; border-top:1px solid #ddd;">
@@ -92,25 +115,28 @@
                         <input type="text" id="inv-in" class="form-control" placeholder="No Invoice..." style="margin:0;">
                         <label style="font-size:11px; display:flex; align-items:center; gap:5px;"><input type="checkbox" id="hd-mode" checked> HD</label>
                     </div>
-                    <input type="text" id="cap-in" class="form-control" placeholder="Catatan...">
+                    <input type="text" id="cap-in" class="form-control" placeholder="Keterangan / Catatan Ukuran...">
                     <div style="display:flex; gap:10px;">
                         <input type="file" id="file-in" multiple style="display:none;" onchange="prepareFiles(this)">
                         <button class="btn btn-outline" style="color:var(--dark); border-color:#ccc;" onclick="document.getElementById('file-in').click()">📁 FILE</button>
-                        <button class="btn btn-primary" style="flex:1;" onclick="sendData()">KIRIM</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="sendData()">KIRIM DATA</button>
                     </div>
                 </div>
             </div>
 
+            <!-- VIEW OPERATOR -->
             <div id="view-operator" style="display:none; flex-direction:column; height:100%;">
                 <div style="padding:15px; background:white; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="margin:0; font-size:16px;">ANTREAN</h3>
+                    <h3 style="margin:0; font-size:16px;">ANTREAN PRODUKSI</h3>
                     <div style="display:flex; gap:8px;">
                         <input type="file" id="op-upload" multiple style="display:none;" onchange="handleOpUpload(this)">
-                        <button class="btn btn-success" onclick="document.getElementById('op-upload').click()">+ UPLOAD</button>
-                        <button class="btn btn-danger" onclick="clearQueue()">RESET</button>
+                        <button class="btn btn-success" style="padding:8px 15px;" onclick="document.getElementById('op-upload').click()">+ UPLOAD</button>
+                        <button class="btn btn-danger" style="padding:8px 15px;" onclick="clearQueue()">RESET</button>
                     </div>
                 </div>
-                <div class="scroll-area"><div id="print-queue" class="print-grid"></div></div>
+                <div class="scroll-area">
+                    <div id="print-queue" class="print-grid"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -118,10 +144,10 @@
     <!-- MODAL PRINT -->
     <div id="modal-print" class="modal">
         <div class="modal-box">
-            <h3 style="margin:0 0 15px 0;">SETUP CETAK</h3>
+            <h3 style="margin:0 0 15px 0;">SETUP PRODUKSI</h3>
             <div id="p-preview-area" style="width:100%; height:150px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:15px; overflow:hidden;">
                 <img id="p-img" style="max-width:100%; max-height:100%; display:none;">
-                <div id="p-pdf-icon" style="display:none; text-align:center;">📄<br><b>PDF FILE</b></div>
+                <div id="p-pdf-icon" style="display:none; text-align:center;">📄<br><b>FILE PDF</b></div>
             </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <input type="text" id="p-inv" class="form-control" placeholder="Invoice">
@@ -141,20 +167,26 @@
                 <select id="p-mat" class="form-control"><option>Chromo</option><option>Vinyl</option><option>Art Carton</option><option>HVS</option></select>
                 <input type="text" id="p-order" class="form-control" placeholder="Order (Pcs)">
             </div>
-            <input type="number" id="p-target" value="1" class="form-control" oninput="calc()" style="font-size:18px; font-weight:bold; text-align:center;">
+            <input type="number" id="p-target" value="1" class="form-control" oninput="calc()" style="font-size:18px; font-weight:bold; text-align:center; color:var(--primary);">
             <div id="p-res" style="background:var(--slate); color:white; padding:12px; border-radius:10px; text-align:center; font-weight:bold; margin-bottom:15px;">...</div>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-outline" style="flex:1; color:black; border-color:#ccc;" onclick="closeModal()">BATAL</button>
-                <button class="btn btn-primary" style="flex:2;" onclick="doPrint()">CETAK</button>
+                <button class="btn btn-primary" style="flex:2;" onclick="doPrint()">PROSES CETAK</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL HISTORY -->
     <div id="modal-hist" class="modal">
         <div class="modal-box" style="max-width:750px;">
-            <h3>RIWAYAT</h3>
-            <div style="overflow-x:auto;"><table style="width:100%; font-size:11px; border-collapse:collapse;" border="1" cellpadding="8"><thead style="background:#f1f5f9;"><tr><th>Waktu</th><th>Inv</th><th>Aksi</th><th>Jml</th><th>Order</th></tr></thead><tbody id="hist-body"></tbody></table></div>
-            <button class="btn btn-outline" style="margin-top:20px; color:black;" onclick="toggleHistory()">TUTUP</button>
+            <h3>LAPORAN AKTIVITAS</h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; font-size:11px; border-collapse:collapse;" border="1" cellpadding="8">
+                    <thead style="background:#f1f5f9;"><tr><th>Waktu</th><th>Inv</th><th>Bahan/Aksi</th><th>Jml</th><th>Order</th></tr></thead>
+                    <tbody id="hist-body"></tbody>
+                </table>
+            </div>
+            <button class="btn btn-outline" style="margin-top:20px; color:black; border-color:#ccc;" onclick="toggleHistory()">TUTUP</button>
         </div>
     </div>
 
@@ -167,7 +199,8 @@
 
         document.getElementById('disp-my-id').innerText = myId;
 
-        let req = indexedDB.open("KertasesV886", 1);
+        // DB INIT - Versi 887
+        let req = indexedDB.open("KertasesV887", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
@@ -188,28 +221,57 @@
         }
 
         function initPeer() {
+            if(peer) peer.destroy();
             peer = new Peer(myId);
-            peer.on('open', () => { document.getElementById('status-box').className = 'status-box ready'; document.getElementById('status-text').innerText = '🟡 STANDBY'; });
-            peer.on('connection', c => { conn = c; setupConn(c); });
+            
+            peer.on('open', (id) => {
+                console.log('ID Saya:', id);
+                document.getElementById('status-box').className = 'status-box ready';
+                document.getElementById('status-text').innerText = '🟡 STANDBY (ONLINE)';
+            });
+
+            peer.on('connection', c => {
+                conn = c;
+                setupConn(c);
+            });
+
+            peer.on('error', err => {
+                console.error('PeerJS Error:', err.type);
+                if(err.type === 'unavailable-id') {
+                    alert("ID sudah dipakai! Ganti ID di sidebar.");
+                } else {
+                    alert("Masalah koneksi: " + err.type);
+                }
+            });
         }
 
         function connectToPeer() {
-            let tid = document.getElementById('target-id').value;
-            if(!tid) return;
+            let tid = document.getElementById('target-id').value.trim();
+            if(!tid) return alert("Masukkan ID Tujuan!");
+            if(tid === myId) return alert("Tidak bisa hubungkan ke ID sendiri!");
+            
             conn = peer.connect(tid);
             setupConn(conn);
         }
 
         function setupConn(c) {
-            c.on('open', () => { document.getElementById('status-box').className = 'status-box connected'; document.getElementById('status-text').innerText = '✅ TERHUBUNG'; });
+            c.on('open', () => {
+                document.getElementById('status-box').className = 'status-box connected';
+                document.getElementById('status-text').innerText = '✅ TERHUBUNG';
+            });
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
                 if(role === 'operator' && d.type === 'job') pushToQueue(d);
                 else if(d.type === 'done') markDone(d.batchId);
                 else renderMsg(d, 'them');
             });
+            c.on('close', () => {
+                document.getElementById('status-box').className = 'status-box ready';
+                document.getElementById('status-text').innerText = '🟡 TERPUTUS';
+            });
         }
 
+        // --- DESIGNER LOGIC ---
         async function prepareFiles(input) {
             tempFiles = [];
             const list = document.getElementById('draft-list');
@@ -217,7 +279,7 @@
             list.innerHTML = '';
             for(let f of input.files) {
                 let isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
-                // PROTEKSI: PDF jangan di-compress!
+                // PDF TIDAK BOLEH KOMPRES
                 let data = isPdf ? await toBase64(f) : (document.getElementById('hd-mode').checked ? await toBase64(f) : await compress(f));
                 tempFiles.push({ data, isPdf, name: f.name });
                 let div = document.createElement('div');
@@ -228,7 +290,8 @@
         }
 
         function sendData() {
-            if(!conn || !conn.open) return alert("Belum terhubung!");
+            if(!conn || !conn.open) return alert("Harus TERHUBUNG ke Operator dulu!");
+            if(tempFiles.length === 0) return alert("Pilih file dulu!");
             let d = { type:'job', batchId:Date.now(), files:tempFiles, inv:document.getElementById('inv-in').value, cap:document.getElementById('cap-in').value };
             conn.send(d);
             saveHist(tempFiles.length, "KIRIM", d.inv);
@@ -246,6 +309,12 @@
             box.appendChild(div); box.scrollTop = box.scrollHeight;
         }
 
+        function markDone(id) {
+            let el = document.getElementById('msg-' + id);
+            if(el) el.style.borderRight = "8px solid var(--success)";
+        }
+
+        // --- OPERATOR LOGIC ---
         function pushToQueue(d) {
             let tx = db.transaction("queue", "readwrite");
             d.files.forEach(f => { tx.objectStore("queue").add({ ...f, inv: d.inv, batchId: d.batchId }); });
@@ -257,7 +326,7 @@
             for(let f of input.files) {
                 let isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
                 let data = await toBase64(f);
-                filesToSave.push({ data, isPdf, inv: 'Manual-' + f.name.split('.')[0], batchId: Date.now() });
+                filesToSave.push({ data, isPdf, inv: 'Upload Manual', batchId: Date.now() });
             }
             let tx = db.transaction("queue", "readwrite");
             filesToSave.forEach(item => tx.objectStore("queue").add(item));
@@ -265,6 +334,7 @@
         }
 
         function renderQ() {
+            if(!db) return;
             const q = document.getElementById('print-queue'); q.innerHTML = '';
             db.transaction("queue").objectStore("queue").getAll().onsuccess = e => {
                 e.target.result.reverse().forEach(i => {
@@ -295,7 +365,7 @@
             };
         }
 
-        // FIX: Rotasi sekarang menukar W dan H
+        // ROTASI: Tukar Nilai
         function toggleRot() {
             let w = document.getElementById('p-w').value;
             let h = document.getElementById('p-h').value;
@@ -320,11 +390,9 @@
             let s = document.getElementById('p-size').value, pW = s==='a3'?29.7:32, pH = s==='a3'?42:48;
             let target = parseInt(document.getElementById('p-target').value);
             const kres = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0; overflow:visible;"><div style="position:absolute; top:-1.5mm; left:-0.1mm; width:0.2mm; height:3mm; background:black;"></div><div style="position:absolute; top:-0.1mm; left:-1.5mm; width:3mm; height:0.2mm; background:black;"></div></div>`;
-            
             let h = `<style>@page{size:${pW}cm ${pH}cm; margin:0;} body{margin:0; overflow:hidden; background:white;}</style>`;
             
             if(activeJob.isPdf) {
-                // PDF PRINT FIX: Gunakan iframe untuk PDF
                 for(let i=0; i<target; i++) h += `<div style="width:${pW}cm; height:${pH}cm; page-break-after:always;"><iframe src="${activeJob.data}" style="width:100%; height:100%; border:none;"></iframe></div>`;
             } else {
                 let w = document.getElementById('p-w').value, h_img = document.getElementById('p-h').value;
@@ -338,9 +406,10 @@
 
             let f = document.getElementById('p-frame').contentWindow;
             f.document.open(); f.document.write(h); f.document.close();
-            setTimeout(() => { f.print(); saveHist(target, "CETAK", document.getElementById('p-inv').value); closeModal(); }, 600);
+            setTimeout(() => { f.print(); saveHist(target, "CETAK", document.getElementById('p-inv').value); if(conn && conn.open) conn.send({type:'done', batchId: activeJob.batchId}); closeModal(); }, 600);
         }
 
+        // --- UTILS ---
         function saveHist(lbr, actionType, inv) {
             let tx = db.transaction("history", "readwrite");
             tx.objectStore("history").add({ time: new Date().toLocaleString('id-ID'), role, action: actionType, inv: inv || '-', mat: actionType === "CETAK" ? document.getElementById('p-mat').value : "-", lbr, order: actionType === "CETAK" ? (document.getElementById('p-order').value || '-') : "-" });
@@ -353,16 +422,16 @@
                     let b = document.getElementById('hist-body'); b.innerHTML = '';
                     let filtered = e.target.result.filter(i => role === 'admin' ? true : i.role === role);
                     filtered.reverse().forEach(r => {
-                        b.innerHTML += `<tr><td>${r.time}</td><td>${r.inv}</td><td>${r.action==="KIRIM"?'KIRIM':r.mat}</td><td>${r.lbr}</td><td>${r.order}</td></tr>`;
+                        b.innerHTML += `<tr><td>${r.time}</td><td>${r.inv}</td><td>${r.action==="KIRIM"?'PENGIRIMAN':r.mat}</td><td>${r.lbr}</td><td>${r.order}</td></tr>`;
                     });
                 };
             }
         }
 
-        function changeId() { if(prompt("PIN:") === "4869") { localStorage.setItem('kts_id', prompt("ID:", myId)); location.reload(); } }
-        function clearQueue() { if(confirm("Reset?")) db.transaction("queue","readwrite").objectStore("queue").clear().onsuccess = renderQ; }
+        function changeId() { if(prompt("PIN Admin:") === "4869") { let nid = prompt("ID Baru:", myId); if(nid){ localStorage.setItem('kts_id', nid); location.reload(); } } }
+        function clearQueue() { if(confirm("Hapus semua antrean?")) db.transaction("queue","readwrite").objectStore("queue").clear().onsuccess = renderQ; }
         function closeModal() { document.getElementById('modal-print').style.display='none'; }
-        function toBase64(f) { return new Promise(resolve => { let fr = new FileReader(); fr.onload = () => resolve(fr.result); fr.readAsDataURL(f); }); }
+        function toBase64(f) { return new Promise(r => { let fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); }); }
         function compress(f) {
             return new Promise(r => {
                 let fr=new FileReader(); fr.onload=e=>{
