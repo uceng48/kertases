@@ -1,13 +1,13 @@
 <!-- 
-  KERTASES PRO V10.4 - PRODUCTION FINAL REFINED
-  Fitur: Editable Inv, Centered Print, Bottom Inv Label, Physical Rotation, PDF Stable
+  KERTASES PRO V10.5 - PDF ULTRA CORE
+  Fitur: Real PDF Preview, Editable Inv, Centered Print, Physical Rotation, Split History
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V10.4</title>
+    <title>Kertases Pro V10.5</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -58,16 +58,17 @@
         
         .msg-header { padding: 8px 12px; background: rgba(255,255,255,0.05); font-size: 0.65rem; display: flex; justify-content: space-between; }
         .msg-body { padding: 12px; }
-        .msg-img { width: 100%; height: 160px; object-fit: contain; background: #000; border: 1px solid #222; }
+        .msg-img { width: 100%; height: 200px; object-fit: contain; background: #000; border: 1px solid #222; }
+        .msg-pdf-frame { width: 100%; height: 200px; border: 1px solid var(--danger); background: #222; }
         .msg-inv { color: var(--accent); font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
         .msg-cap { font-size: 0.85rem; color: #aaa; background: #000; padding: 10px; border: 1px solid #222; cursor: pointer; white-space: pre-wrap; line-height: 1.4; }
-        .msg-footer { padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #222; }
+        .msg-footer { padding: 10px; display: flex; gap: 8px; border-top: 1px solid #222; }
 
         .control-panel { padding: 20px; overflow-y: auto; background: #0c0c0c; border-left: 1px solid var(--border); }
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; color: #666; cursor: pointer; margin-bottom: 15px; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { width: 800px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
+        .modal-box { width: 550px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; color: var(--text-dim); }
         th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; background: rgba(0,0,0,0.3); }
@@ -78,9 +79,8 @@
         .hist-tab-btn.active { background: var(--accent); color: #000; }
 
         .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .preview-item { width: 100%; aspect-ratio: 1; border: 1px solid #333; position: relative; overflow: hidden; background: #000; }
-        .preview-item img { width: 100%; height: 100%; object-fit: contain; }
-        .pdf-box { height: 100%; width: 100%; background: #400; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.8rem; }
+        .preview-item { width: 100%; border: 1px solid #333; height: 100px; background: #000; }
+        .preview-item img, .preview-item iframe { width: 100%; height: 100%; object-fit: contain; border: none; }
     </style>
 </head>
 <body>
@@ -90,7 +90,7 @@
 
     <div id="login-screen">
         <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.4 PRODUCTION REFINED</div>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.5 - PDF ULTRA CORE</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -131,11 +131,11 @@
 
             <div class="control-panel">
                 <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; font-size:0.8rem;">TRANSMIT ASSETS</div>
-                <div class="upload-zone" onclick="document.getElementById('file-in').click()">+ SELECT FILES</div>
+                <div class="upload-zone" onclick="document.getElementById('file-in').click()">+ SELECT FILES / PDF</div>
                 <div id="preview-area" class="preview-grid"></div>
-                <input type="text" id="inv-in" class="cyber-input" placeholder="Invoice Number" style="margin-bottom:10px;">
-                <textarea id="cap-in" class="cyber-input" placeholder="Notes (Enter for new line)"></textarea>
-                <div style="margin:15px 0; font-size:0.75rem;"><input type="checkbox" id="hd-mode" checked> HIGH-DEFINITION ASSETS</div>
+                <input type="text" id="inv-in" class="cyber-input" placeholder="No. Invoice" style="margin-bottom:10px;">
+                <textarea id="cap-in" class="cyber-input" placeholder="Catatan (Enter supported)"></textarea>
+                <div style="margin:15px 0; font-size:0.75rem;"><input type="checkbox" id="hd-mode" checked> HIGH-DEFINITION MODE</div>
                 <input type="file" id="file-in" multiple style="display:none;" onchange="prepareFiles(this)">
                 <button id="btn-send" class="cyber-btn" style="width:100%;" onclick="sendDataStrict()">SEND DATA</button>
             </div>
@@ -147,45 +147,44 @@
         <div class="modal-box" style="width:550px;">
             <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">PRODUCTION SETUP</div>
             <div style="display:flex; gap:15px; margin-bottom:20px;">
-                <div style="width:150px; height:150px; background:#000; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <div id="p-preview-box" style="width:150px; height:150px; background:#000; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
                     <img id="p-img" style="max-width:100%; max-height:100%; object-fit:contain;">
-                    <div id="p-pdf-icon" style="display:none; font-size:2.5rem; font-weight:bold; color:var(--danger); text-align:center;">PDF<br><span style="font-size:0.6rem">A3+ READY</span></div>
+                    <iframe id="p-pdf-preview" style="display:none; width:100%; height:100%; border:none;"></iframe>
                 </div>
                 <div style="flex:1;">
                     <label style="font-size:0.7rem;">INV (EDITABLE):</label>
                     <input type="text" id="p-inv" class="cyber-input" style="margin-bottom:10px; color:var(--success);">
-                    <label style="font-size:0.7rem;">JENIS BAHAN:</label>
+                    <label style="font-size:0.7rem;">BAHAN:</label>
                     <select id="p-mat" class="cyber-input">
                         <option>Chromo</option><option>Vinyl Glossy</option><option>Vinyl Matte</option><option>Transparan</option><option>HVS</option><option>Art Carton</option>
                     </select>
                 </div>
             </div>
-
-            <div id="pdf-direct-options" style="display:none; margin-bottom:20px;">
-                <button class="cyber-btn success" style="width:100%; font-size:1rem; padding:15px;" onclick="doPrintDirect()">CETAK PDF FULL A3+</button>
-                <div style="border-bottom:1px solid #333; margin:20px 0;"></div>
+            
+            <div id="pdf-direct-box" style="display:none; margin-bottom:20px;">
+                <button class="cyber-btn success" style="width:100%; padding:15px;" onclick="doPrintDirect()">CETAK PDF FULL A3+</button>
             </div>
 
-            <div id="grid-print-options">
+            <div id="grid-controls">
                 <label style="font-size:0.7rem;">UKURAN KERTAS:</label>
                 <select id="p-paper" class="cyber-input" onchange="togglePaperCustom()" style="margin-bottom:15px;">
                     <option value="32,48">A3+ (32x48 cm)</option><option value="29.7,42">A3 (29.7x42 cm)</option><option value="21,29.7">A4 (21x29.7 cm)</option><option value="custom">-- CUSTOM --</option>
                 </select>
                 <div id="custom-paper-box" style="display:none; gap:10px; margin-bottom:15px;">
-                    <input type="number" id="p-paper-w" value="32" class="cyber-input">
-                    <input type="number" id="p-paper-h" value="48" class="cyber-input">
+                    <input type="number" id="p-paper-w" value="32" class="cyber-input" placeholder="W">
+                    <input type="number" id="p-paper-h" value="48" class="cyber-input" placeholder="H">
                 </div>
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                     <div style="flex:1;"><label style="font-size:0.7rem;">L (CM):</label><input type="number" id="p-w" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
                     <div style="flex:1;"><label style="font-size:0.7rem;">T (CM):</label><input type="number" id="p-h" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
-                    <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="physicalRotate()">🔄 ROTASI</button></div>
+                    <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="physicalRotate()">🔄</button></div>
                 </div>
-                <label style="font-size:0.7rem;">JUMLAH CETAK (LEMBAR):</label>
+                <label style="font-size:0.7rem;">TARGET LEMBAR:</label>
                 <input type="number" id="p-target" value="1" class="cyber-input" style="font-size:1.8rem; text-align:center; color:var(--success); font-weight:bold; margin-bottom:15px;" oninput="calc()">
                 <div id="p-res" style="text-align:center; color:var(--success); background:rgba(0,255,157,0.1); padding:12px; border:1px solid var(--success); margin-bottom:20px;">...</div>
                 <div style="display:flex; gap:10px;">
                     <button class="cyber-btn danger" style="flex:1;" onclick="document.getElementById('modal-print').style.display='none'">BATAL</button>
-                    <button class="cyber-btn success" style="flex:2;" onclick="doPrint()">PROSES CETAK</button>
+                    <button class="cyber-btn success" style="flex:2;" onclick="doPrint()">PROSES GRID</button>
                 </div>
             </div>
         </div>
@@ -195,7 +194,7 @@
     <div id="modal-hist" class="modal">
         <div class="modal-box" style="width:800px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="color:var(--accent); font-weight:bold; font-size:1.2rem;">RIWAYAT - <span id="hist-role-title">---</span></div>
+                <div style="color:var(--accent); font-weight:bold; font-size:1.2rem;">LOG - <span id="hist-role-title">...</span></div>
                 <button class="cyber-btn success" style="padding:5px 15px; font-size:0.7rem;" onclick="exportHistory()">DOWNLOAD CSV</button>
             </div>
             <div id="op-tabs" class="hist-tabs" style="display:none;">
@@ -203,7 +202,7 @@
                 <div class="hist-tab-btn" id="tab-prod" onclick="switchHistTab('PROD')">LOG PRODUKSI</div>
             </div>
             <div style="max-height:400px; overflow-y:auto; background:#000; border:1px solid #222;">
-                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET</th><th>SUMBER</th></tr></thead><tbody id="hist-body"></tbody></table>
+                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET / STATUS</th><th>PARTNER</th></tr></thead><tbody id="hist-body"></tbody></table>
             </div>
             <button class="cyber-btn" style="width:100%; margin-top:20px;" onclick="toggleHistory()">TUTUP</button>
         </div>
@@ -218,7 +217,7 @@
         let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV';
 
         // DB SETUP
-        let req = indexedDB.open("KertasesV104", 1);
+        let req = indexedDB.open("KertasesV105", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -235,7 +234,7 @@
 
         function changeId() {
             if(prompt("PASSWORD:") === "4869") {
-                let nid = prompt("ID BARU:", myId);
+                let nid = prompt("NEW ID:", myId);
                 if(nid) { localStorage.setItem('kts_id', nid); location.reload(); }
             }
         }
@@ -251,7 +250,7 @@
                 document.getElementById('target-id').value = localStorage.getItem('kts_last_target') || '';
                 initPeer();
                 setTimeout(renderStream, 500);
-            } else alert("ACCESS DENIED");
+            } else alert("DENIED");
         }
 
         function initPeer() {
@@ -299,6 +298,15 @@
             txt.style.color = activeConns.length > 0 ? "var(--success)" : "var(--danger)";
         }
 
+        // --- PDF & IMAGE HELPERS ---
+        function b64ToBlob(b64, type) {
+            const byteCharacters = atob(b64.split(',')[1]);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], {type: type});
+        }
+
         async function prepareFiles(input) {
             tempFiles = [];
             const grid = document.getElementById('preview-area'); grid.innerHTML = '';
@@ -306,10 +314,14 @@
                 let isPdf = f.type === 'application/pdf';
                 let data = await toBase64(f);
                 tempFiles.push({ data, isPdf, name: f.name });
+                
                 let item = document.createElement('div');
                 item.className = 'preview-item';
-                if(isPdf) item.innerHTML = `<div class="pdf-box">PDF</div>`;
-                else item.innerHTML = `<img src="${data}">`;
+                if(isPdf) {
+                    item.innerHTML = `<iframe src="${URL.createObjectURL(f)}"></iframe>`;
+                } else {
+                    item.innerHTML = `<img src="${data}">`;
+                }
                 grid.appendChild(item);
             }
         }
@@ -361,11 +373,20 @@
 
                     let card = document.createElement('div');
                     card.className = `msg-card ${i.direction}`;
-                    let thumb = i.files[0].isPdf ? `<div style="height:160px; display:flex; align-items:center; justify-content:center; background:#400; color:white; font-weight:bold;">📄 PDF DOKUMEN</div>` : `<img src="${i.files[0].data}" class="msg-img">`;
+                    
+                    let thumb = '';
+                    if(i.files[0].isPdf) {
+                        const blob = b64ToBlob(i.files[0].data, 'application/pdf');
+                        const url = URL.createObjectURL(blob);
+                        thumb = `<iframe src="${url}" class="msg-pdf-frame"></iframe>`;
+                    } else {
+                        thumb = `<img src="${i.files[0].data}" class="msg-img">`;
+                    }
+                    
                     let actionBtn = "";
                     if(i.direction === 'in') {
-                        if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="flex:1;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
-                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
+                        if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="width:100%;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
+                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="width:100%;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
                     }
                     card.innerHTML = `
                         <div class="msg-header">
@@ -392,46 +413,41 @@
             };
         }
 
-        // --- PHYSICAL ROTATION ---
-        async function physicalRotate() {
-            if(!activeJob || activeJob.files[0].isPdf) return;
-            let img = new Image();
-            img.src = activeJob.files[0].data;
-            await img.decode();
-            let canvas = document.createElement('canvas');
-            canvas.width = img.height; canvas.height = img.width;
-            let ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(90 * Math.PI / 180);
-            ctx.drawImage(img, -img.width/2, -img.height/2);
-            let newData = canvas.toDataURL('image/png');
-            activeJob.files[0].data = newData;
-            document.getElementById('p-img').src = newData;
-            let wI = document.getElementById('p-w'), hI = document.getElementById('p-h');
-            let oldW = wI.value; wI.value = hI.value; hI.value = oldW;
-            calc();
-        }
-
+        // --- PRINT ENGINE ---
         function openPrint(id) {
             db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => {
                 activeJob = e.target.result;
                 document.getElementById('modal-print').style.display = 'flex';
-                // Reset Inv to Empty for manual entry
-                document.getElementById('p-inv').value = ""; 
+                document.getElementById('p-inv').value = ""; // Default empty
                 
                 if(activeJob.files[0].isPdf) {
+                    const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
+                    const url = URL.createObjectURL(blob);
                     document.getElementById('p-img').style.display = 'none';
-                    document.getElementById('p-pdf-icon').style.display = 'block';
-                    document.getElementById('pdf-direct-options').style.display = 'block';
-                    document.getElementById('grid-print-options').style.display = 'none';
+                    document.getElementById('p-pdf-preview').style.display = 'block';
+                    document.getElementById('p-pdf-preview').src = url;
+                    document.getElementById('pdf-direct-box').style.display = 'block';
                 } else {
                     document.getElementById('p-img').src = activeJob.files[0].data;
                     document.getElementById('p-img').style.display = 'block';
-                    document.getElementById('p-pdf-icon').style.display = 'none';
-                    document.getElementById('pdf-direct-options').style.display = 'none';
-                    document.getElementById('grid-print-options').style.display = 'block';
+                    document.getElementById('p-pdf-preview').style.display = 'none';
+                    document.getElementById('pdf-direct-box').style.display = 'none';
                 }
                 calc();
             };
+        }
+
+        async function physicalRotate() {
+            if(!activeJob || activeJob.files[0].isPdf) return;
+            let img = new Image(); img.src = activeJob.files[0].data; await img.decode();
+            let canvas = document.createElement('canvas'); canvas.width = img.height; canvas.height = img.width;
+            let ctx = canvas.getContext('2d'); ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(90 * Math.PI / 180);
+            ctx.drawImage(img, -img.width/2, -img.height/2);
+            activeJob.files[0].data = canvas.toDataURL('image/png');
+            document.getElementById('p-img').src = activeJob.files[0].data;
+            let wI = document.getElementById('p-w'), hI = document.getElementById('p-h');
+            let oldW = wI.value; wI.value = hI.value; hI.value = oldW;
+            calc();
         }
 
         function togglePaperCustom() { document.getElementById('custom-paper-box').style.display = document.getElementById('p-paper').value === 'custom' ? 'flex' : 'none'; calc(); }
@@ -443,17 +459,19 @@
             let h = parseFloat(document.getElementById('p-h').value) || 1;
             let target = parseInt(document.getElementById('p-target').value) || 1;
             let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
-            document.getElementById('p-res').innerText = `HASIL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
+            document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
         }
 
         function doPrintDirect() {
+            let blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
+            let url = URL.createObjectURL(blob);
             let html = `<style>@page{size:32cm 48cm; margin:0;} body{margin:0;} iframe{width:32cm; height:48cm; border:none;}</style>`;
-            html += `<iframe src="${activeJob.files[0].data}"></iframe>`;
+            html += `<iframe src="${url}"></iframe>`;
             let f = document.getElementById('p-frame').contentWindow;
             f.document.open(); f.document.write(html); f.document.close();
             setTimeout(() => { 
                 f.print(); 
-                saveHistory({ inv: document.getElementById('p-inv').value || 'PDF-DIRECT', cap: `PRODUKSI PDF FULL A3+`, typeLabel: 'OP_PROD' });
+                saveHistory({ inv: document.getElementById('p-inv').value || 'PDF-DIRECT', cap: `PRODUKSI PDF A3+`, typeLabel: 'OP_PROD' });
                 document.getElementById('modal-print').style.display='none';
             }, 1000);
         }
@@ -462,21 +480,16 @@
             let pw = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-w').value : document.getElementById('p-paper').value.split(',')[0];
             let ph = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-h').value : document.getElementById('p-paper').value.split(',')[1];
             let w = document.getElementById('p-w').value, h = document.getElementById('p-h').value, target = document.getElementById('p-target').value;
-            let invLabel = document.getElementById('p-inv').value;
-            let material = document.getElementById('p-mat').value;
-
-            // KRES Marks
-            const mk = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0;"><div style="position:absolute; top:-2mm; left:-0.05mm; width:0.1mm; height:4mm; background:#000;"></div><div style="position:absolute; top:-0.05mm; left:-2mm; width:4mm; height:0.1mm; background:#000;"></div></div>`;
+            let invLabel = document.getElementById('p-inv').value, material = document.getElementById('p-mat').value;
             
-            // CENTER LAYOUT CSS
-            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; height:${ph}cm; display:flex; align-items:center; justify-content:center; position:relative;} .grid{display:grid; grid-template-columns:repeat(${Math.floor(pw/w)}, ${w}cm); gap:0; margin:0; border:0.1mm solid transparent;} .cell{position:relative; width:${w}cm; height:${h}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; display:block;} .inv-text{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; color:#333;}</style>`;
+            const mk = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0;"><div style="position:absolute; top:-2mm; left:-0.05mm; width:0.1mm; height:4mm; background:#000;"></div><div style="position:absolute; top:-0.05mm; left:-2mm; width:4mm; height:0.1mm; background:#000;"></div></div>`;
+            let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
+            
+            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; height:${ph}cm; display:flex; align-items:center; justify-content:center; position:relative;} .grid{display:grid; grid-template-columns:repeat(${nx}, ${w}cm); gap:0; margin:0;} .cell{position:relative; width:${w}cm; height:${h}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; display:block;} .inv-text{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; color:#000;}</style>`;
             
             let gridHtml = `<div class="grid">`;
-            let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
             for(let i=0; i<(nx*ny); i++) gridHtml += `<div class="cell"><img src="${activeJob.files[0].data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
             gridHtml += `</div>`;
-            
-            // Add Invoice Label if not empty
             if(invLabel) gridHtml += `<div class="inv-text">${invLabel} - ${material}</div>`;
 
             let finalOutput = "";
@@ -484,12 +497,7 @@
 
             let f = document.getElementById('p-frame').contentWindow;
             f.document.open(); f.document.write(html + finalOutput); f.document.close();
-            setTimeout(() => { 
-                f.print(); 
-                saveHistory({ inv: invLabel || 'GRID-PRINT', cap: `CETAK ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' });
-                activeConns.forEach(c => c.send({type:'done', inv: invLabel}));
-                document.getElementById('modal-print').style.display='none';
-            }, 1000);
+            setTimeout(() => { f.print(); saveHistory({ inv: invLabel || 'GRID', cap: `PROD ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' }); document.getElementById('modal-print').style.display='none'; }, 1000);
         }
 
         // HISTORY TOOLS
@@ -533,8 +541,7 @@
                     csv += `"${h.time}","${h.inv}","${h.cap.replace(/\n/g, ' ')}","${h.partner}"\n`;
                 });
                 const blob = new Blob([csv], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `Log_${role}_${Date.now()}.csv`; a.click();
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Log_${role}.csv`; a.click();
             };
         }
 
@@ -546,7 +553,7 @@
             };
         }
 
-        function copyTxt(t) { navigator.clipboard.writeText(t); alert("Disalin!"); }
+        function copyTxt(t) { navigator.clipboard.writeText(t); alert("Copy Sukses!"); }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
     </script>
 </body>
