@@ -1,14 +1,14 @@
 <!-- 
-  KERTASES PRO V10.8 - MASTER HYBRID EDITION
-  Fitur: PDF Anti-Blank (V10.5 Logic), Grid Print Working, Centered Layout, 
-         Editable Inv, Physical Rotation, Split History Operator.
+  KERTASES PRO V10.9 - THE FINAL ENGINE
+  Fitur: Anti-Blank PDF Printing, Fixed Grid Engine, Centered Layout, 
+         Editable Inv, Physical Pixel Rotation, Split History.
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V10.8</title>
+    <title>Kertases Pro V10.9</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -92,7 +92,7 @@
     <!-- LOGIN -->
     <div id="login-screen">
         <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.8 MASTER HYBRID</div>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.9 MASTER ENGINE</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -200,7 +200,7 @@
                 <button class="cyber-btn success" style="padding:5px 15px; font-size:0.7rem;" onclick="exportHistory()">DOWNLOAD CSV</button>
             </div>
             <div id="op-tabs" class="hist-tabs" style="display:none;">
-                <div class="hist-tab-btn active" id="tab-recv" onclick="switchHistTab('RECV')">DITERIMA</div>
+                <div class="hist-tab-btn active" id="tab-recv" onclick="switchHistTab('RECV')">DATA DITERIMA</div>
                 <div class="hist-tab-btn" id="tab-prod" onclick="switchHistTab('PROD')">LOG PRODUKSI</div>
             </div>
             <div style="max-height:400px; overflow-y:auto; background:#000; border:1px solid #222;">
@@ -219,7 +219,7 @@
         let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV';
 
         // DB SETUP
-        let req = indexedDB.open("KertasesV108", 1);
+        let req = indexedDB.open("KertasesV109", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -378,7 +378,7 @@
                     let actionBtn = "";
                     if(i.direction === 'in') {
                         if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="width:100%;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
-                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="width:100%;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
+                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
                     }
                     card.innerHTML = `
                         <div class="msg-header">
@@ -405,21 +405,24 @@
             };
         }
 
+        // --- PRODUCTION ENGINE V10.9 ---
         function openPrint(id) {
             db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => {
                 activeJob = e.target.result;
                 document.getElementById('modal-print').style.display = 'flex';
-                document.getElementById('p-inv').value = ""; // Default empty
+                document.getElementById('p-inv').value = ""; 
                 
                 if(activeJob.files[0].isPdf) {
                     document.getElementById('p-img').style.display = 'none';
                     document.getElementById('p-pdf-badge').style.display = 'block';
                     document.getElementById('pdf-direct-box').style.display = 'block';
+                    document.getElementById('grid-controls').style.display = 'none';
                 } else {
                     document.getElementById('p-img').src = activeJob.files[0].data;
                     document.getElementById('p-img').style.display = 'block';
                     document.getElementById('p-pdf-badge').style.display = 'none';
                     document.getElementById('pdf-direct-box').style.display = 'none';
+                    document.getElementById('grid-controls').style.display = 'block';
                 }
                 calc();
             };
@@ -450,26 +453,28 @@
             document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
         }
 
-        // V10.5 PDF PRINTING LOGIC (Langsung tembak)
+        // PDF DIRECT PRINT FIX (ANTI-BLANK)
         function doPrintDirect() {
             const invLabel = document.getElementById('p-inv').value;
             const mat = document.getElementById('p-mat').value;
             const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
             const url = URL.createObjectURL(blob);
             
-            // Konstruksi jendela cetak khusus PDF
-            let f = document.getElementById('p-frame').contentWindow;
-            f.document.open();
-            f.document.write(`<style>@page{size:32cm 48cm; margin:0;} body{margin:0; padding:0; height:48cm; width:32cm; position:relative;} iframe{width:100%; height:100%; border:none;} .inv{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; background:white; padding:2px 10px; border:1px solid #000; z-index:99;}</style>`);
-            f.document.write(`<iframe src="${url}"></iframe>`);
-            if(invLabel) f.document.write(`<div class="inv">${invLabel} - ${mat}</div>`);
-            f.document.close();
+            let f = document.getElementById('p-frame');
+            let doc = f.contentWindow.document;
+            doc.open();
+            doc.write(`<html><head><style>@page{size:32cm 48cm; margin:0;} body{margin:0; padding:0; height:48cm; width:32cm; position:relative; overflow:hidden;} iframe{width:100%; height:100%; border:none;} .inv{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; background:white; padding:2px 10px; border:1px solid #000; z-index:99; font-weight:bold;}</style></head><body>`);
+            doc.write(`<iframe src="${url}"></iframe>`);
+            if(invLabel) doc.write(`<div class="inv">${invLabel} - ${mat}</div>`);
+            doc.write(`</body></html>`);
+            doc.close();
 
+            // Beri waktu 2 detik agar PDF ter-render utuh (Mencegah Blank)
             setTimeout(() => { 
-                f.print(); 
-                saveHistory({ inv: invLabel || 'PDF-DIRECT', cap: `PDF PRINT A3+`, typeLabel: 'OP_PROD' });
+                f.contentWindow.print(); 
+                saveHistory({ inv: invLabel || 'PDF', cap: `PDF PRINT A3+`, typeLabel: 'OP_PROD' });
                 document.getElementById('modal-print').style.display='none';
-            }, 1000);
+            }, 2000);
         }
 
         function doPrint() {
@@ -481,7 +486,7 @@
             const mk = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0;"><div style="position:absolute; top:-2mm; left:-0.05mm; width:0.1mm; height:4mm; background:#000;"></div><div style="position:absolute; top:-0.05mm; left:-2mm; width:4mm; height:0.1mm; background:#000;"></div></div>`;
             let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
             
-            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; height:${ph}cm; width:${pw}cm; display:flex; align-items:center; justify-content:center; position:relative;} .grid{display:grid; grid-template-columns:repeat(${nx}, ${w}cm); gap:0; margin:0;} .cell{position:relative; width:${w}cm; height:${h}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; display:block;} .inv-text{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; color:#000; z-index:99;}</style>`;
+            let html = `<html><head><style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; height:${ph}cm; width:${pw}cm; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;} .grid{display:grid; grid-template-columns:repeat(${nx}, ${w}cm); gap:0; margin:0;} .cell{position:relative; width:${w}cm; height:${h}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; display:block;} .inv-text{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; color:#000; z-index:99; font-weight:bold;}</style></head><body>`;
             
             let gridHtml = `<div class="grid">`;
             for(let i=0; i<(nx*ny); i++) gridHtml += `<div class="cell"><img src="${activeJob.files[0].data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
@@ -492,7 +497,7 @@
             for(let i=0; i<target; i++) finalOutput += `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; page-break-after:always; position:relative;">${gridHtml}</div>`;
 
             let f = document.getElementById('p-frame').contentWindow;
-            f.document.open(); f.document.write(html + finalOutput); f.document.close();
+            f.document.open(); f.document.write(html + finalOutput + `</body></html>`); f.document.close();
             setTimeout(() => { 
                 f.print(); 
                 saveHistory({ inv: invLabel || 'GRID', cap: `PROD ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' }); 
@@ -500,6 +505,7 @@
             }, 1000);
         }
 
+        // HISTORY TOOLS
         function switchHistTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.hist-tab-btn').forEach(b => b.classList.remove('active'));
@@ -536,7 +542,9 @@
         function exportHistory() {
             let csv = "WAKTU,INV,KET,PARTNER\n";
             db.transaction("history").objectStore("history").getAll().onsuccess = e => {
-                e.target.result.forEach(h => { csv += `"${h.time}","${h.inv}","${h.cap.replace(/\n/g, ' ')}","${h.partner}"\n`; });
+                e.target.result.forEach(h => {
+                    csv += `"${h.time}","${h.inv}","${h.cap.replace(/\n/g, ' ')}","${h.partner}"\n`;
+                });
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Log_${role}.csv`; a.click();
             };
