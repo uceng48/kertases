@@ -1,13 +1,13 @@
 <!-- 
-  KERTASES PRO V9.5 - MULTI-BROADCAST & DESIGNER-OPTIMIZED
-  Fitur: Multi-Connection (Comma Separated), ID Changer (4869), Copy-Paste Notes, Direct Download
+  KERTASES PRO V9.6 - WORKFLOW STREAM EDITION
+  Fitur: Multi-Broadcast, Logic-Specific History, Chat-Style Timeline, Persistent DB
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V9.5</title>
+    <title>Kertases Pro V9.6</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -30,49 +30,48 @@
         }
 
         .cyber-input { background: #000; border: 1px solid var(--border); color: var(--accent); padding: 10px; width: 100%; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; }
-        .cyber-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        .cyber-btn { background: linear-gradient(45deg, var(--bg-panel), #222); border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; cursor: pointer; font-weight: 700; text-transform: uppercase; transition: 0.3s; }
+        .cyber-btn { background: linear-gradient(45deg, var(--bg-panel), #222); border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; cursor: pointer; font-weight: 700; text-transform: uppercase; transition: 0.3s; font-size: 0.8rem; }
         .cyber-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-glow); }
         .cyber-btn.danger { border-color: var(--danger); color: var(--danger); }
-        .cyber-btn.success { border-color: var(--success); color: var(--success); }
+        .cyber-btn.danger:hover { background: var(--danger); color: #fff; }
 
         #login-screen { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%); }
         .role-grid { display: flex; gap: 20px; margin-top: 30px; }
-        .role-card { width: 150px; padding: 20px; text-align: center; border: 1px solid var(--border); cursor: pointer; background: rgba(0,0,0,0.5); transition: 0.3s; }
+        .role-card { width: 150px; padding: 20px; text-align: center; border: 1px solid var(--border); cursor: pointer; background: rgba(0,0,0,0.5); }
         .role-card:hover { border-color: var(--accent); transform: translateY(-5px); }
 
         #app-layout { display: none; height: 100vh; flex-direction: row; }
         .sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
         
-        .role-badge { background: var(--accent); color: #000; padding: 5px 10px; font-weight: bold; font-size: 1rem; letter-spacing: 2px; text-align: center; margin-bottom: 20px; border-radius: 2px; }
+        .role-badge { background: var(--accent); color: #000; padding: 5px; font-weight: bold; text-align: center; margin-bottom: 20px; letter-spacing: 2px; }
 
         .status-widget { border: 1px solid var(--border); padding: 15px; margin-bottom: 20px; border-left: 4px solid var(--danger); }
         .status-widget.online { border-left-color: var(--success); }
-        .status-val { font-size: 1.1rem; font-weight: bold; font-family: 'Roboto Mono'; }
-        .id-label { font-size: 0.7rem; color: var(--text-dim); margin-top: 10px; cursor: pointer; }
-        .id-label:hover { color: var(--accent); }
 
+        /* STREAM TIMELINE */
         .main-view { flex: 1; display: grid; grid-template-columns: 1fr 340px; overflow: hidden; }
-        .queue-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; background: rgba(0,0,0,0.3); }
+        .timeline { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border-right: 1px solid var(--border); }
+        .stream-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .msg-card { max-width: 450px; background: #111; border: 1px solid var(--border); position: relative; }
+        .msg-card.out { align-self: flex-end; border-color: var(--secondary); }
+        .msg-card.in { align-self: flex-start; border-color: var(--accent); }
+        
+        .msg-header { padding: 8px 12px; background: rgba(255,255,255,0.05); font-size: 0.7rem; display: flex; justify-content: space-between; border-bottom: 1px solid #222; }
+        .msg-body { padding: 12px; }
+        .msg-img { width: 100%; height: 150px; object-fit: contain; background: #000; margin-bottom: 10px; border: 1px solid #222; }
+        .msg-inv { color: var(--accent); font-weight: bold; font-size: 1rem; margin-bottom: 5px; }
+        .msg-cap { font-size: 0.8rem; color: #aaa; background: #000; padding: 8px; border: 1px solid #222; cursor: pointer; }
+        .msg-footer { padding: 8px 12px; display: flex; gap: 10px; border-top: 1px solid #222; }
+
         .control-panel { padding: 20px; overflow-y: auto; background: #0c0c0c; }
-
-        .op-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; padding: 15px; overflow-y: auto; }
-        .job-card { background: #111; border: 1px solid var(--border); position: relative; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .job-card img { width: 100%; height: 150px; object-fit: contain; background: #000; border-bottom: 1px solid #222; }
-        .job-info { padding: 12px; }
-        .job-inv { color: var(--accent); font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .job-cap { font-size: 0.8rem; color: #aaa; background: #050505; padding: 8px; border: 1px solid #222; cursor: pointer; line-height: 1.4; word-break: break-all; margin-bottom: 10px; }
-        .job-cap:hover { border-color: var(--success); color: #fff; }
-
-        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .preview-item { width: 100%; aspect-ratio: 1; background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #333; }
+        .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; color: #666; cursor: pointer; margin-bottom: 15px; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-box { width: 550px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
 
-        .log-item { padding: 8px; border-bottom: 1px solid #222; font-size: 0.75rem; font-family: 'Roboto Mono'; color: var(--text-dim); }
-        
-        .conn-list { font-size: 0.7rem; color: var(--success); margin-top: 5px; font-family: 'Roboto Mono'; }
+        .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
+        .preview-item { width: 100%; aspect-ratio: 1; background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -80,128 +79,108 @@
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
     <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
 
-    <!-- LOGIN -->
     <div id="login-screen">
         <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V9.5 - BROADCAST SYSTEM</div>
-
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V9.6 - WORKFLOW OPTIMIZED</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
             <div class="role-card" onclick="enterRole('operator')">🖨️<br>OPERATOR</div>
         </div>
-        
         <div style="margin-top:30px; display:flex; gap:10px;">
-            <button id="btn-cloud" class="cyber-btn" onclick="setMode('cloud')">CLOUD MODE</button>
-            <button id="btn-local" class="cyber-btn" onclick="setMode('local')" style="border-color:var(--text-dim); color:var(--text-dim);">LAN MODE</button>
+            <button id="btn-cloud" class="cyber-btn" onclick="setMode('cloud')">CLOUD</button>
+            <button id="btn-local" class="cyber-btn" onclick="setMode('local')" style="border-color:var(--text-dim); color:var(--text-dim);">LAN</button>
         </div>
         <input type="text" id="server-ip" class="cyber-input" placeholder="IP Server Lokal" style="display:none; width:220px; margin-top:15px; text-align:center;">
     </div>
 
-    <!-- MAIN APP -->
     <div id="app-layout">
         <div class="sidebar">
             <div id="active-role-display" class="role-badge">---</div>
-            
             <div id="status-widget" class="status-widget">
-                <div id="status-text" class="status-val">OFFLINE</div>
-                <div class="id-label" onclick="changeId()">MY ID (CLICK TO CHANGE):</div>
-                <div id="my-id-display" class="status-val" style="font-size:0.8rem; color:var(--accent);">...</div>
+                <div id="status-text" style="font-weight:bold;">OFFLINE</div>
+                <div style="font-size:0.7rem; color:var(--text-dim); margin-top:10px; cursor:pointer;" onclick="changeId()">MY ID (CLICK TO CHANGE):</div>
+                <div id="my-id-display" style="font-family:'Roboto Mono'; color:var(--accent); font-size:0.8rem;">...</div>
             </div>
 
-            <label style="font-size:0.7rem;">TARGET ID (PISAH DENGAN KOMA):</label>
-            <input type="text" id="target-id" class="cyber-input" style="margin-top:5px;" placeholder="ID1, ID2, ID3">
+            <label style="font-size:0.7rem;">CONNECT TO TARGET(S):</label>
+            <input type="text" id="target-id" class="cyber-input" style="margin-top:5px;" placeholder="ID1, ID2">
             <button class="cyber-btn" style="width:100%; margin-top:10px;" onclick="connectMulti()">LINK CONNECT</button>
-            <div id="active-conns" class="conn-list"></div>
+            <div id="active-conns" style="font-size:0.6rem; color:var(--success); margin-top:10px; font-family:'Roboto Mono';"></div>
 
-            <div style="margin-top:20px;">
-                <button class="cyber-btn" style="width:100%; font-size:0.8rem;" onclick="toggleHistory()">PRODUCTION LOG</button>
-                <button class="cyber-btn danger" style="width:100%; margin-top:10px; font-size:0.8rem;" onclick="location.reload()">LOGOUT</button>
+            <div style="margin-top:auto;">
+                <button class="cyber-btn" style="width:100%;" onclick="toggleHistory()">DATA HISTORY</button>
+                <button class="cyber-btn danger" style="width:100%; margin-top:10px;" onclick="location.reload()">LOGOUT</button>
             </div>
-            
-            <div id="chat-box" style="margin-top:20px; flex:1; overflow-y:auto; background:#000; border:1px solid #222; padding:5px;"></div>
         </div>
 
         <div class="main-view">
-            <div class="queue-panel">
-                <div style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#000;">
-                    <span id="queue-title" style="font-weight:bold; color:var(--success);">INCOMING JOBS</span>
-                    <button class="cyber-btn danger" style="padding:2px 10px; font-size:0.6rem;" onclick="clearQueue()">CLEAR</button>
+            <div class="timeline">
+                <div style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold; color:var(--accent);">TIMELINE FLOW</span>
+                    <span style="font-size:0.7rem; color:var(--text-dim);">Dihapus di sini tetap ada di Riwayat</span>
                 </div>
-                <div id="print-queue" class="op-grid"></div>
+                <div id="stream-area" class="stream-area"></div>
             </div>
 
             <div class="control-panel">
-                <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; font-size:0.8rem;">TRANSMIT FILES</div>
-                <div class="upload-zone" onclick="document.getElementById('file-in').click()" style="border:2px dashed #444; padding:30px; text-align:center; color:#666; cursor:pointer;">
-                    + DROP / SELECT ASSETS
-                </div>
-                <div id="preview-area" class="preview-grid" style="margin-top:10px;"></div>
-                
+                <div style="color:var(--accent); font-weight:bold; margin-bottom:15px;">TRANSMIT ASSETS</div>
+                <div class="upload-zone" onclick="document.getElementById('file-in').click()">+ SELECT FILES</div>
+                <div id="preview-area" class="preview-grid"></div>
                 <input type="text" id="inv-in" class="cyber-input" placeholder="Invoice Number" style="margin-bottom:10px;">
-                <input type="text" id="cap-in" class="cyber-input" placeholder="Keterangan / Notes" style="margin-bottom:10px;">
-                
+                <input type="text" id="cap-in" class="cyber-input" placeholder="Notes / Instructions" style="margin-bottom:10px;">
                 <div style="margin-bottom:20px; font-size:0.8rem;">
-                    <input type="checkbox" id="hd-mode" checked> MAX QUALITY (HD)
+                    <input type="checkbox" id="hd-mode" checked> HD ASSETS
                 </div>
-                
                 <input type="file" id="file-in" multiple style="display:none;" onchange="prepareFiles(this)">
-                <button class="cyber-btn" style="width:100%;" onclick="sendDataMulti()">SEND TO ALL CONNECTED</button>
+                <button class="cyber-btn" style="width:100%;" onclick="sendDataMulti()">BROADCAST TO CONNECTED</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL PRINT (OPERATOR ONLY) -->
+    <!-- MODAL PRINT -->
     <div id="modal-print" class="modal">
         <div class="modal-box">
-            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">PRODUCTION SETUP</div>
-            
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">SETUP PRODUKSI</div>
             <div style="display:flex; gap:15px; margin-bottom:20px;">
                 <div style="width:150px; height:150px; background:#000; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
                     <img id="p-img" style="max-width:100%; max-height:100%; object-fit:contain;">
                     <div id="p-pdf-icon" style="display:none; font-size:2rem;">PDF</div>
                 </div>
                 <div style="flex:1;">
-                    <label style="font-size:0.7rem;">INVOICE:</label>
+                    <label style="font-size:0.7rem;">INV:</label>
                     <input type="text" id="p-inv" class="cyber-input" readonly style="margin-bottom:10px; color:var(--success);">
                     <label style="font-size:0.7rem;">PAPER:</label>
                     <select id="p-paper" class="cyber-input" onchange="togglePaperCustom()">
-                        <option value="32,48">A3+ (32x48 cm)</option>
-                        <option value="29.7,42">A3 (29.7x42 cm)</option>
-                        <option value="21,29.7">A4 (21x29.7 cm)</option>
-                        <option value="custom">-- CUSTOM --</option>
+                        <option value="32,48">A3+ (32x48)</option><option value="29.7,42">A3 (29.7x42)</option><option value="21,29.7">A4 (21x29.7)</option><option value="custom">-- CUSTOM --</option>
                     </select>
                 </div>
             </div>
-
             <div id="custom-paper-box" style="display:none; gap:10px; margin-bottom:15px;">
-                <div style="flex:1;"><label style="font-size:0.7rem;">PAPER W:</label><input type="number" id="p-paper-w" value="32" class="cyber-input" oninput="calc()"></div>
-                <div style="flex:1;"><label style="font-size:0.7rem;">PAPER H:</label><input type="number" id="p-paper-h" value="48" class="cyber-input" oninput="calc()"></div>
+                <input type="number" id="p-paper-w" value="32" class="cyber-input">
+                <input type="number" id="p-paper-h" value="48" class="cyber-input">
             </div>
-
             <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <div style="flex:1;"><label style="font-size:0.7rem;">IMG W:</label><input type="number" id="p-w" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
-                <div style="flex:1;"><label style="font-size:0.7rem;">IMG H:</label><input type="number" id="p-h" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
-                <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="rotateVisual()" style="padding:10px;">🔄</button></div>
+                <div style="flex:1;"><label style="font-size:0.7rem;">W (CM):</label><input type="number" id="p-w" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
+                <div style="flex:1;"><label style="font-size:0.7rem;">H (CM):</label><input type="number" id="p-h" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
+                <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="rotateVisual()">🔄 ROTATE</button></div>
             </div>
-
-            <label style="font-size:0.7rem;">TARGET SHEETS:</label>
-            <input type="number" id="p-target" value="1" class="cyber-input" style="font-size:1.5rem; text-align:center; color:var(--success); margin-bottom:20px;" oninput="calc()">
-            
-            <div id="p-res" style="text-align:center; color:var(--success); font-family:'Roboto Mono'; background:#000; padding:10px; border:1px solid #222; margin-bottom:20px;">...</div>
-            
+            <label style="font-size:0.7rem;">QTY LEMBAR:</label>
+            <input type="number" id="p-target" value="1" class="cyber-input" style="font-size:1.5rem; text-align:center; color:var(--success);" oninput="calc()">
+            <div id="p-res" style="text-align:center; color:var(--success); background:#000; padding:10px; margin:15px 0;">...</div>
             <div style="display:flex; gap:10px;">
-                <button class="cyber-btn danger" style="flex:1;" onclick="document.getElementById('modal-print').style.display='none'">CANCEL</button>
-                <button class="cyber-btn success" style="flex:2;" onclick="doPrint()">PRINT</button>
+                <button class="cyber-btn danger" style="flex:1;" onclick="document.getElementById('modal-print').style.display='none'">BATAL</button>
+                <button class="cyber-btn" style="flex:2;" onclick="doPrint()">CETAK</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL HISTORY -->
     <div id="modal-hist" class="modal">
-        <div class="modal-box" style="width:700px;">
-            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px;">PRODUCTION LOG</div>
-            <div id="hist-list" style="max-height:400px; overflow-y:auto; background:#000; border:1px solid #222;"></div>
-            <button class="cyber-btn" style="width:100%; margin-top:20px;" onclick="toggleHistory()">CLOSE</button>
+        <div class="modal-box" style="width:750px;">
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">RIWAYAT DATA (ROLE SPECIFIC)</div>
+            <div id="hist-list" style="max-height:400px; overflow-y:auto; background:#000;"></div>
+            <button class="cyber-btn" style="width:100%; margin-top:20px;" onclick="toggleHistory()">TUTUP</button>
         </div>
     </div>
 
@@ -211,17 +190,16 @@
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let cfg = { mode: 'cloud', host: 'localhost' };
         let myId = localStorage.getItem('kts_id') || 'CYBER-' + Math.floor(Math.random()*9999);
-        let role, peer, db, activeJob, tempFiles = [], currentRotation = 0;
-        let activeConns = []; // Array untuk menampung banyak koneksi
+        let role, peer, db, tempFiles = [], activeConns = [], currentRotation = 0;
 
         // DB INIT
-        let req = indexedDB.open("KertasesV95", 1);
+        let req = indexedDB.open("KertasesV96", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
-            d.createObjectStore("queue", { keyPath: "id", autoIncrement:true });
-            d.createObjectStore("history", { keyPath: "id", autoIncrement:true });
+            d.createObjectStore("stream", { keyPath: "id" }); // For Timeline (Can be hidden)
+            d.createObjectStore("history", { keyPath: "id", autoIncrement:true }); // Persistent
         };
-        req.onsuccess = e => db = e.target.result;
+        req.onsuccess = e => { db = e.target.result; };
 
         function setMode(m) {
             cfg.mode = m;
@@ -232,23 +210,23 @@
 
         function changeId() {
             if(prompt("PASSWORD:") === "4869") {
-                let nid = prompt("ID BARU:", myId);
+                let nid = prompt("NEW ID:", myId);
                 if(nid) { localStorage.setItem('kts_id', nid); location.reload(); }
             }
         }
 
         function enterRole(r) {
-            if(prompt(`KODE AKSES ${r.toUpperCase()}:`) === ROLES_KEYS[r]) {
+            if(prompt(`ACCESS CODE ${r.toUpperCase()}:`) === ROLES_KEYS[r]) {
                 role = r;
                 if(cfg.mode === 'local') cfg.host = document.getElementById('server-ip').value || 'localhost';
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-layout').style.display = 'flex';
-                document.getElementById('active-role-display').innerText = `${r.toUpperCase()}`;
+                document.getElementById('active-role-display').innerText = role.toUpperCase();
                 document.getElementById('my-id-display').innerText = myId;
                 document.getElementById('target-id').value = localStorage.getItem('kts_last_target') || '';
                 initPeer();
-                setTimeout(renderQ, 500);
-            } else alert("AKSES DITOLAK");
+                setTimeout(renderStream, 500);
+            } else alert("DENIED");
         }
 
         function initPeer() {
@@ -258,65 +236,48 @@
 
             peer.on('open', () => updateStatus('ready'));
             peer.on('connection', c => setupConn(c));
-            peer.on('error', e => { updateStatus('offline'); logChat("SYS: " + e.type); });
+            peer.on('error', e => { updateStatus('offline'); console.error(e); });
         }
 
-        // MULTI CONNECTION LOGIC
         function connectMulti() {
-            let input = document.getElementById('target-id').value.trim();
-            if(!input) return;
-            localStorage.setItem('kts_last_target', input);
-            
-            let ids = input.split(',').map(s => s.trim());
-            ids.forEach(id => {
-                if(id && id !== myId) {
-                    let c = peer.connect(id, { reliable: true });
-                    setupConn(c);
-                }
-            });
+            let ids = document.getElementById('target-id').value.split(',').map(s => s.trim());
+            localStorage.setItem('kts_last_target', ids.join(','));
+            ids.forEach(id => { if(id && id !== myId) setupConn(peer.connect(id, { reliable: true })); });
         }
 
         function setupConn(c) {
-            c.on('open', () => { 
-                if(!activeConns.find(conn => conn.peer === c.peer)) {
+            c.on('open', () => {
+                if(!activeConns.find(x => x.peer === c.peer)) {
                     activeConns.push(c);
-                    updateConnUI();
                     document.getElementById('conn-sound').play();
-                    logChat(`CONNECTED TO: ${c.peer}`);
+                    updateStatus('online');
+                    updateConnUI();
                 }
-                updateStatus('online'); 
             });
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
-                if(d.type === 'job') pushToDB(d);
-                else if(d.type === 'done') logChat(`DONE: ${d.inv}`);
+                if(d.type === 'job') handleIncomingJob(d, c.peer);
+                if(d.type === 'done') alert(`NOTIF: ${d.inv} SELESAI DICETAK`);
             });
             c.on('close', () => {
-                activeConns = activeConns.filter(conn => conn.peer !== c.peer);
+                activeConns = activeConns.filter(x => x.peer !== c.peer);
                 updateConnUI();
-                if(activeConns.length === 0) updateStatus('ready');
             });
         }
 
         function updateConnUI() {
-            document.getElementById('active-conns').innerText = "LINKED: " + activeConns.map(c => c.peer).join(', ');
+            document.getElementById('active-conns').innerText = "LINKED: " + activeConns.map(x => x.peer).join(', ');
         }
 
         function updateStatus(s) {
             const txt = document.getElementById('status-text');
             const widget = document.getElementById('status-widget');
             widget.className = 'status-widget ' + (activeConns.length > 0 ? 'online' : s);
-            txt.innerText = activeConns.length > 0 ? "ONLINE (" + activeConns.length + ")" : s.toUpperCase();
+            txt.innerText = activeConns.length > 0 ? `CONNECTED (${activeConns.length})` : s.toUpperCase();
             txt.style.color = activeConns.length > 0 ? "var(--success)" : "var(--danger)";
         }
 
-        function logChat(m) {
-            const b = document.getElementById('chat-box');
-            b.innerHTML += `<div class="log-item">${new Date().toLocaleTimeString()} - ${m}</div>`;
-            b.scrollTop = b.scrollHeight;
-        }
-
-        // PREPARE & BROADCAST
+        // ASSET HANDLING
         async function prepareFiles(input) {
             tempFiles = [];
             const grid = document.getElementById('preview-area'); grid.innerHTML = '';
@@ -329,72 +290,115 @@
         }
 
         function sendDataMulti() {
-            if(activeConns.length === 0) return alert("TIDAK ADA KONEKSI AKTIF!");
+            if(activeConns.length === 0) return alert("NO CONNECTION");
             let d = { 
                 type: 'job', files: tempFiles, inv: document.getElementById('inv-in').value || 'NO-INV',
-                cap: document.getElementById('cap-in').value, id: Date.now()
+                cap: document.getElementById('cap-in').value, id: Date.now(), sender: myId
             };
-            activeConns.forEach(c => { if(c.open) c.send(d); });
-            logChat(`BROADCAST JOB: ${d.inv} TO ${activeConns.length} PEERS`);
+            activeConns.forEach(c => c.send(d));
+            
+            // Save to Stream (Timeline) & History
+            let jobData = { ...d, direction: 'out', hidden: false };
+            saveToStream(jobData);
+            saveToHistory(jobData);
+
             tempFiles = []; document.getElementById('preview-area').innerHTML = '';
             document.getElementById('inv-in').value = ''; document.getElementById('cap-in').value = '';
+            renderStream();
         }
 
-        // QUEUE RENDER (CUSTOM FOR ROLES)
-        function pushToDB(d) {
-            let tx = db.transaction("queue", "readwrite");
-            d.files.forEach(f => { tx.objectStore("queue").add({ ...f, inv: d.inv, cap: d.cap, batchId: d.id }); });
-            tx.oncomplete = renderQ;
+        function handleIncomingJob(d, from) {
+            let jobData = { ...d, direction: 'in', from: from, hidden: false };
+            saveToStream(jobData);
+            saveToHistory(jobData);
+            renderStream();
         }
 
-        function renderQ() {
-            const q = document.getElementById('print-queue'); q.innerHTML = '';
-            db.transaction("queue").objectStore("queue").getAll().onsuccess = e => {
-                e.target.result.reverse().forEach(i => {
-                    let btn = '';
-                    if(role === 'operator') {
-                        btn = `<button class="cyber-btn success" style="width:100%; margin-top:10px;" onclick="openPrint(${i.id})">PROSES CETAK</button>`;
-                    } else {
-                        btn = `<button class="cyber-btn" style="width:100%; margin-top:10px; border-color:var(--secondary); color:var(--secondary);" onclick="saveFile('${i.data}', '${i.name || 'file'}')">SAVE FILE</button>`;
+        // PERSISTENCE LOGIC
+        function saveToStream(obj) {
+            let tx = db.transaction("stream", "readwrite");
+            tx.objectStore("stream").put(obj);
+        }
+
+        function saveToHistory(obj) {
+            let tx = db.transaction("history", "readwrite");
+            tx.objectStore("history").add({
+                time: new Date().toLocaleString(),
+                role: role,
+                inv: obj.inv,
+                cap: obj.cap,
+                direction: obj.direction,
+                from: obj.from || 'SELF',
+                type: obj.files ? 'FILE' : 'PRODUKSI'
+            });
+        }
+
+        function renderStream() {
+            const area = document.getElementById('stream-area'); area.innerHTML = '';
+            db.transaction("stream").objectStore("stream").getAll().onsuccess = e => {
+                e.target.result.forEach(i => {
+                    if(i.hidden) return;
+                    let card = document.createElement('div');
+                    card.className = `msg-card ${i.direction}`;
+                    
+                    let filesHtml = i.files.map(f => f.isPdf ? `<div class="msg-img" style="display:flex;align-items:center;justify-content:center;color:#fff;">PDF DOKUMEN</div>` : `<img src="${f.data}" class="msg-img">`).join('');
+                    
+                    let actions = '';
+                    if(i.direction === 'in') {
+                        if(role === 'operator') {
+                            actions = `<button class="cyber-btn" style="flex:1;border-color:var(--success);color:var(--success);" onclick="openPrint('${i.id}')">CETAK</button>`;
+                        } else if(role === 'designer') {
+                            actions = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadAll('${i.id}')">SAVE ALL</button>`;
+                        }
                     }
 
-                    q.innerHTML += `
-                        <div class="job-card">
-                            ${i.isPdf ? '<div style="height:150px; background:#222; display:flex; align-items:center; justify-content:center;">PDF DOKUMEN</div>' : `<img src="${i.data}">`}
-                            <div class="job-info">
-                                <div class="job-inv">${i.inv}</div>
-                                <div class="job-cap" title="Klik untuk Copy" onclick="copyTxt('${i.cap}')">
-                                    <small style="color:var(--accent)">CATATAN (KLIK COPY):</small><br>${i.cap || '-'}
-                                </div>
-                                ${btn}
-                            </div>
-                        </div>`;
+                    card.innerHTML = `
+                        <div class="msg-header">
+                            <span>${i.direction === 'in' ? 'DITERIMA DARI: ' + i.from : 'TERKIRIM'}</span>
+                            <span onclick="hideFromStream(${i.id})" style="cursor:pointer; color:var(--danger)">[ HAPUS ]</span>
+                        </div>
+                        <div class="msg-body">
+                            ${filesHtml}
+                            <div class="msg-inv">${i.inv}</div>
+                            <div class="msg-cap" onclick="copyTxt('${i.cap}')">${i.cap || '---'}</div>
+                        </div>
+                        <div class="msg-footer">${actions}</div>`;
+                    area.appendChild(card);
+                });
+                area.scrollTop = area.scrollHeight;
+            };
+        }
+
+        function hideFromStream(id) {
+            let tx = db.transaction("stream", "readwrite");
+            let store = tx.objectStore("stream");
+            store.get(id).onsuccess = e => {
+                let data = e.target.result;
+                data.hidden = true;
+                store.put(data);
+                renderStream();
+            };
+        }
+
+        // ACTION TOOLS
+        function downloadAll(id) {
+            db.transaction("stream").objectStore("stream").get(id).onsuccess = e => {
+                e.target.result.files.forEach(f => {
+                    const l = document.createElement('a'); l.href = f.data; l.download = "KTS_" + (f.name || "asset"); l.click();
                 });
             };
         }
 
-        function saveFile(data, name) {
-            const link = document.createElement('a'); link.href = data;
-            link.download = "KTS_" + (name || "asset"); link.click();
-            logChat("FILE SAVED.");
-        }
+        function copyTxt(t) { if(t) { navigator.clipboard.writeText(t); alert("Copy Sukses!"); } }
 
-        function copyTxt(txt) {
-            if(!txt) return;
-            navigator.clipboard.writeText(txt);
-            alert("Catatan Berhasil Disalin!");
-        }
-
-        // OPERATOR PRINT ENGINE
         function openPrint(id) {
-            db.transaction("queue").objectStore("queue").get(id).onsuccess = e => {
-                activeJob = e.target.result;
-                currentRotation = 0;
-                document.getElementById('p-img').style.transform = `rotate(0deg)`;
+            db.transaction("stream").objectStore("stream").get(id).onsuccess = e => {
+                activeJob = e.target.result; // Since stream could have multiple files, we take the first for simplicity or Mang can loop
+                activeJob.file = activeJob.files[0]; 
                 document.getElementById('modal-print').style.display = 'flex';
                 document.getElementById('p-inv').value = activeJob.inv;
-                if(!activeJob.isPdf) {
-                    document.getElementById('p-img').src = activeJob.data;
+                if(!activeJob.file.isPdf) {
+                    document.getElementById('p-img').src = activeJob.file.data;
                     document.getElementById('p-img').style.display = 'block';
                     document.getElementById('p-pdf-icon').style.display = 'none';
                 } else {
@@ -405,52 +409,34 @@
             };
         }
 
-        function togglePaperCustom() {
-            document.getElementById('custom-paper-box').style.display = document.getElementById('p-paper').value === 'custom' ? 'flex' : 'none';
-            calc();
-        }
-
-        function rotateVisual() {
-            currentRotation = (currentRotation + 90) % 360;
-            document.getElementById('p-img').style.transform = `rotate(${currentRotation}deg)`;
-            calc();
-        }
+        function togglePaperCustom() { document.getElementById('custom-paper-box').style.display = document.getElementById('p-paper').value === 'custom' ? 'flex' : 'none'; calc(); }
+        function rotateVisual() { currentRotation = (currentRotation + 90) % 360; document.getElementById('p-img').style.transform = `rotate(${currentRotation}deg)`; }
 
         function calc() {
-            let pw, ph;
-            if(document.getElementById('p-paper').value === 'custom') {
-                pw = parseFloat(document.getElementById('p-paper-w').value) || 32;
-                ph = parseFloat(document.getElementById('p-paper-h').value) || 48;
-            } else {
-                let dims = document.getElementById('p-paper').value.split(',');
-                pw = parseFloat(dims[0]); ph = parseFloat(dims[1]);
-            }
+            let pw = document.getElementById('p-paper').value === 'custom' ? parseFloat(document.getElementById('p-paper-w').value) : parseFloat(document.getElementById('p-paper').value.split(',')[0]);
+            let ph = document.getElementById('p-paper').value === 'custom' ? parseFloat(document.getElementById('p-paper-h').value) : parseFloat(document.getElementById('p-paper').value.split(',')[1]);
             let w = parseFloat(document.getElementById('p-w').value) || 1;
             let h = parseFloat(document.getElementById('p-h').value) || 1;
             let target = parseInt(document.getElementById('p-target').value) || 1;
             let pcs = Math.floor((pw-0.5)/w) * Math.floor((ph-0.5)/h);
-            document.getElementById('p-res').innerText = `TOTAL: ${pcs * target} PCS (${pcs} pcs/lembar)`;
+            document.getElementById('p-res').innerText = `HASIL: ${pcs * target} PCS (${pcs} pcs/lbr)`;
         }
 
         function doPrint() {
-            let pw, ph;
-            if(document.getElementById('p-paper').value === 'custom') {
-                pw = document.getElementById('p-paper-w').value; ph = document.getElementById('p-paper-h').value;
-            } else {
-                let dims = document.getElementById('p-paper').value.split(',');
-                pw = dims[0]; ph = dims[1];
-            }
+            let pw = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-w').value : document.getElementById('p-paper').value.split(',')[0];
+            let ph = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-h').value : document.getElementById('p-paper').value.split(',')[1];
             let w = document.getElementById('p-w').value, h_img = document.getElementById('p-h').value, target = document.getElementById('p-target').value;
+            
             const mk = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0;"><div style="position:absolute; top:-2mm; left:-0.1mm; width:0.1mm; height:4mm; background:#000;"></div><div style="position:absolute; top:-0.1mm; left:-2mm; width:4mm; height:0.1mm; background:#000;"></div></div>`;
             
             let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0;} .grid{display:flex; flex-wrap:wrap; margin:0.2cm auto;} .cell{position:relative; width:${w}cm; height:${h_img}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:contain; transform:rotate(${currentRotation}deg);}</style>`;
             
-            if(activeJob.isPdf) {
-                for(let i=0; i<target; i++) html += `<iframe src="${activeJob.data}" style="width:${pw}cm; height:${ph}cm; border:none; page-break-after:always;"></iframe>`;
+            if(activeJob.file.isPdf) {
+                for(let i=0; i<target; i++) html += `<iframe src="${activeJob.file.data}" style="width:${pw}cm; height:${ph}cm; border:none; page-break-after:always;"></iframe>`;
             } else {
                 let grid = `<div class="grid">`;
                 let pcs = Math.floor((pw-0.5)/w) * Math.floor((ph-0.5)/h_img);
-                for(let i=0; i<pcs; i++) grid += `<div class="cell"><img src="${activeJob.data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
+                for(let i=0; i<pcs; i++) grid += `<div class="cell"><img src="${activeJob.file.data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
                 grid += `</div>`;
                 for(let i=0; i<target; i++) html += `<div style="page-break-after:always;">${grid}</div>`;
             }
@@ -459,31 +445,36 @@
             f.document.open(); f.document.write(html); f.document.close();
             setTimeout(() => { 
                 f.print(); 
-                saveHist(target, activeJob.inv);
+                saveToHistory({ inv: activeJob.inv, cap: `CETAK ${target} LBR`, direction: 'prod' });
                 activeConns.forEach(c => c.send({type:'done', inv: activeJob.inv}));
                 document.getElementById('modal-print').style.display='none';
             }, 1000);
         }
 
-        function saveHist(lbr, inv) {
-            let tx = db.transaction("history", "readwrite");
-            tx.objectStore("history").add({ time: new Date().toLocaleString(), inv, lbr });
-        }
-
+        // HISTORY VIEW
         function toggleHistory() {
             let m = document.getElementById('modal-hist');
             m.style.display = m.style.display==='flex'?'none':'flex';
             if(m.style.display==='flex') {
-                let b = document.getElementById('hist-list'); b.innerHTML = '';
+                const list = document.getElementById('hist-list'); list.innerHTML = '';
                 db.transaction("history").objectStore("history").getAll().onsuccess = e => {
-                    e.target.result.reverse().forEach(r => {
-                        b.innerHTML += `<div class="log-item"><b>${r.time}</b> | ${r.inv} | ${r.lbr} Lbr</div>`;
+                    e.target.result.reverse().forEach(h => {
+                        // FILTER LOGIC
+                        let show = false;
+                        if(role==='admin' && h.direction==='out') show = true;
+                        if(role==='designer' && (h.direction==='in' || h.direction==='out')) show = true;
+                        if(role==='operator' && (h.direction==='in' || h.direction==='prod')) show = true;
+
+                        if(show) {
+                            list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; font-size:0.75rem;">
+                                <span style="color:var(--accent)">[${h.time}]</span> <b>${h.inv}</b> | ${h.direction.toUpperCase()} | ${h.cap}
+                            </div>`;
+                        }
                     });
                 };
             }
         }
 
-        function clearQueue() { if(confirm("HAPUS SEMUA?")) db.transaction("queue","readwrite").objectStore("queue").clear().onsuccess = renderQ; }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
         function compress(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=e=>{ let i=new Image(); i.onload=()=>{ let c=document.createElement('canvas'); let sc=Math.min(1200/i.width, 1); c.width=i.width*sc; c.height=i.height*sc; c.getContext('2d').drawImage(i,0,0,c.width,c.height); r(c.toDataURL('image/jpeg',0.8)); }; i.src=e.target.result; }; fr.readAsDataURL(f); }); }
     </script>
