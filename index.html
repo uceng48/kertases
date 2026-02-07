@@ -1,13 +1,13 @@
 <!-- 
-  KERTASES PRO V10.1 - PRODUCTION MASTER
-  Fitur: Direct PDF Print (A3+), Split Operator History, Zero-Distortion Grid, ID Changer (4869)
+  KERTASES PRO V10.2 - FINAL PRODUCTION FIX
+  Fitur: Strict Grid Engine (Zero Gap), Hard Fill Resize, Perfect Rotation, Split History
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V10.1</title>
+    <title>Kertases Pro V10.2</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -31,6 +31,7 @@
 
         .cyber-input { background: #000; border: 1px solid var(--border); color: var(--accent); padding: 10px; width: 100%; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; }
         textarea.cyber-input { height: 80px; resize: none; }
+        
         .cyber-btn { background: linear-gradient(45deg, var(--bg-panel), #222); border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; cursor: pointer; font-weight: 700; text-transform: uppercase; transition: 0.3s; font-size: 0.8rem; }
         .cyber-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-glow); }
         .cyber-btn.danger { border-color: var(--danger); color: var(--danger); }
@@ -52,7 +53,7 @@
         .timeline { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border-right: 1px solid var(--border); overflow: hidden; }
         .stream-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 25px; scroll-behavior: smooth; }
         
-        .msg-card { width: 100%; max-width: 420px; background: #111; border: 1px solid var(--border); }
+        .msg-card { width: 100%; max-width: 400px; background: #111; border: 1px solid var(--border); }
         .msg-card.out { align-self: flex-end; border-color: var(--secondary); }
         .msg-card.in { align-self: flex-start; border-color: var(--accent); }
         
@@ -60,8 +61,8 @@
         .msg-body { padding: 12px; }
         .msg-img { width: 100%; height: 160px; object-fit: contain; background: #000; border: 1px solid #222; }
         .msg-inv { color: var(--accent); font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
-        .msg-cap { font-size: 0.85rem; color: #aaa; background: #000; padding: 10px; border: 1px solid #222; white-space: pre-wrap; line-height: 1.4; }
-        .msg-footer { padding: 10px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #222; }
+        .msg-cap { font-size: 0.85rem; color: #aaa; background: #000; padding: 10px; border: 1px solid #222; cursor: pointer; white-space: pre-wrap; line-height: 1.4; }
+        .msg-footer { padding: 10px; display: flex; gap: 10px; border-top: 1px solid #222; }
 
         .control-panel { padding: 20px; overflow-y: auto; background: #0c0c0c; border-left: 1px solid var(--border); }
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; color: #666; cursor: pointer; margin-bottom: 15px; }
@@ -70,16 +71,16 @@
         .modal-box { width: 800px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; color: var(--text-dim); }
-        th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; background: rgba(0,0,0,0.3); }
-        td { padding: 10px; border-bottom: 1px solid #222; }
-
+        th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; }
+        
         .hist-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .hist-tab-btn { flex: 1; padding: 8px; background: #222; color: #666; cursor: pointer; border: none; font-weight: bold; }
         .hist-tab-btn.active { background: var(--accent); color: #000; }
 
         .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .preview-item { width: 100%; aspect-ratio: 1; border: 1px solid #333; position: relative; }
-        .pdf-box { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #400; color: white; font-weight: bold; font-size: 0.7rem; }
+        .preview-item { width: 100%; border: 1px solid #333; height: 100px; overflow: hidden; background: #000; }
+        .preview-item img { width: 100%; height: 100%; object-fit: contain; }
+        .pdf-box { height: 100%; width: 100%; background: #400; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -87,9 +88,10 @@
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
     <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
 
+    <!-- LOGIN -->
     <div id="login-screen">
-        <h1 style="font-size:3.5rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.1 PRODUCTION MASTER</div>
+        <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V10.2 - PRODUCTION FIX</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -102,6 +104,7 @@
         <input type="text" id="server-ip" class="cyber-input" placeholder="IP Server Lokal" style="display:none; width:220px; margin-top:15px; text-align:center;">
     </div>
 
+    <!-- MAIN APP -->
     <div id="app-layout">
         <div class="sidebar">
             <div id="active-role-display" class="role-badge">---</div>
@@ -110,7 +113,7 @@
                 <div style="font-size:0.7rem; color:var(--text-dim); margin-top:10px; cursor:pointer;" onclick="changeId()">MY ID (PASSWORD: 4869):</div>
                 <div id="my-id-display" style="font-family:'Roboto Mono'; color:var(--accent); font-size:0.85rem;">...</div>
             </div>
-            <input type="text" id="target-id" class="cyber-input" placeholder="Target ID">
+            <input type="text" id="target-id" class="cyber-input" placeholder="Target ID (Pisah Koma)">
             <button class="cyber-btn" style="width:100%; margin-top:10px;" onclick="connectMulti()">LINK CONNECT</button>
             <div id="active-conns" style="font-size:0.6rem; color:var(--success); margin-top:10px; word-break:break-all;"></div>
             <div style="margin-top:auto;">
@@ -122,20 +125,20 @@
         <div class="main-view">
             <div class="timeline">
                 <div style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#000;">
-                    <span style="font-weight:bold; color:var(--accent);">TIMELINE FLOW</span>
+                    <span style="font-weight:bold; color:var(--accent);">TIMELINE STREAM</span>
                     <span id="role-hint" style="font-size:0.7rem; color:var(--text-dim);">---</span>
                 </div>
                 <div id="stream-area" class="stream-area"></div>
             </div>
 
             <div class="control-panel">
-                <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; font-size:0.8rem;">TRANSMIT ASSETS</div>
-                <div class="upload-zone" onclick="document.getElementById('file-in').click()">+ SELECT FILES</div>
+                <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; font-size:0.8rem;">TRANSMIT FILES</div>
+                <div class="upload-zone" onclick="document.getElementById('file-in').click()">+ SELECT ASSETS</div>
                 
                 <div id="preview-area" class="preview-grid"></div>
                 
                 <input type="text" id="inv-in" class="cyber-input" placeholder="Invoice Number" style="margin-bottom:10px;">
-                <textarea id="cap-in" class="cyber-input" placeholder="Notes (Enter for new line)"></textarea>
+                <textarea id="cap-in" class="cyber-input" placeholder="Catatan (Enter untuk baris baru)"></textarea>
                 <div style="margin:15px 0; font-size:0.75rem;"><input type="checkbox" id="hd-mode" checked> HIGH-DEFINITION ASSETS</div>
                 <input type="file" id="file-in" multiple style="display:none;" onchange="prepareFiles(this)">
                 <button id="btn-send" class="cyber-btn" style="width:100%;" onclick="sendDataStrict()">SEND DATA</button>
@@ -146,42 +149,37 @@
     <!-- MODAL PRINT -->
     <div id="modal-print" class="modal">
         <div class="modal-box" style="width:550px;">
-            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">PRODUCTION SETUP</div>
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">PRODUKSI SETUP</div>
             <div style="display:flex; gap:15px; margin-bottom:20px;">
                 <div style="width:150px; height:150px; background:#000; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
                     <img id="p-img" style="max-width:100%; max-height:100%; object-fit:contain;">
-                    <div id="p-pdf-icon" style="display:none; font-size:2.5rem; font-weight:bold; color:var(--danger); text-align:center;">PDF<br><span style="font-size:0.6rem">A3+ READY</span></div>
+                    <div id="p-pdf-icon" style="display:none; font-size:2rem; font-weight:bold; color:var(--danger);">PDF</div>
                 </div>
                 <div style="flex:1;">
                     <label style="font-size:0.7rem;">INV:</label>
                     <input type="text" id="p-inv" class="cyber-input" readonly style="margin-bottom:10px; color:var(--success);">
-                    <label style="font-size:0.7rem;">JENIS BAHAN:</label>
-                    <select id="p-mat" class="cyber-input">
-                        <option>Chromo</option><option>Vinyl Glossy</option><option>Vinyl Matte</option><option>Transparan</option><option>HVS</option><option>Art Carton</option>
+                    <label style="font-size:0.7rem;">UKURAN KERTAS:</label>
+                    <select id="p-paper" class="cyber-input" onchange="togglePaperCustom()">
+                        <option value="32,48">A3+ (32x48 cm)</option><option value="29.7,42">A3 (29.7x42 cm)</option><option value="21,29.7">A4 (21x29.7 cm)</option><option value="custom">-- CUSTOM --</option>
                     </select>
                 </div>
             </div>
-
-            <div id="pdf-direct-options" style="display:none; margin-bottom:20px;">
-                <button class="cyber-btn success" style="width:100%; font-size:1rem; padding:15px;" onclick="doPrintDirect()">CETAK LANGSUNG (FULL A3+)</button>
-                <div style="text-align:center; font-size:0.65rem; color:var(--text-dim); margin-top:5px;">*Gunakan tombol ini jika PDF sudah berukuran A3+ siap cetak</div>
-                <div style="border-bottom:1px solid #333; margin:20px 0;"></div>
+            
+            <!-- Direct Print PDF Opsi -->
+            <div id="direct-pdf-box" style="display:none; margin-bottom:20px;">
+                <button class="cyber-btn success" style="width:100%; padding:15px;" onclick="doPrintDirect()">CETAK PDF FULL A3+</button>
+                <div style="text-align:center; font-size:0.6rem; color:var(--text-dim); margin-top:5px;">Gunakan ini jika file PDF sudah siap cetak 1 lembar</div>
             </div>
 
-            <div id="grid-print-options">
-                <div style="margin-bottom:10px; font-weight:bold; font-size:0.75rem; color:var(--accent)">PENGATURAN GRID (POTONG)</div>
-                <label style="font-size:0.7rem;">UKURAN KERTAS:</label>
-                <select id="p-paper" class="cyber-input" onchange="togglePaperCustom()" style="margin-bottom:15px;">
-                    <option value="32,48">A3+ (32x48 cm)</option><option value="29.7,42">A3 (29.7x42 cm)</option><option value="21,29.7">A4 (21x29.7 cm)</option><option value="custom">-- CUSTOM --</option>
-                </select>
+            <div id="grid-controls">
                 <div id="custom-paper-box" style="display:none; gap:10px; margin-bottom:15px;">
-                    <input type="number" id="p-paper-w" value="32" class="cyber-input" placeholder="W">
-                    <input type="number" id="p-paper-h" value="48" class="cyber-input" placeholder="H">
+                    <input type="number" id="p-paper-w" value="32" class="cyber-input">
+                    <input type="number" id="p-paper-h" value="48" class="cyber-input">
                 </div>
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                     <div style="flex:1;"><label style="font-size:0.7rem;">L (CM):</label><input type="number" id="p-w" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
                     <div style="flex:1;"><label style="font-size:0.7rem;">T (CM):</label><input type="number" id="p-h" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
-                    <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="rotateVisual()">🔄</button></div>
+                    <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="rotateVisual()">🔄 ROTASI</button></div>
                 </div>
                 <label style="font-size:0.7rem;">JUMLAH CETAK (LEMBAR):</label>
                 <input type="number" id="p-target" value="1" class="cyber-input" style="font-size:1.8rem; text-align:center; color:var(--success); font-weight:bold; margin-bottom:15px;" oninput="calc()">
@@ -196,19 +194,17 @@
 
     <!-- MODAL HISTORY -->
     <div id="modal-hist" class="modal">
-        <div class="modal-box" style="width:800px;">
+        <div class="modal-box">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <div style="color:var(--accent); font-weight:bold; font-size:1.2rem;">RIWAYAT - <span id="hist-role-title">---</span></div>
+                <div style="color:var(--accent); font-weight:bold; font-size:1.2rem;">RIWAYAT - <span id="hist-role-title">...</span></div>
                 <button class="cyber-btn success" style="padding:5px 15px; font-size:0.7rem;" onclick="exportHistory()">DOWNLOAD CSV</button>
             </div>
-            
             <div id="op-tabs" class="hist-tabs" style="display:none;">
-                <div class="hist-tab-btn active" id="tab-recv" onclick="switchHistTab('RECV')">DATA DITERIMA (INCOMING)</div>
-                <div class="hist-tab-btn" id="tab-prod" onclick="switchHistTab('PROD')">LOG CETAK (PRODUCTION)</div>
+                <div class="hist-tab-btn active" id="tab-recv" onclick="switchHistTab('RECV')">DITERIMA</div>
+                <div class="hist-tab-btn" id="tab-prod" onclick="switchHistTab('PROD')">LOG PRODUKSI</div>
             </div>
-
             <div style="max-height:400px; overflow-y:auto; background:#000; border:1px solid #222;">
-                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET / STATUS</th><th>SUMBER</th></tr></thead><tbody id="hist-body"></tbody></table>
+                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET</th><th>SUMBER</th></tr></thead><tbody id="hist-body"></tbody></table>
             </div>
             <button class="cyber-btn" style="width:100%; margin-top:20px;" onclick="toggleHistory()">TUTUP</button>
         </div>
@@ -223,7 +219,7 @@
         let role, peer, db, tempFiles = [], activeConns = [], currentRotation = 0, currentTab = 'RECV';
 
         // DB SETUP
-        let req = indexedDB.open("KertasesV101", 1);
+        let req = indexedDB.open("KertasesV102", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -254,6 +250,13 @@
                 document.getElementById('active-role-display').innerText = role.toUpperCase();
                 document.getElementById('my-id-display').innerText = myId;
                 document.getElementById('target-id').value = localStorage.getItem('kts_last_target') || '';
+                
+                let hint = "";
+                if(role === 'admin') hint = "Only Outbox (to Designer)";
+                if(role === 'designer') hint = "Inbox from Admin | Outbox to Operator";
+                if(role === 'operator') hint = "Only Inbox (from Designer)";
+                document.getElementById('role-hint').innerText = hint;
+
                 initPeer();
                 setTimeout(renderStream, 500);
             } else alert("ACCESS DENIED");
@@ -285,7 +288,7 @@
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
                 if(d.type === 'job') handleIncoming(d, c.peer);
-                if(d.type === 'done') alert(`DONE: ${d.inv} telah dicetak!`);
+                if(d.type === 'done') alert(`NOTIF: ${d.inv} telah dicetak!`);
             });
             c.on('close', () => {
                 activeConns = activeConns.filter(x => x.peer !== c.peer);
@@ -304,10 +307,12 @@
             txt.style.color = activeConns.length > 0 ? "var(--success)" : "var(--danger)";
         }
 
-        // ASSETS PREVIEW
+        // PREPARE PREVIEW
         async function prepareFiles(input) {
             tempFiles = [];
-            const grid = document.getElementById('preview-area'); grid.innerHTML = '';
+            const grid = document.getElementById('preview-area'); 
+            grid.innerHTML = '';
+            
             for(let f of input.files) {
                 let isPdf = f.type === 'application/pdf';
                 let data = await toBase64(f);
@@ -315,11 +320,8 @@
                 
                 let item = document.createElement('div');
                 item.className = 'preview-item';
-                if(isPdf) {
-                    item.innerHTML = `<div class="pdf-box">PDF FILE</div>`;
-                } else {
-                    item.innerHTML = `<img src="${data}" style="width:100%; height:100%; object-fit:contain;">`;
-                }
+                if(isPdf) item.innerHTML = `<div class="pdf-box">PDF</div>`;
+                else item.innerHTML = `<img src="${data}">`;
                 grid.appendChild(item);
             }
         }
@@ -333,7 +335,8 @@
             activeConns.forEach(c => c.send(d));
             saveHistory({ ...d, typeLabel: role === 'admin' ? 'ADM_SEND' : 'DSN_SEND' });
             saveStream({ ...d, direction: 'out', hidden: false });
-            tempFiles = []; document.getElementById('preview-area').innerHTML = '';
+            tempFiles = []; 
+            document.getElementById('preview-area').innerHTML = '';
             document.getElementById('inv-in').value = ''; document.getElementById('cap-in').value = '';
             renderStream();
         }
@@ -371,17 +374,20 @@
 
                     let card = document.createElement('div');
                     card.className = `msg-card ${i.direction}`;
-                    let thumb = i.files[0].isPdf ? `<div style="height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#400; color:white; font-weight:bold;">📄 PDF FILE<br><span style="font-size:0.6rem;">${i.inv}</span></div>` : `<img src="${i.files[0].data}" class="msg-img">`;
+                    
+                    let thumb = '';
+                    if(i.files[0].isPdf) thumb = `<div class="pdf-box" style="height:160px; font-size:1.5rem;">📄 PDF</div>`;
+                    else thumb = `<img src="${i.files[0].data}" class="msg-img">`;
                     
                     let actionBtn = "";
                     if(i.direction === 'in') {
                         if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="flex:1;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
-                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">DOWNLOAD ASSET</button>`;
+                        if(role === 'designer') actionBtn = `<button class="cyber-btn" style="flex:1;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE FILE</button>`;
                     }
 
                     card.innerHTML = `
                         <div class="msg-header">
-                            <span>${i.direction === 'in' ? 'FROM: '+i.from : 'SENT DATA'}</span>
+                            <span>${i.direction === 'in' ? 'FROM: '+i.from : 'OUTBOX'}</span>
                             <span onclick="hideStream('${i.id}')" style="color:var(--danger); cursor:pointer;">[ HAPUS ]</span>
                         </div>
                         <div class="msg-body">
@@ -404,7 +410,7 @@
             };
         }
 
-        // --- PRINT ENGINE ---
+        // --- PRINT ENGINE V10.2 (PRODUCTION) ---
         function openPrint(id) {
             db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => {
                 activeJob = e.target.result;
@@ -414,16 +420,15 @@
                 document.getElementById('modal-print').style.display = 'flex';
                 document.getElementById('p-inv').value = activeJob.inv;
                 
-                // Cek jika PDF untuk menampilkan opsi Cetak Langsung
                 if(activeJob.currentFile.isPdf) {
                     document.getElementById('p-img').style.display = 'none';
                     document.getElementById('p-pdf-icon').style.display = 'block';
-                    document.getElementById('pdf-direct-options').style.display = 'block';
+                    document.getElementById('direct-pdf-box').style.display = 'block';
                 } else {
                     document.getElementById('p-img').src = activeJob.currentFile.data;
                     document.getElementById('p-img').style.display = 'block';
                     document.getElementById('p-pdf-icon').style.display = 'none';
-                    document.getElementById('pdf-direct-options').style.display = 'none';
+                    document.getElementById('direct-pdf-box').style.display = 'none';
                 }
                 calc();
             };
@@ -434,7 +439,7 @@
         function rotateVisual() { 
             currentRotation = (currentRotation + 90) % 360; 
             document.getElementById('p-img').style.transform = `rotate(${currentRotation}deg)`; 
-            // Tukar angka agar grid tidak gepeng
+            // Tukar W/H otomatis agar proporsional
             let w = document.getElementById('p-w').value;
             let h = document.getElementById('p-h').value;
             document.getElementById('p-w').value = h;
@@ -449,7 +454,7 @@
             let h = parseFloat(document.getElementById('p-h').value) || 1;
             let target = parseInt(document.getElementById('p-target').value) || 1;
             let pcs = Math.floor(pw/w) * Math.floor(ph/h);
-            document.getElementById('p-res').innerText = `TOTAL: ${pcs * target} PCS (${pcs} pcs/lembar)`;
+            document.getElementById('p-res').innerText = `HASIL: ${pcs * target} PCS (${pcs} pcs/lbr)`;
         }
 
         function doPrintDirect() {
@@ -469,23 +474,23 @@
             let ph = document.getElementById('p-paper').value === 'custom' ? document.getElementById('p-paper-h').value : document.getElementById('p-paper').value.split(',')[1];
             let w = document.getElementById('p-w').value, h_img = document.getElementById('p-h').value, target = document.getElementById('p-target').value;
             
+            // Marks (Rapat)
             const mk = (t, l) => `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0;"><div style="position:absolute; top:-2mm; left:-0.05mm; width:0.1mm; height:4mm; background:#000;"></div><div style="position:absolute; top:-0.05mm; left:-2mm; width:4mm; height:0.1mm; background:#000;"></div></div>`;
             
-            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0;} .grid{display:flex; flex-wrap:wrap; width:${pw}cm; margin:0;} .cell{position:relative; width:${w}cm; height:${h_img}cm; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:contain; transform:rotate(${currentRotation}deg); display:block;}</style>`;
+            // Strict Grid CSS (Zero Gap & Fill)
+            let html = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0;} .grid{display:grid; grid-template-columns: repeat(auto-fill, ${w}cm); gap:0; width:${pw}cm; margin:0;} .cell{position:relative; width:${w}cm; height:${h_img}cm; border:none; margin:0; padding:0; overflow:hidden;} .cell img{width:100%; height:100%; object-fit:fill; transform:rotate(${currentRotation}deg); display:block;}</style>`;
             
-            if(activeJob.currentFile.isPdf) {
-                for(let i=0; i<target; i++) html += `<div style="page-break-after:always;"><iframe src="${activeJob.currentFile.data}" style="width:${pw}cm; height:${ph}cm; border:none;"></iframe></div>`;
-            } else {
-                let grid = `<div class="grid">`;
-                let nx = Math.floor(pw/w);
-                let ny = Math.floor(ph/h_img);
-                for(let i=0; i<(nx*ny); i++) grid += `<div class="cell"><img src="${activeJob.currentFile.data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
-                grid += `</div>`;
-                for(let i=0; i<target; i++) html += `<div style="page-break-after:always;">${grid}</div>`;
-            }
+            let grid = `<div class="grid">`;
+            let nx = Math.floor(pw/w);
+            let ny = Math.floor(ph/h_img);
+            for(let i=0; i<(nx*ny); i++) grid += `<div class="cell"><img src="${activeJob.currentFile.data}">${mk(0,0)}${mk(0,'100%')}${mk('100%',0)}${mk('100%','100%')}</div>`;
+            grid += `</div>`;
+            
+            let finalHtml = "";
+            for(let i=0; i<target; i++) finalHtml += `<div style="page-break-after:always;">${grid}</div>`;
 
             let f = document.getElementById('p-frame').contentWindow;
-            f.document.open(); f.document.write(html); f.document.close();
+            f.document.open(); f.document.write(html + finalHtml); f.document.close();
             setTimeout(() => { 
                 f.print(); 
                 saveHistory({ inv: activeJob.inv, cap: `PRODUKSI GRID ${target} LBR`, typeLabel: 'OP_PROD' });
@@ -494,7 +499,7 @@
             }, 1000);
         }
 
-        // HISTORY SPLIT LOGIC
+        // HISTORY TOOLS
         function switchHistTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.hist-tab-btn').forEach(b => b.classList.remove('active'));
@@ -529,7 +534,7 @@
         }
 
         function exportHistory() {
-            let csv = "WAKTU,INVOICE,KET,PARTNER\n";
+            let csv = "WAKTU,INV,KET,PARTNER\n";
             db.transaction("history").objectStore("history").getAll().onsuccess = e => {
                 e.target.result.forEach(h => {
                     let show = false;
@@ -557,6 +562,7 @@
 
         function copyTxt(t) { navigator.clipboard.writeText(t); alert("Catatan Disalin!"); }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
+        function compress(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=e=>{ let i=new Image(); i.onload=()=>{ let c=document.createElement('canvas'); let sc=Math.min(1200/i.width, 1); c.width=i.width*sc; c.height=i.height*sc; c.getContext('2d').drawImage(i,0,0,c.width,c.height); r(c.toDataURL('image/jpeg',0.8)); }; i.src=e.target.result; }; fr.readAsDataURL(f); }); }
     </script>
 </body>
 </html>
