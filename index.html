@@ -1,14 +1,14 @@
 <!-- 
-  KERTASES PRO V11.5 - FINAL ULTRA STABILITY
-  Fitur: V11.0 PDF Logic (Anti-Blank), Real PDF Preview Setup, 
-         Operator Direct Print, Split History, Back Nav, Centered Grid.
+  KERTASES PRO V11.6 - ULTIMATE PDF STABILITY
+  Fitur: Popup PDF Engine (Anti-Blank), Operator Local Print, 
+         Centered Grid, Split History, Physical Rotation.
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V11.5</title>
+    <title>Kertases Pro V11.6</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@
         .upload-zone { border: 2px dashed #444; padding: 25px; text-align: center; color: #666; cursor: pointer; margin-bottom: 15px; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { width: 550px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 95vh; overflow-y: auto; }
+        .modal-box { width: 550px; background: #111; border: 1px solid var(--accent); padding: 25px; max-height: 90vh; overflow-y: auto; }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; color: var(--text-dim); }
         th { border-bottom: 1px solid var(--accent); color: var(--accent); padding: 10px; text-align: left; background: rgba(0,0,0,0.3); }
@@ -84,10 +84,7 @@
         .preview-item img, .preview-item iframe { width: 100%; height: 100%; object-fit: contain; border: none; }
 
         .back-nav-btn { font-size: 1.5rem; cursor: pointer; color: var(--accent); position: absolute; top: 15px; left: 15px; z-index: 10; background: none; border: none; }
-        #p-setup-pdf-preview { width: 100%; height: 100%; border: none; }
-        
-        /* PRINT LOADER */
-        #print-loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; color: var(--accent); }
+        #p-setup-pdf-preview { width: 100%; height: 100%; border: none; background: #000; }
     </style>
 </head>
 <body>
@@ -95,15 +92,10 @@
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
     <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
 
-    <div id="print-loader">
-        <div style="font-size: 2rem; margin-bottom: 10px;">⚡</div>
-        <div style="font-weight: bold; letter-spacing: 2px;">MENGOLAH DOKUMEN...</div>
-        <div style="font-size: 0.7rem; margin-top: 5px; color: #666;">Harap tunggu 2.5 detik agar PDF tidak blank</div>
-    </div>
-
+    <!-- LOGIN -->
     <div id="login-screen">
-        <h1 style="font-size:3.5rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V11.5 FINAL STABILITY</div>
+        <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V11.6 FINAL PDF SYSTEM</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -122,7 +114,7 @@
             <div id="active-role-display" class="role-badge" style="margin-top:40px;">---</div>
             <div id="status-widget" class="status-widget">
                 <div id="status-text" style="font-weight:bold;">OFFLINE</div>
-                <div style="font-size:0.7rem; color:var(--text-dim); margin-top:10px; cursor:pointer;" onclick="changeId()">YOUR_ID:</div>
+                <div style="font-size:0.7rem; color:var(--text-dim); margin-top:10px; cursor:pointer;" onclick="changeId()">ID (PASSWORD: 4869):</div>
                 <div id="my-id-display" style="font-family:'Roboto Mono'; color:var(--accent); font-size:0.85rem;">...</div>
             </div>
             <input type="text" id="target-id" class="cyber-input" placeholder="Target ID">
@@ -175,24 +167,21 @@
                 </div>
             </div>
 
-            <!-- PDF OPTIONS (V11.5 - Direct Logic) -->
+            <!-- PDF FULL SETUP OPTIONS (V11.6 - POPUP ENGINE) -->
             <div id="pdf-custom-options" style="display:none; border:1px solid var(--danger); padding:15px; margin-bottom:20px; background: rgba(255,0,0,0.05);">
-                <div style="color:var(--danger); font-weight:bold; font-size:0.75rem; margin-bottom:10px;">SETTING PDF FULL (ANTI-BLANK)</div>
-                <label style="font-size:0.7rem;">UKURAN KERTAS PDF:</label>
+                <div style="color:var(--danger); font-weight:bold; font-size:0.75rem; margin-bottom:10px;">PDF SETUP (ANTI-BLANK)</div>
+                <label style="font-size:0.7rem;">KERTAS PDF:</label>
                 <select id="p-pdf-paper" class="cyber-input" onchange="togglePdfPaperCustom()" style="margin-bottom:10px;">
-                    <option value="32,48">A3+ (32x48 cm)</option>
-                    <option value="29.7,42">A3 (29.7x42 cm)</option>
-                    <option value="21,29.7">A4 (21x29.7 cm)</option>
-                    <option value="custom">-- CUSTOM --</option>
+                    <option value="32,48">A3+ (32x48 cm)</option><option value="29.7,42">A3 (29.7x42 cm)</option><option value="21,29.7">A4 (21x29.7 cm)</option><option value="custom">-- CUSTOM --</option>
                 </select>
                 <div id="pdf-custom-paper-box" style="display:none; gap:10px; margin-bottom:10px;">
-                    <input type="number" id="p-pdf-pw" value="32" class="cyber-input" placeholder="W (CM)">
-                    <input type="number" id="p-pdf-ph" value="48" class="cyber-input" placeholder="H (CM)">
+                    <input type="number" id="p-pdf-pw" value="32" class="cyber-input" placeholder="W">
+                    <input type="number" id="p-pdf-ph" value="48" class="cyber-input" placeholder="H">
                 </div>
-                <label style="font-size:0.7rem;">JUMLAH CETAK (LEMBAR):</label>
+                <label style="font-size:0.7rem;">QTY LEMBAR:</label>
                 <input type="number" id="p-pdf-target" value="1" class="cyber-input" style="font-size:1.5rem; text-align:center; color:var(--success); font-weight:bold; margin-bottom:15px;">
                 <div style="display:flex; gap:10px;">
-                    <button class="cyber-btn danger" style="flex:1;" onclick="closeModal()">BACK / BATAL</button>
+                    <button class="cyber-btn danger" style="flex:1;" onclick="closeModal()">BATAL</button>
                     <button class="cyber-btn success" style="flex:2;" onclick="doPrintDirect()">CETAK PDF FULL</button>
                 </div>
             </div>
@@ -212,18 +201,18 @@
                     <div style="flex:1;"><label style="font-size:0.7rem;">T (CM):</label><input type="number" id="p-h" value="5" step="0.1" class="cyber-input" oninput="calc()"></div>
                     <div style="display:flex; align-items:flex-end;"><button class="cyber-btn" onclick="physicalRotate()">🔄</button></div>
                 </div>
-                <label style="font-size:0.7rem;">TARGET LEMBAR:</label>
+                <label style="font-size:0.7rem;">JUMLAH CETAK:</label>
                 <input type="number" id="p-target" value="1" class="cyber-input" style="font-size:1.8rem; text-align:center; color:var(--success); font-weight:bold; margin-bottom:15px;" oninput="calc()">
                 <div id="p-res" style="text-align:center; color:var(--success); background:rgba(0,255,157,0.1); padding:12px; border:1px solid var(--success); margin-bottom:20px;">...</div>
                 <div style="display:flex; gap:10px;">
-                    <button class="cyber-btn danger" style="flex:1;" onclick="closeModal()">BACK / BATAL</button>
+                    <button class="cyber-btn danger" style="flex:1;" onclick="closeModal()">BATAL</button>
                     <button class="cyber-btn success" style="flex:2;" onclick="doPrint()">PROSES GRID</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL HISTORY -->
+    <!-- HISTORY -->
     <div id="modal-hist" class="modal">
         <div class="modal-box" style="width:800px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -247,9 +236,9 @@
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let cfg = { mode: 'cloud', host: 'localhost' };
         let myId = localStorage.getItem('kts_id') || 'CYBER-' + Math.floor(Math.random()*9999);
-        let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV', setupBlobURL = null;
+        let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV', activeBlobURL = null;
 
-        let req = indexedDB.open("KertasesV115", 1);
+        let req = indexedDB.open("KertasesV116", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -280,9 +269,7 @@
                 document.getElementById('active-role-display').innerText = role.toUpperCase();
                 document.getElementById('my-id-display').innerText = myId;
                 document.getElementById('target-id').value = localStorage.getItem('kts_last_target') || '';
-                if(role === 'operator') {
-                    document.getElementById('btn-action-main').innerText = "PROSES CETAK";
-                }
+                if(role === 'operator') document.getElementById('btn-action-main').innerText = "PROSES CETAK";
                 initPeer();
                 setTimeout(renderStream, 500);
             } else alert("DENIED");
@@ -312,7 +299,7 @@
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
                 if(d.type === 'job') handleIncoming(d, c.peer);
-                if(d.type === 'done') alert(`NOTIF: ${d.inv} dicetak!`);
+                if(d.type === 'done') alert(`DONE: ${d.inv} dicetak!`);
             });
             c.on('close', () => {
                 activeConns = activeConns.filter(x => x.peer !== c.peer);
@@ -347,7 +334,7 @@
                 tempFiles.push({ data, isPdf, name: f.name });
                 let item = document.createElement('div');
                 item.className = 'preview-item';
-                if(isPdf) item.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#400; color:white; font-size:0.6rem; font-weight:bold;">PDF</div>`;
+                if(isPdf) item.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#400; color:white; font-size:0.6rem; font-weight:bold;">PDF READY</div>`;
                 else item.innerHTML = `<img src="${data}">`;
                 grid.appendChild(item);
             }
@@ -399,8 +386,7 @@
                         if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="width:100%;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
                         if(role === 'designer') actionBtn = `<button class="cyber-btn" style="width:100%;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
                     }
-                    let card = document.createElement('div');
-                    card.className = `msg-card ${i.direction}`;
+                    let card = document.createElement('div'); card.className = `msg-card ${i.direction}`;
                     card.innerHTML = `<div class="msg-header"><span>${i.direction === 'in' ? 'FROM: '+i.from : 'OUTBOX'}</span><span onclick="hideStream('${i.id}')" style="color:var(--danger); cursor:pointer;">[ HAPUS ]</span></div><div class="msg-body">${thumb}<div class="msg-inv">${i.inv || '(No Invoice)'}</div><div class="msg-cap" onclick="copyTxt(this.innerText)">${i.cap || '---'}</div></div><div class="msg-footer">${actionBtn}</div>`;
                     area.appendChild(card);
                 });
@@ -415,32 +401,27 @@
             activeJob = job;
             document.getElementById('modal-print').style.display = 'flex';
             document.getElementById('p-inv').value = ""; 
-            if(setupBlobURL) URL.revokeObjectURL(setupBlobURL);
+            if(activeBlobURL) URL.revokeObjectURL(activeBlobURL);
 
             if(activeJob.files[0].isPdf) {
                 const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
-                setupBlobURL = URL.createObjectURL(blob);
+                activeBlobURL = URL.createObjectURL(blob);
                 document.getElementById('p-img').style.display = 'none';
                 document.getElementById('p-setup-pdf-preview').style.display = 'block';
-                document.getElementById('p-setup-pdf-preview').src = setupBlobURL;
-                document.getElementById('p-pdf-badge').style.display = 'block';
+                document.getElementById('p-setup-pdf-preview').src = activeBlobURL;
                 document.getElementById('pdf-custom-options').style.display = 'block';
                 document.getElementById('grid-controls').style.display = 'none';
             } else {
                 document.getElementById('p-img').src = activeJob.files[0].data;
                 document.getElementById('p-img').style.display = 'block';
                 document.getElementById('p-setup-pdf-preview').style.display = 'none';
-                document.getElementById('p-pdf-badge').style.display = 'none';
                 document.getElementById('pdf-custom-options').style.display = 'none';
                 document.getElementById('grid-controls').style.display = 'block';
             }
             calc();
         }
 
-        function closeModal() {
-            document.getElementById('modal-print').style.display = 'none';
-            if(setupBlobURL) { URL.revokeObjectURL(setupBlobURL); setupBlobURL = null; }
-        }
+        function closeModal() { document.getElementById('modal-print').style.display = 'none'; if(activeBlobURL) { URL.revokeObjectURL(activeBlobURL); activeBlobURL = null; } }
 
         async function physicalRotate() {
             if(!activeJob || activeJob.files[0].isPdf) return;
@@ -467,7 +448,7 @@
             document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * t} PCS (${nx * ny} pcs/lbr)`;
         }
 
-        // --- PDF STABLE ENGINE V11.0 (WITH LABEL) ---
+        // --- THE POPUP ENGINE (GUARANTEED NO BLANK) ---
         function doPrintDirect() {
             const invLabel = document.getElementById('p-inv').value;
             const mat = document.getElementById('p-mat').value;
@@ -475,27 +456,25 @@
             let pw = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-pw').value : document.getElementById('p-pdf-paper').value.split(',')[0];
             let ph = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-ph').value : document.getElementById('p-pdf-paper').value.split(',')[1];
             
-            document.getElementById('print-loader').style.display = 'flex';
+            // JURUS TERAKHIR: Buka di Popup Window murni
+            let printWin = window.open('', '_blank', 'width=800,height=600');
+            printWin.document.write('<html><head><title>Kertases PDF Print</title>');
+            printWin.document.write(`<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; background:#fff;} .wrap{width:${pw}cm; height:${ph}cm; position:relative; overflow:hidden; page-break-after:always;} embed{width:100%; height:100%; border:none;} .label{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; font-weight:bold; background:white; border:1px solid #000; padding:3px 15px; z-index:999;}</style>`);
+            printWin.document.write('</head><body>');
             
-            const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
-            const url = URL.createObjectURL(blob);
-            let f = document.getElementById('p-frame');
-            let fWin = f.contentWindow;
-            fWin.document.open();
-            let styles = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; background:white;} .wrap{width:${pw}cm; height:${ph}cm; position:relative; overflow:hidden; page-break-after:always;} iframe{width:100%; height:100%; border:none;} .label{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; font-weight:bold; color:black; background:white; border:1px solid black; padding:3px 15px; z-index:9999;}</style>`;
-            let content = "";
             for(let i=0; i<target; i++) {
-                content += `<div class="wrap"><iframe src="${url}"></iframe>${invLabel ? `<div class="label">${invLabel} - ${mat}</div>` : ''}</div>`;
+                printWin.document.write(`<div class="wrap"><embed src="${activeBlobURL}" type="application/pdf" width="100%" height="100%">${invLabel ? `<div class="label">${invLabel} - ${mat}</div>` : ''}</div>`);
             }
-            fWin.document.write(styles + content);
-            fWin.document.close();
+            
+            printWin.document.write('</body></html>');
+            printWin.document.close();
 
-            setTimeout(() => { 
-                document.getElementById('print-loader').style.display = 'none';
-                fWin.print(); 
+            // Beri jeda 1.5 detik agar PDF Viewer Popup memuat sempurna
+            setTimeout(() => {
+                printWin.print();
                 saveHistory({ inv: invLabel || 'PDF', cap: `PDF PRINT ${target} LBR`, typeLabel: 'OP_PROD' });
                 closeModal();
-            }, 2500); // Buffer 2.5s for PDF rendering
+            }, 1500);
         }
 
         function doPrint() {
@@ -522,7 +501,7 @@
         function refreshHistBody() { const b = document.getElementById('hist-body'); b.innerHTML = ''; db.transaction("history").objectStore("history").getAll().onsuccess = e => { e.target.result.reverse().forEach(h => { let show = false; if(role==='admin' && h.typeLabel==='ADM_SEND') show = true; if(role==='designer' && (h.typeLabel==='DSN_RECV' || h.typeLabel==='DSN_SEND')) show = true; if(role==='operator') { if(currentTab === 'RECV' && h.typeLabel==='OP_RECV') show = true; if(currentTab === 'PROD' && h.typeLabel==='OP_PROD') show = true; } if(show) b.innerHTML += `<tr><td>${h.time}</td><td>${h.inv}</td><td>${h.cap}</td><td>${h.partner}</td></tr>`; }); }; }
         function exportHistory() { let csv = "WAKTU,INV,KET,PARTNER\n"; db.transaction("history").objectStore("history").getAll().onsuccess = e => { e.target.result.forEach(h => { csv += `"${h.time}","${h.inv}","${h.cap.replace(/\n/g, ' ')}","${h.partner}"\n`; }); const blob = new Blob([csv], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Log_${role}.csv`; a.click(); }; }
         function downloadFiles(id) { db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => { e.target.result.files.forEach(f => { const l = document.createElement('a'); l.href = f.data; l.download = "KTS_"+f.name; l.click(); }); }; }
-        function copyTxt(t) { navigator.clipboard.writeText(t); alert("Copy Sukses!"); }
+        function copyTxt(t) { navigator.clipboard.writeText(t); alert("Disalin!"); }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
     </script>
 </body>
