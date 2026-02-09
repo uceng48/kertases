@@ -1,14 +1,14 @@
 <!-- 
-  KERTASES PRO V11.4 - ULTIMATE MASTER PDF
-  Fitur: Real PDF Preview in Setup, PDF Invoice Label, Operator Local Print,
-         Centered Grid, Split History, Anti-Blank PDF Engine.
+  KERTASES PRO V11.5 - FINAL ULTRA STABILITY
+  Fitur: V11.0 PDF Logic (Anti-Blank), Real PDF Preview Setup, 
+         Operator Direct Print, Split History, Back Nav, Centered Grid.
 -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V11.4</title>
+    <title>Kertases Pro V11.5</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -84,9 +84,10 @@
         .preview-item img, .preview-item iframe { width: 100%; height: 100%; object-fit: contain; border: none; }
 
         .back-nav-btn { font-size: 1.5rem; cursor: pointer; color: var(--accent); position: absolute; top: 15px; left: 15px; z-index: 10; background: none; border: none; }
-        
-        /* SETUP MODAL PREVIEW PDF */
         #p-setup-pdf-preview { width: 100%; height: 100%; border: none; }
+        
+        /* PRINT LOADER */
+        #print-loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -94,9 +95,15 @@
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
     <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
 
+    <div id="print-loader">
+        <div style="font-size: 2rem; margin-bottom: 10px;">⚡</div>
+        <div style="font-weight: bold; letter-spacing: 2px;">MENGOLAH DOKUMEN...</div>
+        <div style="font-size: 0.7rem; margin-top: 5px; color: #666;">Harap tunggu 2.5 detik agar PDF tidak blank</div>
+    </div>
+
     <div id="login-screen">
-        <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V11.4 PRODUCTION MASTER PDF</div>
+        <h1 style="font-size:3.5rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V11.5 FINAL STABILITY</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -168,9 +175,9 @@
                 </div>
             </div>
 
-            <!-- PDF OPTIONS (V11.4 - NOW WITH PREVIEW) -->
+            <!-- PDF OPTIONS (V11.5 - Direct Logic) -->
             <div id="pdf-custom-options" style="display:none; border:1px solid var(--danger); padding:15px; margin-bottom:20px; background: rgba(255,0,0,0.05);">
-                <div style="color:var(--danger); font-weight:bold; font-size:0.75rem; margin-bottom:10px;">SETTING PDF FULL (NO GRID)</div>
+                <div style="color:var(--danger); font-weight:bold; font-size:0.75rem; margin-bottom:10px;">SETTING PDF FULL (ANTI-BLANK)</div>
                 <label style="font-size:0.7rem;">UKURAN KERTAS PDF:</label>
                 <select id="p-pdf-paper" class="cyber-input" onchange="togglePdfPaperCustom()" style="margin-bottom:10px;">
                     <option value="32,48">A3+ (32x48 cm)</option>
@@ -240,9 +247,9 @@
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let cfg = { mode: 'cloud', host: 'localhost' };
         let myId = localStorage.getItem('kts_id') || 'CYBER-' + Math.floor(Math.random()*9999);
-        let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV', activeBlobURL = null;
+        let role, peer, db, tempFiles = [], activeConns = [], currentTab = 'RECV', setupBlobURL = null;
 
-        let req = indexedDB.open("KertasesV114", 1);
+        let req = indexedDB.open("KertasesV115", 1);
         req.onupgradeneeded = e => {
             let d = e.target.result;
             d.createObjectStore("stream", { keyPath: "id" });
@@ -275,7 +282,6 @@
                 document.getElementById('target-id').value = localStorage.getItem('kts_last_target') || '';
                 if(role === 'operator') {
                     document.getElementById('btn-action-main').innerText = "PROSES CETAK";
-                    document.getElementById('role-hint').innerText = "Recv Designer | Upload Local -> Print";
                 }
                 initPeer();
                 setTimeout(renderStream, 500);
@@ -306,7 +312,7 @@
             c.on('data', d => {
                 document.getElementById('notif-sound').play().catch(()=>{});
                 if(d.type === 'job') handleIncoming(d, c.peer);
-                if(d.type === 'done') alert(`DONE: ${d.inv} dicetak!`);
+                if(d.type === 'done') alert(`NOTIF: ${d.inv} dicetak!`);
             });
             c.on('close', () => {
                 activeConns = activeConns.filter(x => x.peer !== c.peer);
@@ -341,7 +347,7 @@
                 tempFiles.push({ data, isPdf, name: f.name });
                 let item = document.createElement('div');
                 item.className = 'preview-item';
-                if(isPdf) item.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#400; color:white; font-size:0.6rem; font-weight:bold;">PDF READY</div>`;
+                if(isPdf) item.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; background:#400; color:white; font-size:0.6rem; font-weight:bold;">PDF</div>`;
                 else item.innerHTML = `<img src="${data}">`;
                 grid.appendChild(item);
             }
@@ -350,8 +356,7 @@
         function mainAction() {
             if(role === 'operator') {
                 if(tempFiles.length === 0) return alert("PILIH FILE!");
-                activeJob = { files: tempFiles, inv: document.getElementById('inv-in').value };
-                openPrintLogic(activeJob);
+                openPrintLogic({ files: tempFiles, inv: document.getElementById('inv-in').value });
             } else {
                 sendDataStrict();
             }
@@ -406,29 +411,26 @@
         function hideStream(id) { db.transaction("stream", "readwrite").objectStore("stream").get(parseInt(id) || id).onsuccess = e => { let d = e.target.result; d.hidden=true; db.transaction("stream","readwrite").objectStore("stream").put(d); renderStream(); }; }
         function openPrint(id) { db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => { openPrintLogic(e.target.result); }; }
 
-        // --- THE LOGIC FOR PDF PREVIEW IN SETUP MODAL ---
         function openPrintLogic(job) {
             activeJob = job;
             document.getElementById('modal-print').style.display = 'flex';
             document.getElementById('p-inv').value = ""; 
-
-            if(activeBlobURL) URL.revokeObjectURL(activeBlobURL);
+            if(setupBlobURL) URL.revokeObjectURL(setupBlobURL);
 
             if(activeJob.files[0].isPdf) {
-                // PDF MODE
                 const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
-                activeBlobURL = URL.createObjectURL(blob);
-                
+                setupBlobURL = URL.createObjectURL(blob);
                 document.getElementById('p-img').style.display = 'none';
                 document.getElementById('p-setup-pdf-preview').style.display = 'block';
-                document.getElementById('p-setup-pdf-preview').src = activeBlobURL;
+                document.getElementById('p-setup-pdf-preview').src = setupBlobURL;
+                document.getElementById('p-pdf-badge').style.display = 'block';
                 document.getElementById('pdf-custom-options').style.display = 'block';
                 document.getElementById('grid-controls').style.display = 'none';
             } else {
-                // IMAGE MODE
                 document.getElementById('p-img').src = activeJob.files[0].data;
                 document.getElementById('p-img').style.display = 'block';
                 document.getElementById('p-setup-pdf-preview').style.display = 'none';
+                document.getElementById('p-pdf-badge').style.display = 'none';
                 document.getElementById('pdf-custom-options').style.display = 'none';
                 document.getElementById('grid-controls').style.display = 'block';
             }
@@ -437,10 +439,7 @@
 
         function closeModal() {
             document.getElementById('modal-print').style.display = 'none';
-            if(activeBlobURL) {
-                URL.revokeObjectURL(activeBlobURL);
-                activeBlobURL = null;
-            }
+            if(setupBlobURL) { URL.revokeObjectURL(setupBlobURL); setupBlobURL = null; }
         }
 
         async function physicalRotate() {
@@ -468,6 +467,7 @@
             document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * t} PCS (${nx * ny} pcs/lbr)`;
         }
 
+        // --- PDF STABLE ENGINE V11.0 (WITH LABEL) ---
         function doPrintDirect() {
             const invLabel = document.getElementById('p-inv').value;
             const mat = document.getElementById('p-mat').value;
@@ -475,22 +475,27 @@
             let pw = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-pw').value : document.getElementById('p-pdf-paper').value.split(',')[0];
             let ph = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-ph').value : document.getElementById('p-pdf-paper').value.split(',')[1];
             
+            document.getElementById('print-loader').style.display = 'flex';
+            
+            const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
+            const url = URL.createObjectURL(blob);
             let f = document.getElementById('p-frame');
             let fWin = f.contentWindow;
             fWin.document.open();
-            let styles = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0;} .wrap{width:${pw}cm; height:${ph}cm; position:relative; overflow:hidden; page-break-after:always;} iframe{width:100%; height:100%; border:none;} .label{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; font-weight:bold; background:white; border:1px solid #000; padding:3px 15px; z-index:999;}</style>`;
+            let styles = `<style>@page{size:${pw}cm ${ph}cm; margin:0;} body{margin:0; padding:0; background:white;} .wrap{width:${pw}cm; height:${ph}cm; position:relative; overflow:hidden; page-break-after:always;} iframe{width:100%; height:100%; border:none;} .label{position:absolute; bottom:1cm; left:50%; transform:translateX(-50%); font-family:sans-serif; font-size:10pt; font-weight:bold; color:black; background:white; border:1px solid black; padding:3px 15px; z-index:9999;}</style>`;
             let content = "";
             for(let i=0; i<target; i++) {
-                content += `<div class="wrap"><iframe src="${activeBlobURL}"></iframe>${invLabel ? `<div class="label">${invLabel} - ${mat}</div>` : ''}</div>`;
+                content += `<div class="wrap"><iframe src="${url}"></iframe>${invLabel ? `<div class="label">${invLabel} - ${mat}</div>` : ''}</div>`;
             }
             fWin.document.write(styles + content);
             fWin.document.close();
 
             setTimeout(() => { 
+                document.getElementById('print-loader').style.display = 'none';
                 fWin.print(); 
                 saveHistory({ inv: invLabel || 'PDF', cap: `PDF PRINT ${target} LBR`, typeLabel: 'OP_PROD' });
                 closeModal();
-            }, 2000);
+            }, 2500); // Buffer 2.5s for PDF rendering
         }
 
         function doPrint() {
