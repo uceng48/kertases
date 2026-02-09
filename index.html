@@ -1,21 +1,12 @@
---- START OF FILE v11.2.final.okeh.html ---
-
-<!-- 
-  KERTASES PRO V11.2.2 - THE FINAL PRODUCTION (STABLE PDF ENGINE)
-  Fitur: V11.2.1 PDF Engine (Anti-Blank Overlay), Operator Local Print, 
-         Full PDF Setup (Paper/Inv/Qty), Back Navigation, 
-         Centered Grid, Split History.
-  Update: PDF Visual Preview (Auto-Render Page 1)
--->
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V11.2</title>
+    <title>Kertases Pro V11.2.3</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <!-- Tambahan Library PDF.js untuk Preview Gambar -->
+    <!-- Library PDF.js untuk Visual Preview & Render High-Res -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     
@@ -66,10 +57,11 @@
         .msg-header { padding: 8px 12px; background: rgba(255,255,255,0.05); font-size: 0.65rem; display: flex; justify-content: space-between; }
         .msg-body { padding: 12px; }
         .msg-img { width: 100%; height: 180px; object-fit: contain; background: #000; border: 1px solid #222; }
-        .msg-pdf-placeholder { width: 100%; height: 180px; border: 1px solid var(--danger); background: #222; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-direction: column; gap: 10px; cursor: pointer; text-align: center; position: relative; overflow: hidden; }
-        .msg-pdf-placeholder img { width: 100%; height: 100%; object-fit: contain; }
-        .msg-pdf-tag { position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; padding: 2px 6px; font-size: 0.6rem; z-index: 2; }
         
+        .msg-pdf-placeholder { width: 100%; height: 180px; border: 1px solid var(--danger); background: #222; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .msg-pdf-placeholder img { width: 100%; height: 100%; object-fit: contain; }
+        .pdf-tag { position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; padding: 2px 6px; font-size: 0.6rem; font-weight: bold; z-index: 5; }
+
         .msg-inv { color: var(--accent); font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
         .msg-cap { font-size: 0.85rem; color: #aaa; background: #000; padding: 10px; border: 1px solid #222; cursor: pointer; white-space: pre-wrap; line-height: 1.4; }
         .msg-footer { padding: 10px; display: flex; gap: 10px; border-top: 1px solid #222; }
@@ -102,7 +94,7 @@
 
     <div id="login-screen">
         <h1 style="font-size:3rem; color:var(--accent); text-shadow:0 0 20px var(--accent-glow); margin:0;">KERTASES <span style="color:#fff">PRO</span></h1>
-        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V11.2 FINAL PRODUCTION</div>
+        <div style="color:var(--text-dim); letter-spacing:5px; margin-bottom:40px;">V11.2.3 FINAL PRODUCTION</div>
         <div class="role-grid">
             <div class="role-card" onclick="enterRole('admin')">🕶️<br>ADMIN</div>
             <div class="role-card" onclick="enterRole('designer')">🎨<br>DESIGNER</div>
@@ -121,7 +113,7 @@
             <div id="active-role-display" class="role-badge" style="margin-top:40px;">---</div>
             <div id="status-widget" class="status-widget">
                 <div id="status-text" style="font-weight:bold;">OFFLINE</div>
-                <div style="font-size:0.7rem; color:var(--text-dim); margin-top:10px; cursor:pointer;" onclick="changeId()">ID (CLICK CHANGE - 4869):</div>
+                <div style="font-size:0.7rem; color:var(--text-dim); margin-top:10px; cursor:pointer;" onclick="changeId()">YOUR_ID:</div>
                 <div id="my-id-display" style="font-family:'Roboto Mono'; color:var(--accent); font-size:0.85rem;">...</div>
             </div>
             <input type="text" id="target-id" class="cyber-input" placeholder="Target ID">
@@ -160,12 +152,11 @@
         <div class="modal-box">
             <div style="color:var(--accent); font-weight:bold; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">PRODUCTION SETUP</div>
             <div style="display:flex; gap:15px; margin-bottom:20px;">
-                <div id="p-preview-box" style="width:150px; height:150px; background:#000; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <div id="p-preview-box" style="width:150px; height:150px; background:#000; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
                     <img id="p-img" style="max-width:100%; max-height:100%; object-fit:contain;">
-                    <!-- Visual PDF di modal cetak -->
-                    <div id="p-pdf-visual" style="display:none; width:100%; height:100%; position:relative;">
+                    <div id="p-pdf-visual" style="display:none; width:100%; height:100%;">
+                        <div class="pdf-tag">PDF</div>
                         <img id="p-pdf-thumb" style="width:100%; height:100%; object-fit:contain;">
-                        <div style="position:absolute; top:5px; right:5px; background:var(--danger); color:white; font-size:0.6rem; padding:2px 5px; font-weight:bold;">PDF</div>
                     </div>
                 </div>
                 <div style="flex:1;">
@@ -178,7 +169,7 @@
                 </div>
             </div>
 
-            <!-- PDF OPTIONS (STABLE V11.2) -->
+            <!-- PDF OPTIONS -->
             <div id="pdf-custom-options" style="display:none; border:1px solid var(--danger); padding:15px; margin-bottom:20px; background: rgba(255,0,0,0.05);">
                 <div style="color:var(--danger); font-weight:bold; font-size:0.75rem; margin-bottom:10px;">SETTING PDF FULL (NO GRID)</div>
                 <label style="font-size:0.7rem;">UKURAN KERTAS PDF:</label>
@@ -196,7 +187,7 @@
                 <input type="number" id="p-pdf-target" value="1" class="cyber-input" style="font-size:1.5rem; text-align:center; color:var(--success); font-weight:bold; margin-bottom:15px;">
                 <div style="display:flex; gap:10px;">
                     <button class="cyber-btn danger" style="flex:1;" onclick="document.getElementById('modal-print').style.display='none'">BACK / BATAL</button>
-                    <button class="cyber-btn success" style="flex:2;" onclick="doPrintDirect()">CETAK PDF FULL</button>
+                    <button id="btn-do-pdf" class="cyber-btn success" style="flex:2;" onclick="doPrintDirect()">CETAK PDF FULL</button>
                 </div>
             </div>
 
@@ -228,17 +219,20 @@
 
     <!-- MODAL HISTORY -->
     <div id="modal-hist" class="modal">
-        <div class="modal-box" style="width:800px;">
+        <div class="modal-box" style="width:850px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <div style="color:var(--accent); font-weight:bold; font-size:1.2rem;">LOG - <span id="hist-role-title">...</span></div>
-                <button class="cyber-btn success" style="padding:5px 15px; font-size:0.7rem;" onclick="exportHistory()">DOWNLOAD CSV</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="cyber-btn success" style="padding:5px 15px; font-size:0.7rem;" onclick="exportHistory()">DOWNLOAD CSV</button>
+                    <button class="cyber-btn danger" style="padding:5px 15px; font-size:0.7rem;" onclick="clearAllHistory()">CLEAR ALL LOG</button>
+                </div>
             </div>
             <div id="op-tabs" class="hist-tabs" style="display:none;">
                 <div class="hist-tab-btn active" id="tab-recv" onclick="switchHistTab('RECV')">DITERIMA</div>
                 <div class="hist-tab-btn" id="tab-prod" onclick="switchHistTab('PROD')">LOG PRODUKSI</div>
             </div>
             <div style="max-height:400px; overflow-y:auto; background:#000; border:1px solid #222;">
-                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET / STATUS</th><th>PARTNER</th></tr></thead><tbody id="hist-body"></tbody></table>
+                <table><thead><tr><th>WAKTU</th><th>INV</th><th>KET / STATUS</th><th>PARTNER</th><th style="width:80px;">AKSI</th></tr></thead><tbody id="hist-body"></tbody></table>
             </div>
             <button class="cyber-btn" style="width:100%; margin-top:20px;" onclick="toggleHistory()">BACK / KEMBALI</button>
         </div>
@@ -338,22 +332,22 @@
             txt.style.color = activeConns.length > 0 ? "var(--success)" : "var(--danger)";
         }
 
-        // FUNGSI RENDER PREVIEW PDF KE GAMBAR
-        async function getPdfPreview(base64) {
+        // PDF TO IMAGE RENDERER (V11.2.3)
+        async function getPdfPreview(base64, highRes = false) {
             try {
                 const pdfData = atob(base64.split(',')[1]);
                 const loadingTask = pdfjsLib.getDocument({data: pdfData});
                 const pdf = await loadingTask.promise;
                 const page = await pdf.getPage(1);
-                const viewport = page.getViewport({scale: 0.5});
+                const viewport = page.getViewport({scale: highRes ? 3.5 : 0.6});
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
                 await page.render({canvasContext: context, viewport: viewport}).promise;
-                return canvas.toDataURL();
+                return canvas.toDataURL('image/jpeg', highRes ? 0.95 : 0.7);
             } catch (e) {
-                console.error("PDF Preview Error", e);
+                console.error("PDF Render Error", e);
                 return null;
             }
         }
@@ -364,24 +358,12 @@
             for(let f of input.files) {
                 let isPdf = f.type === 'application/pdf';
                 let data = await toBase64(f);
-                let thumb = null;
-
-                if(isPdf) {
-                    thumb = await getPdfPreview(data);
-                }
-
-                tempFiles.push({ data, isPdf, thumb, name: f.name });
+                let thumb = isPdf ? await getPdfPreview(data) : data;
                 
+                tempFiles.push({ data, isPdf, thumb, name: f.name });
                 let item = document.createElement('div');
                 item.className = 'preview-item';
-                if(isPdf) {
-                    item.innerHTML = `
-                        <div class="msg-pdf-tag">PDF</div>
-                        <img src="${thumb || ''}" style="background:#222;">
-                    `;
-                } else {
-                    item.innerHTML = `<img src="${data}">`;
-                }
+                item.innerHTML = `${isPdf ? '<div class="pdf-tag">PDF</div>' : ''}<img src="${thumb}">`;
                 grid.appendChild(item);
             }
         }
@@ -423,7 +405,7 @@
         function saveStream(obj) { db.transaction("stream", "readwrite").objectStore("stream").put(obj); }
         function saveHistory(obj) {
             db.transaction("history", "readwrite").objectStore("history").add({
-                time: new Date().toLocaleString(), inv: obj.inv, typeLabel: obj.typeLabel, partner: obj.fromId || obj.senderId || 'LOCAL', cap: obj.cap || '-', role: role
+                time: new Date().toLocaleString(), inv: obj.inv || '-', typeLabel: obj.typeLabel, partner: obj.fromId || obj.senderId || 'LOCAL', cap: obj.cap || '-', role: role
             });
         }
 
@@ -437,24 +419,16 @@
                     let card = document.createElement('div');
                     card.className = `msg-card ${i.direction}`;
                     
-                    // Logic thumbnail timeline
-                    let thumbContent = "";
-                    if(i.files[0].isPdf) {
-                        thumbContent = `
-                            <div class="msg-pdf-placeholder">
-                                <div class="msg-pdf-tag">PDF</div>
-                                <img src="${i.files[0].thumb || ''}">
-                            </div>`;
-                    } else {
-                        thumbContent = `<img src="${i.files[0].data}" class="msg-img">`;
-                    }
+                    let thumb = i.files[0].isPdf ? 
+                        `<div class="msg-pdf-placeholder"><div class="pdf-tag">PDF</div><img src="${i.files[0].thumb}"></div>` : 
+                        `<img src="${i.files[0].data}" class="msg-img">`;
 
                     let actionBtn = "";
                     if(i.direction === 'in') {
                         if(role === 'operator') actionBtn = `<button class="cyber-btn success" style="width:100%;" onclick="openPrint('${i.id}')">PROSES DATA</button>`;
                         if(role === 'designer') actionBtn = `<button class="cyber-btn" style="width:100%;border-color:var(--secondary);color:var(--secondary);" onclick="downloadFiles('${i.id}')">SAVE ASSET</button>`;
                     }
-                    card.innerHTML = `<div class="msg-header"><span>${i.direction === 'in' ? 'FROM: '+i.from : 'OUTBOX'}</span><span onclick="hideStream('${i.id}')" style="color:var(--danger); cursor:pointer;">[ HAPUS ]</span></div><div class="msg-body">${thumbContent}<div class="msg-inv">${i.inv || '(No Invoice)'}</div><div class="msg-cap" onclick="copyTxt(this.innerText)">${i.cap || '---'}</div></div><div class="msg-footer">${actionBtn}</div>`;
+                    card.innerHTML = `<div class="msg-header"><span>${i.direction === 'in' ? 'FROM: '+i.from : 'OUTBOX'}</span><span onclick="hideStream('${i.id}')" style="color:var(--danger); cursor:pointer;">[ HAPUS ]</span></div><div class="msg-body">${thumb}<div class="msg-inv">${i.inv || '(No Invoice)'}</div><div class="msg-cap" onclick="copyTxt(this.innerText)">${i.cap || '---'}</div></div><div class="msg-footer">${actionBtn}</div>`;
                     area.appendChild(card);
                 });
                 area.scrollTop = area.scrollHeight;
@@ -480,7 +454,7 @@
             if(activeJob.files[0].isPdf) {
                 document.getElementById('p-img').style.display = 'none';
                 document.getElementById('p-pdf-visual').style.display = 'block';
-                document.getElementById('p-pdf-thumb').src = activeJob.files[0].thumb || '';
+                document.getElementById('p-pdf-thumb').src = activeJob.files[0].thumb;
                 document.getElementById('pdf-custom-options').style.display = 'block';
                 document.getElementById('grid-controls').style.display = 'none';
             } else {
@@ -493,108 +467,53 @@
             calc();
         }
 
-        async function physicalRotate() {
-            if(!activeJob || activeJob.files[0].isPdf) return;
-            let img = new Image(); img.src = activeJob.files[0].data; await img.decode();
-            let canvas = document.createElement('canvas'); canvas.width = img.height; canvas.height = img.width;
-            let ctx = canvas.getContext('2d'); ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(90 * Math.PI / 180);
-            ctx.drawImage(img, -img.width/2, -img.height/2);
-            activeJob.files[0].data = canvas.toDataURL('image/png');
-            document.getElementById('p-img').src = activeJob.files[0].data;
-            let wI = document.getElementById('p-w'), hI = document.getElementById('p-h');
-            let oldW = wI.value; wI.value = hI.value; hI.value = oldW;
-            calc();
-        }
-
-        function togglePdfPaperCustom() { document.getElementById('pdf-custom-paper-box').style.display = document.getElementById('p-pdf-paper').value==='custom'?'flex':'none'; }
-        function togglePaperCustom() { document.getElementById('custom-paper-box').style.display = document.getElementById('p-paper').value==='custom'?'flex':'none'; calc(); }
-
-        function calc() {
-            let pw = document.getElementById('p-paper').value === 'custom' ? parseFloat(document.getElementById('p-paper-w').value) : parseFloat(document.getElementById('p-paper').value.split(',')[0]);
-            let ph = document.getElementById('p-paper').value === 'custom' ? parseFloat(document.getElementById('p-paper-h').value) : parseFloat(document.getElementById('p-paper').value.split(',')[1]);
-            let w = parseFloat(document.getElementById('p-w').value) || 1, h = parseFloat(document.getElementById('p-h').value) || 1;
-            let target = parseInt(document.getElementById('p-target').value) || 1;
-            let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
-            document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
-        }
-
-        function b64ToBlob(b64, type) {
-            const byteCharacters = atob(b64.split(',')[1]);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-            return new Blob([new Uint8Array(byteNumbers)], {type: type});
-        }
-
-        // V11.2.1 - PDF ENGINE STABLE (ANTI-BLANK OVERLAY)
-        function doPrintDirect() {
+        // PRINT ENGINE HIGH-RES (STABLE)
+        async function doPrintDirect() {
             const invLabel = document.getElementById('p-inv').value;
             const mat = document.getElementById('p-mat').value;
             const target = parseInt(document.getElementById('p-pdf-target').value) || 1;
-            let pw = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-pw').value : document.getElementById('p-pdf-paper').value.split(',')[0];
-            let ph = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-ph').value : document.getElementById('p-pdf-paper').value.split(',')[1];
-            
-            const blob = b64ToBlob(activeJob.files[0].data, 'application/pdf');
-            const url = URL.createObjectURL(blob);
+            const btn = document.getElementById('btn-do-pdf');
+            const oldTxt = btn.innerText;
 
-            let html = `
-            <style>
-                @page { size: ${pw}cm ${ph}cm; margin: 0; }
-                body { margin: 0; padding: 0; background: #fff; }
-                .sheet {
-                    position: relative;
-                    width: ${pw}cm;
-                    height: ${ph}cm;
-                    page-break-after: always;
-                    overflow: hidden;
-                    display: flex;
-                    flex-direction: column;
+            btn.innerText = "RENDERING..."; btn.disabled = true;
+
+            try {
+                // Render High-Res Image from PDF (3.5x scale)
+                const highResImg = await getPdfPreview(activeJob.files[0].data, true);
+                
+                let pw = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-pw').value : document.getElementById('p-pdf-paper').value.split(',')[0];
+                let ph = document.getElementById('p-pdf-paper').value === 'custom' ? document.getElementById('p-pdf-ph').value : document.getElementById('p-pdf-paper').value.split(',')[1];
+
+                let html = `
+                <style>
+                    @page { size: ${pw}cm ${ph}cm; margin: 0; }
+                    body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; }
+                    .sheet {
+                        position: relative; width: ${pw}cm; height: ${ph}cm;
+                        page-break-after: always; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                    }
+                    .pdf-img { width: 100%; height: calc(100% - 1.2cm); object-fit: contain; }
+                    .footer { height: 1.2cm; width: 100%; display: flex; align-items: center; justify-content: center; font-family: Arial; font-weight: bold; font-size: 11pt; border-top: 1px solid #eee; }
+                </style>`;
+
+                let content = "";
+                for(let i = 0; i < target; i++) {
+                    content += `<div class="sheet"><img src="${highResImg}" class="pdf-img"><div class="footer">${invLabel ? invLabel + ' - ' + mat : ''}</div></div>`;
                 }
-                .pdf-content {
-                    width: 100%;
-                    height: calc(100% - 1.5cm);
-                    border: none;
-                    display: block;
-                }
-                .inv-footer {
-                    height: 1.5cm;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-family: Arial, sans-serif;
-                    font-size: 11pt;
-                    font-weight: bold;
-                    color: #000;
-                    text-transform: uppercase;
-                }
-            </style>`;
 
-            let content = "";
-            for(let i = 0; i < target; i++) {
-                content += `
-                <div class="sheet">
-                    <iframe class="pdf-content" src="${url}#toolbar=0&navpanes=0&scrollbar=0"></iframe>
-                    <div class="inv-footer">${invLabel ? invLabel + ' - ' + mat : ''}</div>
-                </div>`;
-            }
+                let f = document.getElementById('p-frame');
+                f.style.display = "block";
+                let fDoc = f.contentWindow.document;
+                fDoc.open(); fDoc.write(html + content); fDoc.close();
 
-            let f = document.getElementById('p-frame');
-            f.style.display = "block"; f.style.width = "1px"; f.style.height = "1px"; 
-
-            let fDoc = f.contentWindow.document;
-            fDoc.open();
-            fDoc.write(html + content);
-            fDoc.close();
-
-            setTimeout(() => {
-                f.contentWindow.print();
-                f.style.display = "none";
-                saveHistory({ 
-                    inv: invLabel || 'PDF FULL', 
-                    cap: `PDF PRINT ${target} LBR`, 
-                    typeLabel: 'OP_PROD' 
-                });
-                document.getElementById('modal-print').style.display = 'none';
-            }, 2000); 
+                setTimeout(() => {
+                    f.contentWindow.print();
+                    f.style.display = "none";
+                    btn.innerText = oldTxt; btn.disabled = false;
+                    saveHistory({ inv: invLabel || 'PDF FULL', cap: `PDF PRINT ${target} LBR`, typeLabel: 'OP_PROD' });
+                    document.getElementById('modal-print').style.display = 'none';
+                }, 1000);
+            } catch (err) { alert("Render Gagal!"); btn.innerText = oldTxt; btn.disabled = false; }
         }
 
         function doPrint() {
@@ -632,11 +551,7 @@
             
             let finalOutput = "";
             for(let i=0; i<target; i++) {
-                finalOutput += `
-                <div class="sheet">
-                    ${gridHtml}
-                    <div class="inv-footer">${invLabel ? invLabel + ' - ' + material : ''}</div>
-                </div>`;
+                finalOutput += `<div class="sheet">${gridHtml}<div class="inv-footer">${invLabel ? invLabel + ' - ' + material : ''}</div></div>`;
             }
 
             let f = document.getElementById('p-frame').contentWindow;
@@ -644,6 +559,7 @@
             setTimeout(() => { f.print(); saveHistory({ inv: invLabel || 'GRID', cap: `PROD ${nx*ny*target} PCS`, typeLabel: 'OP_PROD' }); document.getElementById('modal-print').style.display='none'; }, 1000);
         }
 
+        // HISTORY MANAGEMENT
         function switchHistTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.hist-tab-btn').forEach(b => b.classList.remove('active'));
@@ -672,20 +588,49 @@
                         if(currentTab === 'RECV' && h.typeLabel==='OP_RECV') show = true;
                         if(currentTab === 'PROD' && h.typeLabel==='OP_PROD') show = true;
                     }
-                    if(show) b.innerHTML += `<tr><td>${h.time}</td><td>${h.inv}</td><td>${h.cap}</td><td>${h.partner}</td></tr>`;
+                    if(show) {
+                        b.innerHTML += `<tr><td>${h.time}</td><td>${h.inv}</td><td>${h.cap}</td><td>${h.partner}</td><td><button class="cyber-btn danger" style="padding:2px 8px; font-size:0.6rem;" onclick="deleteHistory(${h.id})">HAPUS</button></td></tr>`;
+                    }
                 });
             };
+        }
+
+        function deleteHistory(id) {
+            if(confirm("Hapus log ini?")) {
+                let tx = db.transaction("history", "readwrite");
+                tx.objectStore("history").delete(id);
+                tx.oncomplete = () => refreshHistBody();
+            }
+        }
+
+        function clearAllHistory() {
+            if(confirm(`PERINGATAN: Hapus SEMUA log untuk role ${role.toUpperCase()}?`)) {
+                let tx = db.transaction("history", "readwrite");
+                let store = tx.objectStore("history");
+                store.openCursor().onsuccess = e => {
+                    let cursor = e.target.result;
+                    if(cursor) {
+                        if(cursor.value.role === role) cursor.delete();
+                        cursor.continue();
+                    }
+                };
+                tx.oncomplete = () => {
+                    alert("Log " + role.toUpperCase() + " dibersihkan.");
+                    refreshHistBody();
+                };
+            }
         }
 
         function exportHistory() {
             let csv = "WAKTU,INV,KET,PARTNER\n";
             db.transaction("history").objectStore("history").getAll().onsuccess = e => {
-                e.target.result.forEach(h => { csv += `"${h.time}","${h.inv}","${h.cap.replace(/\n/g, ' ')}","${h.partner}"\n`; });
+                e.target.result.forEach(h => { if(h.role === role) csv += `"${h.time}","${h.inv}","${h.cap.replace(/\n/g, ' ')}","${h.partner}"\n`; });
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Log_${role}.csv`; a.click();
             };
         }
 
+        // UTILS
         function downloadFiles(id) {
             db.transaction("stream").objectStore("stream").get(parseInt(id) || id).onsuccess = e => {
                 e.target.result.files.forEach(f => {
@@ -694,6 +639,29 @@
             };
         }
 
+        async function physicalRotate() {
+            if(!activeJob || activeJob.files[0].isPdf) return;
+            let img = new Image(); img.src = activeJob.files[0].data; await img.decode();
+            let canvas = document.createElement('canvas'); canvas.width = img.height; canvas.height = img.width;
+            let ctx = canvas.getContext('2d'); ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(90 * Math.PI / 180);
+            ctx.drawImage(img, -img.width/2, -img.height/2);
+            activeJob.files[0].data = canvas.toDataURL('image/png');
+            document.getElementById('p-img').src = activeJob.files[0].data;
+            let wI = document.getElementById('p-w'), hI = document.getElementById('p-h');
+            let oldW = wI.value; wI.value = hI.value; hI.value = oldW;
+            calc();
+        }
+
+        function togglePdfPaperCustom() { document.getElementById('pdf-custom-paper-box').style.display = document.getElementById('p-pdf-paper').value==='custom'?'flex':'none'; }
+        function togglePaperCustom() { document.getElementById('custom-paper-box').style.display = document.getElementById('p-paper').value==='custom'?'flex':'none'; calc(); }
+        function calc() {
+            let pw = document.getElementById('p-paper').value === 'custom' ? parseFloat(document.getElementById('p-paper-w').value) : parseFloat(document.getElementById('p-paper').value.split(',')[0]);
+            let ph = document.getElementById('p-paper').value === 'custom' ? parseFloat(document.getElementById('p-paper-h').value) : parseFloat(document.getElementById('p-paper').value.split(',')[1]);
+            let w = parseFloat(document.getElementById('p-w').value) || 1, h = parseFloat(document.getElementById('p-h').value) || 1;
+            let target = parseInt(document.getElementById('p-target').value) || 1;
+            let nx = Math.floor(pw/w), ny = Math.floor(ph/h);
+            document.getElementById('p-res').innerText = `TOTAL: ${nx * ny * target} PCS (${nx * ny} pcs/lbr)`;
+        }
         function copyTxt(t) { navigator.clipboard.writeText(t); alert("Copy Sukses!"); }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
     </script>
