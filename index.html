@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Data_Sync</title>
+    <title>Kertases Pro V15.3 - Professional Production Flow</title>
 
     <!-- Library Lokal & CDN (Lengkap) -->
-
     <script src="peerjs.min.js"></script>
     <script src="pdf.min.js"></script>
     <script src="jspdf.umd.min.js"></script>
@@ -140,6 +139,247 @@
 
         .hist-tab-btn { flex:1; border:none; padding:10px; border-radius:10px; cursor:pointer; color: white; background: transparent; transition: 0.3s; }
         .hist-tab-btn.active { background: var(--accent); box-shadow: 0 4px 10px var(--accent-glow); }
+
+        /* CSS BARU: MANUAL LAYOUTER */
+        #modal-manual-layout { 
+            display: none; position: fixed; inset: 0; background: var(--bg); z-index: 5000;
+            grid-template-columns: 350px 1fr;
+        }
+       /* 1. SETTINGAN TEKS & INPUT (JADI LEUTIK & RAPIH) */
+     .layout-sidebar label {
+        font-size: 0.55rem !important; /* Tulisan Label Leutik Pisan */
+        color: var(--text-dim);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+        display: block;
+        text-transform: uppercase;
+    }
+     .layout-sidebar input, 
+    .layout-sidebar select {
+        font-size: 0.7rem !important; /* Tulisan Input Sedeng */
+        height: 28px !important;       /* Kotak Input Pendek */
+        padding: 0 8px !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Tombol-tombol di sidebar diperleutik saeutik */
+    .layout-sidebar .btn {
+        font-size: 0.7rem !important;
+        padding: 6px 12px !important;
+        height: auto !important;
+    }
+        .layout-main { 
+            background: #000; display: flex; flex-direction: column; align-items: center; 
+            padding: 40px; overflow-y: auto; position: relative;
+        }
+        .paper-canvas { 
+            background: white; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transform-origin: top center; transition: 0.3s;
+        }
+        .canvas-item { position: absolute; border: 1px solid transparent; }
+        .canvas-item:hover { border: 1px solid var(--accent); }
+        .canvas-item .item-del {
+            position: absolute; top: -10px; right: -10px; background: var(--danger);
+            color: white; width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+            cursor: pointer; z-index: 10;
+        }
+        .source-thumb-card {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .source-thumb-card:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+        /* --- TAMPILAN GRID MINIMALIS (ANYAR) --- */
+    
+    /* Wadah Daptar Gambar jadi Grid 3 Kolom */
+/* 2. SETTINGAN GAMBAR (JADI 2 KOLOM = GEDE) */
+    #manual-source-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* Ieu kuncina: 2 Kolom (Kiri-Kanan) */
+        gap: 10px !important;  /* Jarak antar gambar */
+        align-content: start;
+        padding-bottom: 20px;
+    }
+
+
+    /* Kartu Gambar Leutik */
+    .source-thumb-card {
+        flex-direction: column !important; /* Susunan ka handap */
+        padding: 4px !important;
+        height: 70px; /* Tinggi kartu dibatesan */
+        justify-content: center;
+        text-align: center;
+        position: relative;
+    }
+
+    /* Gambar di jero kartu */
+    .source-thumb-card img {
+        width: 100% !important; 
+        height: 40px !important; /* Ukuran gambar leutik */
+        margin-bottom: 2px;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    /* Tombol Hapus (X) di Pojok */
+    .mini-del-btn {
+        position: absolute;
+        top: 2px; 
+        right: 2px;
+        width: 16px; height: 16px;
+        background: var(--danger);
+        color: white;
+        border-radius: 50%;
+        font-size: 10px;
+        line-height: 16px;
+        text-align: center;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    /* Ngaran File Leutik Pisan */
+    .mini-label {
+        font-size: 0.55rem; 
+        color: var(--text-dim); 
+        white-space: nowrap; 
+        overflow: hidden; 
+        width: 100%;
+    }
+    /* --- PROFESIONAL LAYOUTER SIDEBAR --- */
+
+* Style Kotak Upload */
+.upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+    transition: 0.3s;
+    margin-bottom: 15px;
+}
+.upload-zone:hover {
+    border-color: var(--accent);
+    background: rgba(99, 102, 241, 0.1);
+}
+.upload-icon { font-size: 1.5rem; margin-bottom: 5px; display: block; }
+.upload-text { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 1px; }
+
+/* Grid Container (Gallery) */
+#manual-source-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Responsif */
+    gap: 10px;
+    align-content: start;
+    padding-right: 5px;
+}
+
+/* Style Kartu Gambar */
+ /* 3. TAMPILAN KARTU GAMBAR (ASSET CARD) */
+    .asset-card {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        height: 120px !important; /* Kartu dijieun jangkung */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+
+.asset-card:hover {
+        border-color: var(--accent); /* Warna ungu mun disorot */
+        transform: scale(1.02);      /* Ngagedean saeutik */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+ /* Area Gambar (Dominan) */
+    .asset-thumb {
+        flex: 1; /* Gambar ngeusian sisa ruang */
+        width: 100%;
+        /* Motif Checkerboard (Catur) Transparan ala Photoshop */
+        background-image: 
+            linear-gradient(45deg, #151515 25%, transparent 25%), 
+            linear-gradient(-45deg, #151515 25%, transparent 25%), 
+            linear-gradient(45deg, transparent 75%, #151515 75%), 
+            linear-gradient(-45deg, transparent 75%, #151515 75%);
+        background-size: 10px 10px;
+        background-color: #0b0b0b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px; /* Padding supaya gambar teu nempel sisi teuing */
+    }
+
+  .asset-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Gambar pas, teu kapotong */
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); /* Kalangkang gambar */
+    }
+
+    /* Info Bar di Bawah (Ngaran & Hapus) */
+    .asset-info {
+        height: 24px !important;
+        background: #080c16;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8px;
+    }
+    
+    .asset-name { 
+        font-size: 0.6rem !important; 
+        color: #94a3b8; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        max-width: 80px;
+    }
+    
+    .asset-del { 
+        font-size: 0.7rem !important; 
+        cursor: pointer; 
+        color: var(--danger);
+        opacity: 0.7;
+    }
+    .asset-del:hover { opacity: 1; transform: scale(1.2); }
+    /* ==================================================
+       FIX SCROLLING SIDEBAR (TAMBAHKEUN DI HANDAP)
+       ================================================== */
+
+    /* 1. SIDEBAR DIKONCI TINGGINA */
+    .layout-sidebar {
+        display: flex !important;
+        flex-direction: column !important; /* Susunan ka handap */
+        height: 100vh !important;        /* Tinggi Full Layar */
+        max-height: 100vh !important;    /* Ulah leuwih ti layar */
+        overflow: hidden !important;     /* Ulah scroll sidebar-na */
+        padding-bottom: 20px !important; /* Mere napas handap saeutik */
+    }
+
+    /* 2. AREA TENGAH (GAMBAR) JADI SCROLLABLE */
+    /* Ieu kuncina: "flex: 1" bakal ngeusian sisa ruang kosong */
+    .layout-sidebar > div[style*="overflow-y:auto"] {
+        flex: 1 !important;             /* Ngeusian rohangan kosong */
+        overflow-y: auto !important;    /* Muncul scrollbar mun pinuh */
+        min-height: 0 !important;       /* Trik CSS supaya scroll jalan bener */
+        border-bottom: 1px solid var(--border); /* Garis batas */
+        margin-bottom: 10px !important;
+    }
+
+    /* 3. TOMBOL PRINT TETEP DI HANDAP */
+    .layout-sidebar > button.btn-success {
+        flex-shrink: 0 !important;      /* Tombol moal jadi gepeng */
+        margin-top: 0 !important;       /* Jarak diatur ku elemen luhurna */
+        z-index: 10 !important;         /* Pastikeun aya di luhur */
+    }
     </style>
 </head>
 <body>
@@ -164,7 +404,7 @@
     <div id="login-screen">
         <div class="login-box glass-panel">
             <h1 style="font-family: 'Outfit'; font-size: 2.5rem; margin: 0; background: linear-gradient(to right, #6366f1, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">KERTASES PRO</h1>
-            <p style="color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px;">Production Flow</p>
+            <p style="color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px;">PRODUCTION FLOW V15.3</p>
             
             <div class="role-grid">
                 <div class="role-card" onclick="enterRole('admin')"><i>🕶️</i><span>ADMIN</span></div>
@@ -234,7 +474,10 @@
             <!-- CONTROL PANEL -->
             <div class="control-panel glass-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <span style="font-weight: 700; font-family: 'Outfit';">TRANSMIT ASSETS</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight: 700; font-family: 'Outfit';">TRANSMIT ASSETS</span>
+                        <button id="btn-open-layouter" class="btn btn-mini btn-outline" style="display:none;" onclick="openManualLayouter()">🧩</button>
+                    </div>
                     <button class="btn btn-mini btn-outline" onclick="toggleSelectAllRows()">ALL</button>
                 </div>
                 <div id="job-list"></div>
@@ -242,6 +485,91 @@
                 <button id="btn-action-main" class="btn btn-primary" style="width: 100%; margin-top: 15px; height: 50px;" onclick="mainAction()">PROCESS DATA</button>
                 <input type="file" id="job-file-in" multiple style="display:none;" onchange="handleFileSelect(this)">
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: MANUAL LAYOUTER (OPERATOR) -->
+    <div id="modal-manual-layout">
+       <div class="layout-sidebar glass-panel" style="padding: 15px; width: 300px;">
+    
+    <!-- HEADER -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid var(--border);">
+        <button class="btn btn-mini btn-outline" style="padding:4px 8px; font-size:0.6rem;" onclick="closeManualLayouter()">⬅️ BACK</button>
+        <span style="font-family:'Outfit'; color:var(--accent); font-weight:bold; font-size:0.8rem;">LAYOUTER</span>
+    </div>
+
+    <!-- 1. UPLOAD (Compact) -->
+    <div class="upload-zone" onclick="document.getElementById('manual-upload-in').click()">
+        <span class="upload-icon">📂</span>
+        <span class="upload-text">IMPORT IMAGES</span>
+        <input type="file" id="manual-upload-in" hidden multiple onchange="handleManualUpload(this)">
+    </div>
+
+    <!-- 2. UKURAN & ROTASI (Sabariseun Ameh Hemat Tempat) -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr 0.8fr; gap:5px; margin-bottom:8px;">
+        <div>
+            <label>WIDTH (CM)</label>
+            <input type="number" id="m-w" value="10" step="0.1" class="cyber-input">
+        </div>
+        <div>
+            <label>HEIGHT (CM)</label>
+            <input type="number" id="m-h" value="10" step="0.1" class="cyber-input">
+        </div>
+        <div>
+            <label>ROT</label>
+            <select id="m-rot" class="cyber-input" style="padding:0 4px;">
+                <option value="0">0°</option><option value="90">90°</option>
+                <option value="180">180°</option><option value="270">270°</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 3. GAP & KRES (Disatukeun dina Box) -->
+    <div style="background:rgba(255,255,255,0.03); padding:8px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">
+        <!-- Gap -->
+        <div style="display:flex; align-items:flex-end; gap:5px; margin-bottom:8px;">
+            <div style="flex:1;">
+                <label>GAP JARAK (CM)</label>
+                <input type="number" id="m-gap" value="0.5" step="0.1" class="cyber-input">
+            </div>
+            <button class="btn btn-outline" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size:0.6rem;" onclick="document.getElementById('m-gap').value=0" title="Nol">0</button>
+        </div>
+
+        <!-- Kres Config -->
+        <div style="border-top:1px dashed var(--border); padding-top:6px; margin-top:6px;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:5px;">
+                <input type="checkbox" id="m-use-kres" style="transform:scale(1);">
+                <label for="m-use-kres" style="margin:0; cursor:pointer; color:var(--text);">CROP MARKS (KRES)</label>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <div><label>TEBAL (MM)</label><input type="number" id="m-kres-tebal" value="0.3" step="0.1" class="cyber-input"></div>
+                <div><label>PANJANG (MM)</label><input type="number" id="m-kres-panjang" value="5" step="1" class="cyber-input"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. LIST GAMBAR (Akan jadi 2 Kolom Besar) -->
+    <div style="flex:1; overflow-y:auto; border-top:1px solid var(--border); padding-top:10px;">
+        <label style="color:var(--accent); font-weight:bold; margin-bottom:5px;">ASSETS GALLERY:</label>
+        <div id="manual-source-list">
+            <!-- Gambar asup didieu -->
+        </div>
+    </div>
+
+    <!-- 5. TOMBOL PRINT -->
+    <button class="btn btn-success" style="width:100%; margin-top:10px; height:35px; font-size:0.75rem;" onclick="printManualCanvas()">🖨️ PRINT LAYOUT</button>
+</div>
+
+        <div class="layout-main">
+            <div style="margin-bottom:20px; display:flex; gap:15px; align-items:center; background:rgba(0,0,0,0.5); padding:10px 20px; border-radius:50px; border:1px solid var(--border);">
+                <select id="m-paper" class="cyber-input" style="width:150px;" onchange="updatePaperCanvas()">
+                    <option value="32,48">A3+ (32x48)</option>
+                    <option value="21,29.7">A4 (21x29.7)</option>
+                </select>
+                <button class="btn btn-mini btn-danger" onclick="clearManualCanvas()">🗑️ CLEAR ALL</button>
+                <span style="font-size:0.7rem; color:var(--text-dim);">TIPS: KLIK GAMBAR DI KIRI UNTUK MENYUSUN KE KERTAS</span>
+            </div>
+            <div id="paper-canvas" class="paper-canvas"></div>
         </div>
     </div>
 
@@ -274,14 +602,28 @@
                     <input type="number" id="p-custom-w" class="cyber-input" placeholder="W" oninput="calcGrid()"><input type="number" id="p-custom-h" class="cyber-input" placeholder="H" oninput="calcGrid()">
                 </div>
                 <div id="grid-controls" style="display:none; border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: flex-end;">
-                        <div><label style="font-size: 0.6rem;">L (cm)</label><input type="number" id="p-grid-w" value="5" step="0.1" class="cyber-input" oninput="calcGrid()"></div>
-                        <div><label style="font-size: 0.6rem;">T (cm)</label><input type="number" id="p-grid-h" value="5" step="0.1" class="cyber-input" oninput="calcGrid()"></div>
-                        <div><label style="font-size: 0.6rem;">GAP</label><input type="number" id="p-grid-gap" value="0" step="0.1" class="cyber-input" oninput="calcGrid()"></div>
-                        <button class="btn btn-outline" onclick="physicalRotate()">🔄</button>
-                    </div>
-                    <div id="grid-res-box" style="text-align: center; color: var(--success); font-size: 0.8rem; margin-top: 10px; font-weight: 700;">HASIL: -</div>
-                </div>
+    <!-- BAGIAN LAMA (UKURAN & GAP) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: flex-end;">
+        <div><label style="font-size: 0.6rem;">L (cm)</label><input type="number" id="p-grid-w" value="5" step="0.1" class="cyber-input" oninput="calcGrid()"></div>
+        <div><label style="font-size: 0.6rem;">T (cm)</label><input type="number" id="p-grid-h" value="5" step="0.1" class="cyber-input" oninput="calcGrid()"></div>
+        <div><label style="font-size: 0.6rem;">GAP</label><input type="number" id="p-grid-gap" value="0" step="0.1" class="cyber-input" oninput="calcGrid()"></div>
+        <button class="btn btn-outline" onclick="physicalRotate()">🔄</button>
+    </div>
+
+    <!-- IEU TAMBAHAN ANYARNA (KRES SETTINGS) -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);">
+        <div>
+            <label style="font-size:0.6rem; color:var(--text-dim)">TEBAL KRES (mm)</label>
+            <input type="number" id="p-grid-kres-thick" value="0.2" step="0.1" class="cyber-input">
+        </div>
+        <div>
+            <label style="font-size:0.6rem; color:var(--text-dim)">PANJANG (mm)</label>
+            <input type="number" id="p-grid-kres-len" value="5" step="1" class="cyber-input">
+        </div>
+    </div>
+    
+    <div id="grid-res-box" style="text-align: center; color: var(--success); font-size: 0.8rem; margin-top: 10px; font-weight: 700;">HASIL: -</div>
+</div>
                 <div style="margin-top: 20px; text-align: center;">
                     <label style="font-size: 0.7rem; color: var(--text-dim);">QTY LEMBAR</label>
                     <input type="number" id="p-pdf-target" value="1" class="cyber-input" style="font-size: 1.5rem; text-align: center; color: var(--success); font-weight: 800;" oninput="calcGrid()">
@@ -337,6 +679,9 @@
         let tempJobs = [], activeJobIdx = null, selectedInboxes = [], currentPrintMode = 'full', activeJob = null;
         let currentPromptTask = null;
 
+        // STATE MANUAL LAYOUTER
+        let manualSources = [], canvasItems = [], currentX = 0, currentY = 0, maxRowH = 0;
+
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         // DATABASE
@@ -390,7 +735,10 @@
             document.getElementById('app-layout').style.display = 'flex';
             document.getElementById('active-role-display').innerText = role.toUpperCase();
             document.getElementById('my-id-display').innerText = myId;
-            if(role === 'operator') document.getElementById('batch-bar').style.display = 'flex';
+            if(role === 'operator') {
+                document.getElementById('batch-bar').style.display = 'flex';
+                document.getElementById('btn-open-layouter').style.display = 'inline-flex';
+            }
             initPeer(); 
             addNewJob(); 
             setTimeout(renderStream, 500);
@@ -451,6 +799,15 @@
 
         // --- CONTROL PANEL ---
         function addNewJob() { tempJobs.push({ files: [], inv: '', cap: '', selected: true }); renderJobs(); }
+        
+        // FITUR HAPUS ROW
+        function removeJobRow(idx) {
+            if(tempJobs.length > 1) {
+                tempJobs.splice(idx, 1);
+                renderJobs();
+            } else { alert("Minimal 1 baris!"); }
+        }
+
         function triggerFileSelect(idx) { activeJobIdx = idx; document.getElementById('job-file-in').click(); }
         async function handleFileSelect(input) {
             if(!input.files.length || activeJobIdx === null) return;
@@ -470,8 +827,9 @@
                 row.className = `job-row ${job.selected ? 'checked' : ''}`;
                 let thumbs = job.files.map((f, fIdx) => `<div class="thumb-box"><img src="${f.thumb}">${f.isPdf ? '<div class="pdf-tag">PDF</div>':''}<div onclick="removeFile(${jIdx}, ${fIdx})" style="position:absolute; top:2px; left:2px; background:var(--danger); color:white; font-size:10px; padding:2px; cursor:pointer; border-radius:50%; width:16px; height:16px; text-align:center; line-height:12px;">×</div></div>`).join('');
                 row.innerHTML = `
+                    <div onclick="removeJobRow(${jIdx})" style="position:absolute; top:12px; left:12px; background:var(--danger); color:white; font-size:0.6rem; font-weight:bold; padding:2px 6px; border-radius:6px; cursor:pointer; z-index:10;">HAPUS BARIS</div>
                     <input type="checkbox" style="position:absolute; top:15px; right:15px; transform:scale(1.4);" ${job.selected ? 'checked' : ''} onchange="tempJobs[${jIdx}].selected=this.checked; renderJobs()">
-                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">${thumbs}<div class="thumb-box" style="cursor:pointer; border:1px dashed var(--accent); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.5rem;" onclick="triggerFileSelect(${jIdx})">+</div></div>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; padding-top:20px;">${thumbs}<div class="thumb-box" style="cursor:pointer; border:1px dashed var(--accent); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.5rem;" onclick="triggerFileSelect(${jIdx})">+</div></div>
                     <input type="text" class="cyber-input" placeholder="INV #" value="${job.inv}" oninput="tempJobs[${jIdx}].inv=this.value" style="margin-bottom:8px; font-weight:700;">
                     <textarea class="cyber-input" placeholder="KETERANGAN..." oninput="tempJobs[${jIdx}].cap=this.value">${job.cap}</textarea>
                 `;
@@ -502,12 +860,58 @@
             }
         }
 
-        function handleIncoming(d, from) {
-            let label = (role==='designer') ? "DSN_RECV" : "OP_RECV";
-            saveStream({ ...d, direction: 'in', from: from, hidden: false });
-            d.jobs.forEach(job => saveHistory({ inv: job.inv, cap: job.cap, thumb: job.files[0]?.thumb, typeLabel: label, partner: from }));
-            renderStream(); document.getElementById('notif-sound').play().catch(()=>{});
-        }
+       function handleIncoming(d, from) {
+    // 1. Nangtukeun label pikeun log riwayat (History)
+    // Upami urang login salaku desainer, labelna DSN_RECV, upami operator OP_RECV
+    let label = (role === 'designer') ? "DSN_RECV" : "OP_RECV";
+
+    // 2. Nyiapkeun data objek anu bakal disimpen ka IndexedDB
+    // Urang tambahkeun properti anyar:
+    // - direction: 'in' (tandana data asup)
+    // - from: ID anu ngirim
+    // - reprintCount: 0 (awalna kénéh, tacan aya cetak ulang)
+    let streamData = { 
+        ...d, 
+        direction: 'in', 
+        from: from, 
+        hidden: false, 
+        reprintCount: 0, // Kunci utama pikeun fitur cetak ulang
+        status: 'pending' // Status awal sateuacan diproses ku operator
+    };
+
+    // 3. Simpen ka database stream (IndexedDB)
+    saveStream(streamData);
+
+    // 4. Catet unggal "Job" anu aya dina pakét kiriman ka Log History
+    if (d.jobs && Array.isArray(d.jobs)) {
+        d.jobs.forEach(job => {
+            saveHistory({ 
+                inv: job.inv || '-', 
+                cap: job.cap || '-', 
+                thumb: job.files[0]?.thumb || null, 
+                typeLabel: label, 
+                partner: from 
+            });
+        });
+    }
+
+    // 5. Refresh tampilan timeline
+    // Kusabab aya logika filter dina renderStream, data anyar ieu otomatis
+    // muncul dina tab ALL, ADMIN, atanapi DESIGNER (Inbox)
+    renderStream(); 
+
+    // 6. Maénkeun sora notifikasi
+    const notifSound = document.getElementById('notif-sound');
+    if (notifSound) {
+        notifSound.currentTime = 0; // Balikkeun deui ka detik 0
+        notifSound.play().catch(err => {
+            console.log("Sora diblokir ku browser, kedah aya interaksi pangguna heula.");
+        });
+    }
+    
+    // 7. Opsional: Tambahan log dina konsol pikeun debugging
+    console.log(`📥 Data asup ti ${from}. Jumlah job: ${d.jobs.length}`);
+}
 
         function handleStatusUpdate(d) {
             db.transaction("stream", "readwrite").objectStore("stream").get(d.msgId).onsuccess = e => {
@@ -528,55 +932,84 @@
         }
 
         function renderStream() {
-            const area = document.getElementById('stream-area'); area.innerHTML = '';
-            db.transaction("stream").objectStore("stream").getAll().onsuccess = e => {
-                e.target.result.forEach(msg => {
-                    if(msg.hidden) return;
-                    if(role === 'admin' && msg.direction === 'in') return;
-                    if(role === 'operator' && msg.direction === 'out' && msg.status !== 'printed') return;
-                    
-                    if(timelineFilter === 'admin' && msg.senderRole !== 'admin') return;
-                    if(timelineFilter === 'designer' && msg.senderRole !== 'designer') return;
-                    if(timelineFilter === 'printed' && msg.status !== 'printed') return;
+    const area = document.getElementById('stream-area');
+    area.innerHTML = '';
 
-                    const isSelected = selectedInboxes.includes(msg.id);
-                    let card = document.createElement('div');
-                    card.className = `msg-card ${msg.direction} ${msg.status === 'printed' ? 'printed' : ''} ${isSelected ? 'selected' : ''}`;
-                    
-                    let printedMark = msg.status === 'printed' ? `<div class="printed-badge">DICETAK</div>` : '';
-                    let header = `<div class="msg-header"><span>FROM: ${msg.from || 'ME'} <span class="role-tag">${msg.senderRole}</span></span> ${printedMark} <span onclick="hideStream(${msg.id})" style="cursor:pointer; color:var(--danger); font-weight:bold;">×</span></div>`;
-                    let body = document.createElement('div'); body.className = 'msg-body';
-                    
-                    msg.jobs.forEach((job, jIdx) => {
-                        let jobWrap = document.createElement('div');
-                        jobWrap.innerHTML = `
-                            <input type="text" class="card-edit-inv" value="${job.inv||''}" onchange="updateStreamContent(${msg.id}, ${jIdx}, 'inv', this.value)">
-                            <textarea class="card-edit-cap" onchange="updateStreamContent(${msg.id}, ${jIdx}, 'cap', this.value)">${job.cap||''}</textarea>
-                        `;
-                        job.files.forEach((f, fIdx) => {
-                            let fWrap = document.createElement('div'); fWrap.className = 'thumb-row-wrap';
-                            fWrap.innerHTML = `
-                                <div class="thumb-box"><img src="${f.thumb}">${f.isPdf?'<div class="pdf-tag">PDF</div>':''}</div>
-                                <button class="btn btn-mini btn-outline" style="color:var(--success); flex:1;" onclick="downloadAsset('${f.data}', '${job.inv||'file'}_${fIdx}')">💾 SAVE</button>
-                            `;
-                            jobWrap.appendChild(fWrap);
-                        });
-                        body.appendChild(jobWrap);
-                    });
-                    
-                    let footer = document.createElement('div'); footer.style.cssText = "padding:12px; display:flex; gap:10px; border-top:1px solid var(--border);";
-                    if(msg.direction==='in' && role==='operator') {
-                        footer.innerHTML = `
-                            <button class="btn btn-success btn-mini" style="flex:2;" onclick="openPrintSingle(${msg.id})">CETAK</button>
-                            <button class="btn ${isSelected ? 'btn-primary' : 'btn-outline'} btn-mini" onclick="toggleSelect(${msg.id})">${isSelected ? '✅ TERPILIH' : 'BATCH'}</button>
-                        `;
-                    }
-                    card.innerHTML = header; card.appendChild(body); card.appendChild(footer);
-                    area.appendChild(card);
+    db.transaction("stream").objectStore("stream").getAll().onsuccess = e => {
+        const results = e.target.result;
+
+        results.forEach(msg => {
+            if (msg.hidden) return;
+
+            // Logika Tab (Sami sareng sateuacanna)
+            if (timelineFilter === 'printed') {
+                if (msg.status !== 'printed') return;
+            } else {
+                if (msg.status === 'printed') return;
+                if (timelineFilter === 'admin' && msg.senderRole !== 'admin') return;
+                if (timelineFilter === 'designer' && msg.senderRole !== 'designer') return;
+            }
+
+            if (role === 'admin' && msg.direction === 'in') return;
+
+            const isSelected = selectedInboxes.includes(msg.id);
+            let card = document.createElement('div');
+            card.className = `msg-card ${msg.direction} ${msg.status === 'printed' ? 'printed' : ''} ${isSelected ? 'selected' : ''}`;
+            
+            // --- BAGIAN BADGE (Aya tambahan keur REPRINT) ---
+            let printedMark = msg.status === 'printed' ? `<div class="printed-badge">DICETAK</div>` : '';
+            // Mun aya reprint, munculkeun badge warna konéng
+            let reprintMark = (msg.reprintCount > 0) ? `<div class="printed-badge" style="background:var(--warning); margin-left:5px;">REPRINT [${msg.reprintCount}x]</div>` : '';
+            
+            let header = `
+                <div class="msg-header">
+                    <div style="display:flex; align-items:center;">
+                        <span>FROM: ${msg.from || 'ME'} <span class="role-tag">${msg.senderRole}</span></span> 
+                        ${printedMark} ${reprintMark}
+                    </div>
+                    <span onclick="hideStream(${msg.id})" style="cursor:pointer; color:var(--danger); font-weight:bold; padding:0 5px;">×</span>
+                </div>`;
+            
+            // Body Card (Sami sareng nu sateuacanna)
+            let body = document.createElement('div'); 
+            body.className = 'msg-body';
+            msg.jobs.forEach((job, jIdx) => {
+                let jobWrap = document.createElement('div');
+                jobWrap.style.marginBottom = "15px";
+                jobWrap.innerHTML = `<input type="text" class="card-edit-inv" value="${job.inv||''}" onchange="updateStreamContent(${msg.id}, ${jIdx}, 'inv', this.value)"><textarea class="card-edit-cap" onchange="updateStreamContent(${msg.id}, ${jIdx}, 'cap', this.value)">${job.cap||''}</textarea>`;
+                job.files.forEach((f, fIdx) => {
+                    jobWrap.innerHTML += `<div class="thumb-row-wrap"><div class="thumb-box"><img src="${f.thumb}">${f.isPdf ? '<div class="pdf-tag">PDF</div>' : ''}</div><div style="flex:1; display:flex; flex-direction:column; gap:5px;"><span style="font-size:0.6rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:150px;">${f.name || 'file_asset'}</span><button class="btn btn-mini btn-outline" style="color:var(--success); border-color:rgba(16,185,129,0.3);" onclick="downloadAsset('${f.data}', '${job.inv||'file'}_${fIdx}')">💾 SAVE</button></div></div>`;
                 });
-                area.scrollTop = area.scrollHeight;
-            };
-        }
+                body.appendChild(jobWrap);
+            });
+            
+            // --- BAGIAN TOMBOL (Tambahan Tombol Cetak Ulang) ---
+            let footer = document.createElement('div'); 
+            footer.style.cssText = "padding:12px; display:flex; gap:10px; border-top:1px solid rgba(255,255,255,0.05);";
+            
+            if(msg.direction === 'in' && role === 'operator') {
+                if(msg.status !== 'printed') {
+                    // Tampilan Inbox Biasa
+                    footer.innerHTML = `
+                        <button class="btn btn-success btn-mini" style="flex:2;" onclick="openPrintSingle(${msg.id})">🖨️ CETAK</button>
+                        <button class="btn ${isSelected ? 'btn-primary' : 'btn-outline'} btn-mini" onclick="toggleSelect(${msg.id})">${isSelected ? '✅ READY' : '➕ BATCH'}</button>
+                    `;
+                } else {
+                    // Tampilan dina tab "DATA CETAK" (Aya Cetak Ulang)
+                    footer.innerHTML = `
+                        <button class="btn btn-outline btn-mini" style="flex:1; border-color:var(--warning); color:var(--warning);" onclick="openPrintSingle(${msg.id})">🔄 CETAK ULANG</button>
+                    `;
+                }
+            }
+            
+            card.innerHTML = header; 
+            card.appendChild(body); 
+            if(footer.innerHTML !== "") card.appendChild(footer);
+            area.appendChild(card);
+        });
+        area.scrollTop = area.scrollHeight;
+    };
+}
 
         function updateStreamContent(msgId, jobIdx, field, value) {
             db.transaction("stream", "readwrite").objectStore("stream").get(msgId).onsuccess = e => {
@@ -663,72 +1096,153 @@
         }
 
         function executeGridPrint() {
-            const btn = document.getElementById('btn-do-print'); btn.innerText = "PROSES GRID..."; btn.disabled = true;
-            let pw, ph;
-            if(document.getElementById('p-pdf-paper').value === 'custom') {
-                pw = parseFloat(document.getElementById('p-custom-w').value); ph = parseFloat(document.getElementById('p-custom-h').value);
-            } else {
-                let p = document.getElementById('p-pdf-paper').value.split(','); pw = parseFloat(p[0]); ph = parseFloat(p[1]);
-            }
-            let w = parseFloat(document.getElementById('p-grid-w').value), h = parseFloat(document.getElementById('p-grid-h').value), gap = parseFloat(document.getElementById('p-grid-gap').value) || 0, target = parseInt(document.getElementById('p-pdf-target').value) || 1, inv = document.getElementById('p-inv-edit').value, mat = document.getElementById('p-mat').value;
-            let nx = Math.floor((pw + gap) / (w + gap)), ny = Math.floor((ph + gap) / (h + gap)), halfGap = gap / 2;
+    const btn = document.getElementById('btn-do-print'); btn.innerText = "PROSES GRID..."; btn.disabled = true;
+    
+    // NYANDAK DATA KERTAS
+    let pw, ph;
+    if(document.getElementById('p-pdf-paper').value === 'custom') {
+        pw = parseFloat(document.getElementById('p-custom-w').value); 
+        ph = parseFloat(document.getElementById('p-custom-h').value);
+    } else {
+        let p = document.getElementById('p-pdf-paper').value.split(','); 
+        pw = parseFloat(p[0]); ph = parseFloat(p[1]);
+    }
 
-            const mk = (t, l, dir) => {
-                let hStyle = `position:absolute; top:-0.1mm; width:5mm; height:0.2mm; background:#000;`, vStyle = `position:absolute; left:-0.1mm; width:0.2mm; height:5mm; background:#000;`, parts = "";
-                if(dir.includes('r')) parts += `<div style="${hStyle} left:0;"></div>`; if(dir.includes('l')) parts += `<div style="${hStyle} left:-5mm;"></div>`; if(dir.includes('d')) parts += `<div style="${vStyle} top:0;"></div>`; if(dir.includes('u')) parts += `<div style="${vStyle} top:-5mm;"></div>`;
-                return `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0; z-index:100;">${parts}</div>`;
+    // NYANDAK DATA UKURAN
+    let w = parseFloat(document.getElementById('p-grid-w').value), 
+        h = parseFloat(document.getElementById('p-grid-h').value), 
+        gap = parseFloat(document.getElementById('p-grid-gap').value) || 0, 
+        target = parseInt(document.getElementById('p-pdf-target').value) || 1, 
+        inv = document.getElementById('p-inv-edit').value, 
+        mat = document.getElementById('p-mat').value;
+
+    // NYANDAK SETTINGAN KRES (ANYAR)
+    let kresTebal = parseFloat(document.getElementById('p-grid-kres-thick').value) || 0.2;
+    let kresPanjang = parseFloat(document.getElementById('p-grid-kres-len').value) || 5;
+
+    let nx = Math.floor((pw + gap) / (w + gap)), 
+        ny = Math.floor((ph + gap) / (h + gap)), 
+        halfGap = gap / 2;
+
+    // FUNGSI NYIEUN GARIS KRES (UPDATE RUMUS)
+    const mk = (t, l, dir) => {
+        // Horizontal: Panjang = kresPanjang, Tinggi = kresTebal
+        // Vertical: Lebar = kresTebal, Tinggi = kresPanjang
+        // Urang make logic centering sakedik (top: -halfTebal)
+        
+        let halfTebal = kresTebal / 2;
+        
+        let hStyle = `position:absolute; top:-${halfTebal}mm; width:${kresPanjang}mm; height:${kresTebal}mm; background:#000;`;
+        let vStyle = `position:absolute; left:-${halfTebal}mm; width:${kresTebal}mm; height:${kresPanjang}mm; background:#000;`;
+        
+        let parts = "";
+        
+        // Logic arah garis (Kanan, Kiri, Bawah, Atas)
+        // Lamun ka kiri (l), geser posisi left sajauh panjang garis (minus)
+        // Lamun ka atas (u), geser posisi top sajauh panjang garis (minus)
+        
+        if(dir.includes('r')) parts += `<div style="${hStyle} left:0;"></div>`;
+        if(dir.includes('l')) parts += `<div style="${hStyle} left:-${kresPanjang}mm;"></div>`; 
+        if(dir.includes('d')) parts += `<div style="${vStyle} top:0;"></div>`;
+        if(dir.includes('u')) parts += `<div style="${vStyle} top:-${kresPanjang}mm;"></div>`;
+
+        return `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0; z-index:100;">${parts}</div>`;
+    };
+
+    // CSS UTAMA
+    let html = `<style>
+        @page { size: ${pw}cm ${ph}cm; margin: 0; } 
+        body { margin: 0; } 
+        .sheet { width: ${pw}cm; height: ${ph}cm; display: flex; align-items: center; justify-content: center; page-break-after: always; position: relative; } 
+        .grid-container { display: grid; grid-template-columns: repeat(${nx}, ${w}cm); grid-gap: ${gap}cm; position: relative; } 
+        .cell { position: relative; width: ${w}cm; height: ${h}cm; } 
+        .cell img { width: 100%; height: 100%; object-fit: fill; } 
+        .footer { position: absolute; bottom: 0.3cm; width: 100%; text-align: center; font-weight: bold; font-family: sans-serif; font-size: 10pt; }
+    </style>`;
+
+    let cells = ""; 
+    for(let row=0; row<ny; row++) {
+        for(let col=0; col<nx; col++) {
+            let offset = halfGap > 0 ? `-${halfGap}cm` : "0";
+            
+            // Logic nunjukkeun jenis kres dumasar posisi (Pojok/Tengah)
+            const getType = (r, c) => { 
+                if(r===0 && c===0) return "rd"; 
+                if(r===0 && c===nx) return "ld"; 
+                if(r===ny && c===0) return "ru"; 
+                if(r===ny && c===nx) return "lu"; 
+                if(r===0) return "lrd"; 
+                if(r===ny) return "lru"; 
+                if(c===0) return "rdu"; 
+                if(c===nx) return "ldu"; 
+                return "lrdu"; 
             };
-
-            let html = `<style>@page { size: ${pw}cm ${ph}cm; margin: 0; } body { margin: 0; } .sheet { width: ${pw}cm; height: ${ph}cm; display: flex; align-items: center; justify-content: center; page-break-after: always; position: relative; } .grid-container { display: grid; grid-template-columns: repeat(${nx}, ${w}cm); grid-gap: ${gap}cm; position: relative; } .cell { position: relative; width: ${w}cm; height: ${h}cm; } .cell img { width: 100%; height: 100%; object-fit: fill; } .footer { position: absolute; bottom: 0.3cm; width: 100%; text-align: center; font-weight: bold; font-family: sans-serif; font-size: 10pt; }</style>`;
-            let cells = ""; 
-            for(let row=0; row<ny; row++) {
-                for(let col=0; col<nx; col++) {
-                    let offset = halfGap > 0 ? `-${halfGap}cm` : "0";
-                    const getType = (r, c) => { if(r===0 && c===0) return "rd"; if(r===0 && c===nx) return "ld"; if(r===ny && c===0) return "ru"; if(r===ny && c===nx) return "lu"; if(r===0) return "lrd"; if(r===ny) return "lru"; if(c===0) return "rdu"; if(c===nx) return "ldu"; return "lrdu"; };
-                    let marks = mk(offset, offset, getType(row, col));
-                    if(col === nx-1) marks += mk(offset, `calc(100% + ${halfGap}cm)`, getType(row, col+1));
-                    if(row === ny-1) {
-                        marks += mk(`calc(100% + ${halfGap}cm)`, offset, getType(row+1, col));
-                        if(col === nx-1) marks += mk(`calc(100% + ${halfGap}cm)`, `calc(100% + ${halfGap}cm)`, getType(row+1, col+1));
-                    }
-                    cells += `<div class="cell"><img src="${activeJob.files[0].data}">${marks}</div>`;
-                }
+            
+            let marks = mk(offset, offset, getType(row, col));
+            
+            if(col === nx-1) marks += mk(offset, `calc(100% + ${halfGap}cm)`, getType(row, col+1));
+            
+            if(row === ny-1) {
+                marks += mk(`calc(100% + ${halfGap}cm)`, offset, getType(row+1, col));
+                if(col === nx-1) marks += mk(`calc(100% + ${halfGap}cm)`, `calc(100% + ${halfGap}cm)`, getType(row+1, col+1));
             }
-            let content = ""; 
-            for(let i=0; i<target; i++) content += `<div class="sheet"><div class="grid-container">${cells}</div><div class="footer">${inv} - ${mat}</div></div>`;
-            finishPrint(html + content, inv, target, `GRID (${nx*ny}x${target})`);
+            cells += `<div class="cell"><img src="${activeJob.files[0].data}">${marks}</div>`;
         }
+    }
+    
+    let content = ""; 
+    for(let i=0; i<target; i++) content += `<div class="sheet"><div class="grid-container">${cells}</div><div class="footer">${inv} - ${mat}</div></div>`;
+    
+    finishPrint(html + content, inv, target, `GRID (${nx*ny}x${target})`);
+}
 
         function finishPrint(fullHtml, inv, qty, mode) {
-            let f = document.getElementById('p-frame'); f.style.display = "block";
-            f.contentWindow.document.open(); f.contentWindow.document.write(fullHtml); f.contentWindow.document.close();
-            setTimeout(() => {
-                f.contentWindow.print(); f.style.display = "none";
-                document.getElementById('btn-do-print').innerText = "MULAI CETAK"; document.getElementById('btn-do-print').disabled = false;
+    let f = document.getElementById('p-frame');
+    f.style.display = "block";
+    f.contentWindow.document.open();
+    f.contentWindow.document.write(fullHtml);
+    f.contentWindow.document.close();
+    
+    setTimeout(() => {
+        f.contentWindow.print();
+        f.style.display = "none";
+        document.getElementById('btn-do-print').innerText = "MULAI CETAK";
+        document.getElementById('btn-do-print').disabled = false;
+        
+        if(activeJob.internalId) {
+            db.transaction("stream", "readwrite").objectStore("stream").get(activeJob.internalId).onsuccess = e => {
+                let d = e.target.result;
                 
-                // DATA MASUK DARI PARTNER
-                if(activeJob.internalId) {
-                    db.transaction("stream", "readwrite").objectStore("stream").get(activeJob.internalId).onsuccess = e => {
-                        let d = e.target.result; d.status = 'printed';
-                        db.transaction("stream", "readwrite").objectStore("stream").put(d).onsuccess = () => renderStream();
-                    };
-                    let conn = activeConns.find(x => x.peer === activeJob.senderId);
-                    if(conn) conn.send({ type: 'status_update', msgId: activeJob.internalId });
-                } 
-                // DATA INPUT LOKAL (OPERATOR) -> Masuk Timeline
-                else if(role === 'operator') {
-                    let localJob = {
-                        id: Date.now(), direction: 'in', from: 'LOKAL (MANUAL)', senderRole: 'operator', senderId: myId, status: 'printed',
-                        jobs: [{ inv: inv, cap: mode, files: activeJob.files }], hidden: false
-                    };
-                    saveStream(localJob);
-                    renderStream();
+                // --- LOGIKA REPRINT ---
+                if(d.status === 'printed') {
+                    // Mun geus pernah diprint, tambahkeun angka reprintna
+                    d.reprintCount = (d.reprintCount || 0) + 1;
+                } else {
+                    // Mun karek munggaran diprint
+                    d.status = 'printed';
+                    d.reprintCount = 0;
                 }
-
-                saveHistory({ inv, typeLabel: 'PRODUKSI_SELESAI', qty, cap: mode, thumb: activeJob.files[0].thumb, partner: activeJob.internalId ? activeJob.senderId : 'MANUAL' });
-                closeModal();
-            }, 1000);
+                
+                db.transaction("stream", "readwrite").objectStore("stream").put(d).onsuccess = () => renderStream();
+            };
+            
+            let conn = activeConns.find(x => x.peer === activeJob.senderId);
+            if(conn) conn.send({ type: 'status_update', msgId: activeJob.internalId });
+        } 
+        // (Sesa kodeu manual operator sami wae...)
+        else if(role === 'operator') {
+            let localJob = {
+                id: Date.now(), direction: 'in', from: 'LOKAL (MANUAL)', senderRole: 'operator', senderId: myId, status: 'printed', reprintCount: 0,
+                jobs: [{ inv: inv, cap: mode, files: activeJob.files }], hidden: false
+            };
+            saveStream(localJob);
+            renderStream();
         }
+
+        saveHistory({ inv, typeLabel: 'PRODUKSI_SELESAI', qty, cap: mode, thumb: activeJob.files[0].thumb, partner: activeJob.internalId ? activeJob.senderId : 'MANUAL' });
+        closeModal();
+    }, 1000);
+}
 
         // --- HISTORY & UTILS ---
         function saveHistory(obj) { 
@@ -806,13 +1320,236 @@
         function downloadAsset(data, name) { const a = document.createElement('a'); a.href = data; a.download = name; a.click(); }
         function clearTimeline() { if(confirm("Hapus Timeline?")) { db.transaction("stream", "readwrite").objectStore("stream").clear().onsuccess = () => renderStream(); } }
         function saveStream(o) { db.transaction("stream", "readwrite").objectStore("stream").put(o); }
-        function closeModal() { document.getElementById('modal-print').style.display = 'none'; }
+        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
         function hideStream(id) { db.transaction("stream", "readwrite").objectStore("stream").get(id).onsuccess = e => { let d = e.target.result; d.hidden = true; db.transaction("stream", "readwrite").objectStore("stream").put(d); renderStream(); }; }
         function toBase64(f) { return new Promise(r => { let fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(f); }); }
         function toggleSelect(id) { if(selectedInboxes.includes(id)) selectedInboxes = selectedInboxes.filter(x => x !== id); else selectedInboxes.push(id); document.getElementById('batch-count').innerText = `${selectedInboxes.length} ITEM DIPILIH`; renderStream(); }
         function openBatchPrint() { if(!selectedInboxes.length) return; let all = [], count = 0; selectedInboxes.forEach(id => { db.transaction("stream").objectStore("stream").get(id).onsuccess = e => { e.target.result.jobs.forEach(j => j.files.forEach(f => { if(f.isPdf) all.push({...f, inv: j.inv}); })); count++; if(count === selectedInboxes.length) openPrintLogic({ files: all, internalId: null }); } }); }
         function changeId() { openKtsPrompt("Admin Access", "Masukkan kode reset:", "password", (code) => { if(code === "4869") { openKtsPrompt("Ganti ID", "Masukkan ID Baru:", "text", (nid) => { if(nid) { localStorage.setItem('kts_id', nid); location.reload(); } }); } }); }
         async function exportLogToPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("KERTASES PRODUCTION LOG - " + role.toUpperCase(), 14, 15); doc.autoTable({ html: '#hist-table-real', columns: [{ header: 'WAKTU', dataKey: 'time' }, { header: 'INV', dataKey: 'inv' }, { header: 'QTY', dataKey: 'qty' }, { header: 'KET', dataKey: 'cap' }, { header: 'PARTNER', dataKey: 'partner' }], margin: { top: 25 } }); doc.save('log_kertases.pdf'); }
+
+        // --- JS BARU: MANUAL LAYOUT LOGIC (FIXED ROTATION) ---
+        function openManualLayouter() { document.getElementById('modal-manual-layout').style.display = 'grid'; updatePaperCanvas(); }
+        function closeManualLayouter() { document.getElementById('modal-manual-layout').style.display = 'none'; }
+
+        async function handleManualUpload(input) {
+            for(let f of input.files) {
+                let data = await toBase64(f);
+                manualSources.push({ id: Date.now() + Math.random(), data, name: f.name });
+            }
+            renderManualSourceList();
+        }
+
+      function renderManualSourceList() {
+    const list = document.getElementById('manual-source-list'); 
+    list.innerHTML = ''; 
+
+    // Tampilan kosong (Empty State)
+    if(manualSources.length === 0) {
+        list.innerHTML = `
+            <div style="grid-column: 1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; opacity:0.3;">
+                <span style="font-size:2rem; margin-bottom:10px;">🖼️</span>
+                <span style="font-size:0.7rem; color:var(--text);">NO ASSETS</span>
+            </div>
+        `;
+        return;
+    }
+
+    manualSources.forEach((src, idx) => {
+        let card = document.createElement('div');
+        card.className = 'asset-card';
+        card.onclick = () => addToCanvas(src.id);
+        
+        // Ieu HTML pikeun kartu per item
+        card.innerHTML = `
+            <div class="asset-thumb">
+                <img src="${src.data}">
+            </div>
+            <div class="asset-info">
+                <span class="asset-name" title="${src.name}">${src.name}</span>
+                <span class="asset-del" onclick="event.stopPropagation(); manualSources.splice(${idx}, 1); renderManualSourceList();" title="Hapus">🗑️</span>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+        function updatePaperCanvas() {
+            const paper = document.getElementById('paper-canvas');
+            const dim = document.getElementById('m-paper').value.split(',');
+            const scale = 10; // 1cm = 10px
+            paper.style.width = (dim[0] * scale) + 'px';
+            paper.style.minHeight = (dim[1] * scale) + 'px';
+            paper.style.height = 'auto'; // Scrollable vertically
+            renderCanvasItems();
+        }
+
+        function addToCanvas(srcId) {
+    const src = manualSources.find(s => s.id === srcId);
+    const w = parseFloat(document.getElementById('m-w').value);
+    const h = parseFloat(document.getElementById('m-h').value);
+    const rot = parseInt(document.getElementById('m-rot').value);
+    const gap = parseFloat(document.getElementById('m-gap').value) || 0; // Nyandak nilai gap
+    const paperDim = document.getElementById('m-paper').value.split(',');
+    const pW = parseFloat(paperDim[0]);
+
+    let renderW = (rot === 90 || rot === 270) ? h : w;
+    let renderH = (rot === 90 || rot === 270) ? w : h;
+
+    if(currentX + renderW > pW) { 
+        currentX = 0; 
+        currentY += maxRowH + gap; 
+        maxRowH = 0; 
+    }
+    
+    canvasItems.push({ 
+        id: Date.now(), 
+        srcId, 
+        data: src.data, 
+        x: currentX, 
+        y: currentY, 
+        w, 
+        h, 
+        rot, 
+        renderW, 
+        renderH 
+    });
+    
+    currentX += renderW + gap;
+    if(renderH > maxRowH) maxRowH = renderH;
+    
+    renderCanvasItems();
+}
+
+        function renderCanvasItems() {
+            const paper = document.getElementById('paper-canvas');
+            const scale = 10;
+            paper.innerHTML = '';
+            canvasItems.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.className = 'canvas-item';
+                // Ukuran div kedah "renderW" (bounding box)
+                div.style.left = (item.x * scale) + 'px';
+                div.style.top = (item.y * scale) + 'px';
+                div.style.width = (item.renderW * scale) + 'px';
+                div.style.height = (item.renderH * scale) + 'px';
+                
+                // Gambar di tengah div
+                div.innerHTML = `
+                    <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:visible;">
+                        <img src="${item.data}" style="
+                            width:${item.w * scale}px; 
+                            height:${item.h * scale}px; 
+                            transform:rotate(${item.rot}deg);
+                            object-fit:fill;
+                        ">
+                        <div class="item-del" onclick="canvasItems.splice(${idx}, 1); renderCanvasItems();">×</div>
+                    </div>
+                `;
+                paper.appendChild(div);
+            });
+        }
+
+        function clearManualCanvas() { canvasItems = []; currentX = 0; currentY = 0; maxRowH = 0; renderCanvasItems(); }
+
+function printManualCanvas() {
+    if(!canvasItems.length) return alert("Canvas kosong!");
+    
+    // 1. Candak Data Kertas & Settingan
+    const dim = document.getElementById('m-paper').value.split(',');
+    const pw = parseFloat(dim[0]), ph = parseFloat(dim[1]); 
+    const useKres = document.getElementById('m-use-kres').checked;
+    
+    // 2. Candak Ukuran Kres tina Input (Default mun kosong)
+    // Pastikeun input id 'm-kres-tebal' jeung 'm-kres-panjang' geus aya di HTML
+    const tebalVal = document.getElementById('m-kres-tebal').value || 0.2;
+    const panjangVal = document.getElementById('m-kres-panjang').value || 5;
+    
+    // Konversi ka string 'mm' keur CSS
+    const kThick = tebalVal + 'mm';
+    const kLen = panjangVal + 'mm';
+    const kOff = '2mm'; // Jarak aman (offset) ti gambar ka kres
+
+    // 3. Setup CSS Kertas & Style Kres
+    let html = `<style>
+        @page { size: ${pw}cm ${ph}cm; margin: 0; } 
+        body { margin: 0; padding: 0; background: white; width: ${pw}cm; min-height: ${ph}cm; }
+        .page-container { position: relative; width: ${pw}cm; height: ${ph}cm; overflow: hidden; }
+        
+        /* STYLE KHUSUS KRES */
+        .k-mark { position: absolute; background: #000; z-index: 999; }
+        
+        /* Vertical & Horizontal Definitions */
+        .k-v { width: ${kThick}; height: ${kLen}; }
+        .k-h { height: ${kThick}; width: ${kLen}; }
+
+        /* Posisi Kres (Relative ka Wrapper Gambar) */
+        /* Juru Kenca-Luhur (Top-Left) */
+        .tl-v { bottom: 100%; left: 0; margin-bottom: ${kOff}; } 
+        .tl-h { right: 100%; top: 0; margin-right: ${kOff}; }
+
+        /* Juru Katuhu-Luhur (Top-Right) */
+        .tr-v { bottom: 100%; right: 0; margin-bottom: ${kOff}; }
+        .tr-h { left: 100%; top: 0; margin-left: ${kOff}; }
+
+        /* Juru Kenca-Handap (Bottom-Left) */
+        .bl-v { top: 100%; left: 0; margin-top: ${kOff}; }
+        .bl-h { right: 100%; bottom: 0; margin-right: ${kOff}; }
+
+        /* Juru Katuhu-Handap (Bottom-Right) */
+        .br-v { top: 100%; right: 0; margin-top: ${kOff}; }
+        .br-h { left: 100%; bottom: 0; margin-left: ${kOff}; }
+
+        .img-wrap { position: absolute; display: flex; align-items: center; justify-content: center; }
+    </style>`;
+
+    html += `<div class="page-container">`;
+
+    // 4. Loop Unggal Item Gambar
+    canvasItems.forEach(item => {
+        let marks = '';
+        
+        if(useKres) {
+            // Urang nyieun 8 garis (2 per juru) nu arahna kaluar
+            // Ieu teknik pang amanna ameh mun rapet (gap 0) jadi nyampur, mun renggang jadi papisah
+            
+            // Top-Left
+            marks += `<div class="k-mark k-v tl-v"></div><div class="k-mark k-h tl-h"></div>`;
+            // Top-Right
+            marks += `<div class="k-mark k-v tr-v"></div><div class="k-mark k-h tr-h"></div>`;
+            // Bottom-Left
+            marks += `<div class="k-mark k-v bl-v"></div><div class="k-mark k-h bl-h"></div>`;
+            // Bottom-Right
+            marks += `<div class="k-mark k-v br-v"></div><div class="k-mark k-h br-h"></div>`;
+        }
+
+        // Render Item
+        html += `
+        <div class="img-wrap" style="left:${item.x}cm; top:${item.y}cm; width:${item.renderW}cm; height:${item.renderH}cm;">
+            ${marks}
+            <img src="${item.data}" style="width:${item.w}cm; height:${item.h}cm; transform:rotate(${item.rot}deg); object-fit:fill; display:block;">
+        </div>`;
+    });
+
+    html += `</div>`;
+
+    // 5. Eksekusi Print
+    const f = document.getElementById('p-frame');
+    f.style.display = "block";
+    f.contentWindow.document.open();
+    f.contentWindow.document.write(html);
+    f.contentWindow.document.close();
+    
+    const btn = document.querySelector('#modal-manual-layout .btn-success');
+    const oldText = btn.innerText;
+    btn.innerText = "RENDERING...";
+    
+    setTimeout(() => { 
+        f.contentWindow.print(); 
+        f.style.display="none"; 
+        btn.innerText = oldText;
+    }, 1000);
+}
     </script>
 </body>
 </html>
