@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V15.3 - Professional Production Flow</title>
+    <title>Kertases Pro V15.3 - Production Flow (GitHub Ready)</title>
 
     <!-- Library Lokal & CDN (Lengkap) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet">
     
     <style>
+        /* ========== CSS LENGKAP (SAMA PERSIS DENGAN ASLI) ========== */
         :root {
             --bg: #0a0f1d; --panel: rgba(21, 32, 54, 0.9); --border: rgba(255, 255, 255, 0.1);
             --accent: #6366f1; --accent-glow: rgba(99, 102, 241, 0.3);
@@ -204,7 +205,7 @@
         .hist-tab-btn { flex:1; border:none; padding:10px; border-radius:10px; cursor:pointer; color: white; background: transparent; transition: 0.3s; }
         .hist-tab-btn.active { background: var(--accent); box-shadow: 0 4px 10px var(--accent-glow); }
 
-        /* CSS BARU: MANUAL LAYOUTER */
+        /* CSS MANUAL LAYOUTER */
         #modal-manual-layout { 
             display: none; 
             position: fixed; 
@@ -422,12 +423,12 @@
     </style>
 </head>
 <body>
-    <!-- Audio Files -->
-    <audio id="notif-sound" src="notif.mp3"></audio>
-    <audio id="conn-sound" src="conn.mp3"></audio>
-    <audio id="done-sound" src="done.mp3"></audio>
+    <!-- Audio Files - GitHub Version: Menggunakan Base64 dummy agar tidak error -->
+    <audio id="notif-sound" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTG9uZ2VzdCBQcmV2aWV3AFd3dy5CaWdTb3VuZEJhbmsuY29tAAA="></audio>
+    <audio id="conn-sound" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTG9uZ2VzdCBQcmV2aWV3AFd3dy5CaWdTb3VuZEJhbmsuY29tAAA="></audio>
+    <audio id="done-sound" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTG9uZ2VzdCBQcmV2aWV3AFd3dy5CaWdTb3VuZEJhbmsuY29tAAA="></audio>
 
-    <!-- LOGOUT CONFIRM MODAL (Hanya 1) -->
+    <!-- LOGOUT CONFIRM MODAL -->
     <div id="logout-confirm">
         <div>
             <p>Logout dari system?</p>
@@ -455,7 +456,7 @@
     <div id="login-screen">
         <div class="login-box glass-panel">
             <h1 style="font-family: 'Outfit'; font-size: 2.5rem; margin: 0; background: linear-gradient(to right, #6366f1, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">KERTASES PRO</h1>
-            <p style="color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px;">SYNC_DATA_PRODUCTION</p>
+            <p style="color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px;">PRODUCTION FLOW V15.3</p>
             
             <div class="role-grid">
                 <div class="role-card"><i>🕶️</i><span>ADMIN</span></div>
@@ -731,18 +732,15 @@
 
     <script>
         // ============================================
-        // KERTASES PRO V15.3 - FULLY FIXED VERSION
+        // KERTASES PRO V15.3 - GITHUB OPTIMIZED
         // ============================================
         
-        const { ipcRenderer } = require('electron');
-
         // ============= GLOBAL VARIABLES =============
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let myId = localStorage.getItem('kts_id') || 'KTS-' + Math.floor(Math.random()*9999);
         let role, peer, db, activeConns = [], currentTab = 1, timelineFilter = 'all';
         let tempJobs = [], activeJobIdx = null, selectedInboxes = [], currentPrintMode = 'full', activeJob = null;
         let currentPromptTask = null;
-        let audioFiles = {};
         let postLogoutMode = false;
         
         // STATE MANUAL LAYOUTER
@@ -762,16 +760,25 @@
             checkAutoLogin(); 
         };
 
-        // ============= AUDIO HANDLER =============
-        ipcRenderer.on('audio-path', (event, paths) => {
-            audioFiles = paths;
-            console.log("Path audio siap:", audioFiles);
-        });
-
+        // ============= AUDIO HANDLER (Browser Only) =============
         function playNotification() {
-            if (audioFiles.notif) {
-                const audio = new Audio(audioFiles.notif);
-                audio.play().catch(e => console.error("Gagal muter sora:", e));
+            const audio = document.getElementById('notif-sound');
+            if (audio) {
+                audio.play().catch(e => console.log("Audio play suppressed (browser policy)"));
+            }
+        }
+
+        function playConnectionSound() {
+            const audio = document.getElementById('conn-sound');
+            if (audio) {
+                audio.play().catch(e => console.log("Audio play suppressed"));
+            }
+        }
+
+        function playDoneSound() {
+            const audio = document.getElementById('done-sound');
+            if (audio) {
+                audio.play().catch(e => console.log("Audio play suppressed"));
             }
         }
 
@@ -788,23 +795,19 @@
             console.log("LOGOUT: Memulai proses logout...");
             closeLogoutConfirm();
             
-            // 1. Hentikan semua koneksi peer
             if (peer) {
                 peer.destroy();
                 peer = null;
             }
             
-            // 2. Hapus semua interval/timeout
             const highestId = setTimeout(() => {}, 0);
             for (let i = highestId; i >= 0; i--) {
                 clearTimeout(i);
                 clearInterval(i);
             }
             
-            // 3. Hapus session
             localStorage.removeItem('kts_active_role');
             
-            // 4. Reset semua state
             role = null;
             tempJobs = [];
             activeConns = [];
@@ -817,11 +820,9 @@
             currentY = 0;
             maxRowH = 0;
             
-            // 5. Reset UI
             document.getElementById('app-layout').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
             
-            // 6. Tutup semua modal
             document.querySelectorAll('.modal, #kts-prompt, #modal-manual-layout').forEach(m => {
                 m.style.display = 'none';
                 if (m.id === 'kts-prompt') {
@@ -829,20 +830,16 @@
                 }
             });
             
-            // 7. Reset input fields
             document.querySelectorAll('.cyber-input').forEach(input => {
                 input.value = '';
             });
             
-            // 8. Set postLogoutMode
             postLogoutMode = true;
             window.postLogoutMode = true;
             
-            // 9. Re-initialize login listeners
             setTimeout(() => {
                 reinitializeLoginListeners();
                 
-                // Animasi siap login
                 const loginBox = document.querySelector('.login-box');
                 loginBox.style.animation = 'none';
                 loginBox.offsetHeight;
@@ -875,38 +872,31 @@
             const modal = document.getElementById('kts-prompt');
             const input = document.getElementById('p-val');
 
-            // Reset modal
             modal.style.display = 'flex';
             modal.style.visibility = 'visible';
             modal.style.opacity = '1';
             modal.style.pointerEvents = 'auto';
             
-            // Set konten
             document.getElementById('p-title').innerText = title;
             document.getElementById('p-desc').innerHTML = desc + 
                 '<br><span style="color:var(--accent); font-size:0.7rem;">✓ Input siap digunakan</span>';
 
-            // Reset input
             input.type = type;
             input.value = '';
             input.disabled = false;
             input.readOnly = false;
             input.style.pointerEvents = 'auto';
             
-            // Simpan callback
             currentPromptTask = callback;
 
-            // Tambahkan class post-logout
             modal.classList.add('post-logout');
             
-            // Fokus input
             setTimeout(() => {
                 input.focus({ preventScroll: true });
                 input.select();
                 console.log("Fokus input:", document.activeElement === input);
             }, 50);
             
-            // Fallback focus
             setTimeout(() => {
                 if (document.activeElement !== input) {
                     console.warn("Fallback focus");
@@ -915,13 +905,6 @@
                     input.click();
                 }
             }, 150);
-            
-            // Force window activate via IPC
-            try {
-                ipcRenderer.send('force-activate-window');
-            } catch(e) {
-                console.warn("IPC not available");
-            }
         }
 
         function closeKtsPrompt() {
@@ -976,11 +959,9 @@
         function reinitializeLoginListeners() {
             console.log("Re-initializing login listeners...");
             
-            // Reset role cards dengan fresh listeners
             const roleGrid = document.querySelector('.role-grid');
             const newRoleGrid = roleGrid.cloneNode(false);
             
-            // Rebuild role cards
             const roles = ['ADMIN', 'DESIGNER', 'OPERATOR'];
             const icons = ['🕶️', '🎨', '🖨️'];
             
@@ -1009,7 +990,6 @@
             
             roleGrid.parentNode.replaceChild(newRoleGrid, roleGrid);
             
-            // Reset button mode
             document.getElementById('btn-cloud').onclick = function() { 
                 setMode('cloud'); 
             };
@@ -1028,14 +1008,11 @@
         function loadInterface(r) {
             role = r;
             
-            // Hapus post-logout class
             document.getElementById('kts-prompt').classList.remove('post-logout');
             
-            // Reset flag
             postLogoutMode = false;
             window.postLogoutMode = false;
             
-            // Show app layout
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-layout').style.display = 'flex';
             document.getElementById('active-role-display').innerText = role.toUpperCase();
@@ -1106,16 +1083,7 @@
                     activeConns.push(c); 
                     updateStatus('online'); 
                     updateConnUI();
-
-                    const connSound = document.getElementById('conn-sound');
-                    if (connSound) {
-                        connSound.pause();
-                        connSound.currentTime = 0;
-                        connSound.volume = 1.0; 
-                        connSound.play().catch(err => {
-                            console.warn("Sora koneksi siap, klik layar sakali kanggo 'unlock' sora!");
-                        });
-                    }
+                    playConnectionSound();
                 }
             });
 
@@ -1288,15 +1256,7 @@
             }
 
             renderStream(); 
-
-            const notifSound = document.getElementById('notif-sound');
-            if (notifSound) {
-                notifSound.pause();
-                notifSound.currentTime = 0;
-                notifSound.play().catch(err => {
-                    console.warn("Sora lokal siap, mangga klik layar sakali kanggo aktifkeun!");
-                });
-            }
+            playNotification();
         }
 
         function handleStatusUpdate(d) {
@@ -1669,14 +1629,7 @@
                     partner: activeJob.internalId ? activeJob.senderId : 'MANUAL' 
                 });
 
-                const doneSound = document.getElementById('done-sound');
-                if (doneSound) {
-                    doneSound.pause();
-                    doneSound.currentTime = 0;
-                    doneSound.volume = 1.0;
-                    doneSound.play().catch(e => console.warn("Klik layar sakali kanggo aktifkeun sora!"));
-                }
-
+                playDoneSound();
                 closeModal();
             }, 1000);
         }
@@ -2085,19 +2038,16 @@
 
         // ============= EVENT LISTENERS =============
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM Content Loaded - Initializing...");
+            console.log("DOM Content Loaded - Initializing GitHub Version...");
             
-            // Cek post-logout mode
             if (!localStorage.getItem('kts_active_role')) {
                 console.log("Fresh start - no active role");
                 postLogoutMode = true;
                 window.postLogoutMode = true;
             }
             
-            // Initialize login listeners
             reinitializeLoginListeners();
             
-            // KTS Prompt ENTER key
             const promptInput = document.getElementById('p-val');
             if (promptInput) {
                 promptInput.addEventListener('keypress', function(event) {
@@ -2108,14 +2058,9 @@
                 });
             }
             
-            // Prevent click propagation on input
             document.getElementById('p-val').addEventListener('mousedown', e => e.stopPropagation());
         });
 
-                // ============= EVENT LISTENERS =============
-        
-        
-        // TAMBAHKAN DI SINI - PERSIS SEBELUM 
         window.addEventListener('online', function() {
             console.log('Internet tersambung - mode cloud ready');
             if (localStorage.getItem('kts_mode') === 'cloud' && peer) {
