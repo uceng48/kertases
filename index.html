@@ -6,10 +6,6 @@
     <title>Kertases Pro V15.3 - Professional Production Flow</title>
 
     <!-- Library Lokal & CDN (Lengkap) -->
-    <script src="peerjs.min.js"></script>
-    <script src="pdf.min.js"></script>
-    <script src="jspdf.umd.min.js"></script>
-    <script src="jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -384,8 +380,10 @@
 </head>
 <body>
 
-    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
-    <audio id="conn-sound" src="https://assets.mixkit.co/active_storage/sfx/1084/1084-preview.mp3"></audio>
+    <!-- Manggil file lokal dina hiji folder -->
+    <audio id="notif-sound" src="notif.mp3"></audio>
+    <audio id="conn-sound" src="conn.mp3"></audio>
+    <audio id="done-sound" src="done.mp3"></audio>
 
     <!-- PROMPT CUSTOM -->
     <div id="kts-prompt">
@@ -673,6 +671,23 @@
     <iframe id="p-frame" style="display:none;"></iframe>
 
     <script>
+        const { ipcRenderer } = require('electron');
+
+let audioFiles = {};
+
+// Narima path audio ti main.js
+ipcRenderer.on('audio-path', (event, paths) => {
+    audioFiles = paths;
+    console.log("Path audio siap:", audioFiles);
+});
+
+// Fungsi kanggo muter sora
+function playNotification() {
+    if (audioFiles.notif) {
+        const audio = new Audio(audioFiles.notif);
+        audio.play().catch(e => console.error("Gagal muter sora:", e));
+    }
+}
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let myId = localStorage.getItem('kts_id') || 'KTS-' + Math.floor(Math.random()*9999);
         let role, peer, db, activeConns = [], currentTab = 1, timelineFilter = 'all';
@@ -773,22 +788,72 @@
             setupConn(peer.connect(tid, { reliable: true }));
         }
 
-        function setupConn(c) {
-            c.on('open', () => {
-                if(!activeConns.find(x => x.peer === c.peer)) {
-                    activeConns.push(c); updateStatus('online'); updateConnUI();
-                    document.getElementById('conn-sound').play().catch(()=>{});
-                }
-            });
-            c.on('data', d => {
-                if(d.type === 'job') handleIncoming(d, c.peer);
-                if(d.type === 'status_update') handleStatusUpdate(d);
-            });
-            c.on('close', () => { 
-                activeConns = activeConns.filter(x => x.peer !== c.peer); 
-                updateConnUI(); if(!activeConns.length) updateStatus('ready'); 
-            });
+       function setupConn(c) {
+    // 1. PAS KONEKSI MUKA (ID Partner Nyambung)
+    c.on('open', () => {
+        // Pariksa bilih ID ieu tos aya dina daptar, supados teu numpuk
+        if(!activeConns.find(x => x.peer === c.peer)) {
+            // Lebatkeun kana daptar koneksi aktif
+            activeConns.push(c); 
+            
+            // Ganti status widget janten ONLINE (Ijo)
+            updateStatus('online'); 
+            
+            // Update tampilan daptar ID anu konek di sidebar
+            updateConnUI();
+
+            // --- LOGIKA MAENKEUN SORA KONEKSI LOKAL (conn.mp3) ---
+            const connSound = document.getElementById('conn-sound');
+            if (connSound) {
+                // Reset sora bilih keur maen keneh
+                connSound.pause();
+                connSound.currentTime = 0;
+                
+                // Setel polumeu (1.0 = maksimal)
+                connSound.volume = 1.0; 
+                
+                // Tabeuh sorana
+                connSound.play().catch(err => {
+                    // Browser biasana menta klik layar sakali heula
+                    console.warn("Sora koneksi siap, klik layar sakali kanggo 'unlock' sora!");
+                });
+            }
         }
+    });
+
+    // 2. PAS NARIMA DATA (Kiriman ti Partner)
+    c.on('data', d => {
+        // Upami datana mangrupa Job/File anyar
+        if(d.type === 'job') {
+            handleIncoming(d, c.peer);
+        }
+        
+        // Upami datana mangrupa update status (misal: beja geus dicetak)
+        if(d.type === 'status_update') {
+            handleStatusUpdate(d);
+        }
+    });
+
+    // 3. PAS KONEKSI PUTUS (Partner Offline/Tutup Aplikasi)
+    c.on('close', () => { 
+        // Cabut ID partner tina daptar koneksi
+        activeConns = activeConns.filter(x => x.peer !== c.peer); 
+        
+        // Refresh tampilan sidebar
+        updateConnUI(); 
+        
+        // Upami tos teu aya hiji-hiji acan nu konek, balikkeun status jadi READY
+        if(!activeConns.length) {
+            updateStatus('ready');
+        }
+    });
+
+    // 4. PAS AYA ERROR KONEKSI
+    c.on('error', err => {
+        console.error("Aya masalah koneksi:", err);
+        updateStatus('offline');
+    });
+}
 
         function updateConnUI() { document.getElementById('active-conns').innerHTML = activeConns.map(x => `<div class="glass-panel" style="padding:8px; margin-bottom:5px; font-size:0.7rem; border-color:var(--success); border-radius:10px !important;">🟢 ${x.peer}</div>`).join(''); }
         function updateStatus(s) { 
@@ -860,29 +925,20 @@
             }
         }
 
-       function handleIncoming(d, from) {
-    // 1. Nangtukeun label pikeun log riwayat (History)
-    // Upami urang login salaku desainer, labelna DSN_RECV, upami operator OP_RECV
+      function handleIncoming(d, from) {
     let label = (role === 'designer') ? "DSN_RECV" : "OP_RECV";
-
-    // 2. Nyiapkeun data objek anu bakal disimpen ka IndexedDB
-    // Urang tambahkeun properti anyar:
-    // - direction: 'in' (tandana data asup)
-    // - from: ID anu ngirim
-    // - reprintCount: 0 (awalna kénéh, tacan aya cetak ulang)
+    
     let streamData = { 
         ...d, 
         direction: 'in', 
         from: from, 
         hidden: false, 
-        reprintCount: 0, // Kunci utama pikeun fitur cetak ulang
-        status: 'pending' // Status awal sateuacan diproses ku operator
+        reprintCount: 0, 
+        status: 'pending' 
     };
 
-    // 3. Simpen ka database stream (IndexedDB)
     saveStream(streamData);
 
-    // 4. Catet unggal "Job" anu aya dina pakét kiriman ka Log History
     if (d.jobs && Array.isArray(d.jobs)) {
         d.jobs.forEach(job => {
             saveHistory({ 
@@ -895,22 +951,20 @@
         });
     }
 
-    // 5. Refresh tampilan timeline
-    // Kusabab aya logika filter dina renderStream, data anyar ieu otomatis
-    // muncul dina tab ALL, ADMIN, atanapi DESIGNER (Inbox)
     renderStream(); 
 
-    // 6. Maénkeun sora notifikasi
+    // --- LOGIKA MANGGIL SORA LOKAL ---
     const notifSound = document.getElementById('notif-sound');
     if (notifSound) {
-        notifSound.currentTime = 0; // Balikkeun deui ka detik 0
+        // Reset sora bilih nuju jalan
+        notifSound.pause();
+        notifSound.currentTime = 0;
+        
+        // Maenkeun sora lokal
         notifSound.play().catch(err => {
-            console.log("Sora diblokir ku browser, kedah aya interaksi pangguna heula.");
+            console.warn("Sora lokal siap, mangga klik layar sakali kanggo aktifkeun!");
         });
     }
-    
-    // 7. Opsional: Tambahan log dina konsol pikeun debugging
-    console.log(`📥 Data asup ti ${from}. Jumlah job: ${d.jobs.length}`);
 }
 
         function handleStatusUpdate(d) {
@@ -1202,23 +1256,25 @@
     f.contentWindow.document.open();
     f.contentWindow.document.write(fullHtml);
     f.contentWindow.document.close();
-    
+
+    // Jeda sakedik kanggo nunggu browser nyiapkeun tampilan print
     setTimeout(() => {
         f.contentWindow.print();
         f.style.display = "none";
+        
+        // Reset tombol
         document.getElementById('btn-do-print').innerText = "MULAI CETAK";
         document.getElementById('btn-do-print').disabled = false;
         
+        // --- LOGIKA UPDATE DATA ---
         if(activeJob.internalId) {
             db.transaction("stream", "readwrite").objectStore("stream").get(activeJob.internalId).onsuccess = e => {
                 let d = e.target.result;
                 
-                // --- LOGIKA REPRINT ---
+                // Cek bilih ieu cetak ulang atanapi munggaran
                 if(d.status === 'printed') {
-                    // Mun geus pernah diprint, tambahkeun angka reprintna
                     d.reprintCount = (d.reprintCount || 0) + 1;
                 } else {
-                    // Mun karek munggaran diprint
                     d.status = 'printed';
                     d.reprintCount = 0;
                 }
@@ -1226,11 +1282,12 @@
                 db.transaction("stream", "readwrite").objectStore("stream").put(d).onsuccess = () => renderStream();
             };
             
+            // Bejaan partner (Designer/Admin) yen data geus dicetak
             let conn = activeConns.find(x => x.peer === activeJob.senderId);
             if(conn) conn.send({ type: 'status_update', msgId: activeJob.internalId });
         } 
-        // (Sesa kodeu manual operator sami wae...)
         else if(role === 'operator') {
+            // Upami input lokal operator
             let localJob = {
                 id: Date.now(), direction: 'in', from: 'LOKAL (MANUAL)', senderRole: 'operator', senderId: myId, status: 'printed', reprintCount: 0,
                 jobs: [{ inv: inv, cap: mode, files: activeJob.files }], hidden: false
@@ -1239,7 +1296,18 @@
             renderStream();
         }
 
+        // Simpen ka History
         saveHistory({ inv, typeLabel: 'PRODUKSI_SELESAI', qty, cap: mode, thumb: activeJob.files[0].thumb, partner: activeJob.internalId ? activeJob.senderId : 'MANUAL' });
+
+        // --- LOGIKA SORA BERES CETAK (done.mp3) ---
+        const doneSound = document.getElementById('done-sound');
+        if (doneSound) {
+            doneSound.pause();
+            doneSound.currentTime = 0;
+            doneSound.volume = 1.0;
+            doneSound.play().catch(e => console.warn("Klik layar sakali kanggo aktifkeun sora!"));
+        }
+
         closeModal();
     }, 1000);
 }
