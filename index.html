@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Production Flow</title>
+    <title>Kertases Pro V15.3 - Professional Production Flow</title>
 
     <!-- Library Lokal & CDN (Lengkap) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -455,7 +455,7 @@
     <div id="login-screen">
         <div class="login-box glass-panel">
             <h1 style="font-family: 'Outfit'; font-size: 2.5rem; margin: 0; background: linear-gradient(to right, #6366f1, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">KERTASES PRO</h1>
-            <p style="color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px;">PRODUCTION FLOW V15.3</p>
+            <p style="color: var(--text-dim); font-size: 0.85rem; letter-spacing: 3px;">SYNC_DATA_PRODUCTION</p>
             
             <div class="role-grid">
                 <div class="role-card"><i>🕶️</i><span>ADMIN</span></div>
@@ -2111,6 +2111,23 @@
             // Prevent click propagation on input
             document.getElementById('p-val').addEventListener('mousedown', e => e.stopPropagation());
         });
+
+                // ============= EVENT LISTENERS =============
+        
+        
+        // TAMBAHKAN DI SINI - PERSIS SEBELUM 
+        window.addEventListener('online', function() {
+            console.log('Internet tersambung - mode cloud ready');
+            if (localStorage.getItem('kts_mode') === 'cloud' && peer) {
+                peer.reconnect?.();
+            }
+        });
+
+        window.addEventListener('offline', function() {
+            console.log('Internet putus - mode local siap dipakai');
+            alert('Internet putus. Gunakan mode LOCAL LAN jika perlu.');
+        });
+    
     </script>
 </body>
 </html>
