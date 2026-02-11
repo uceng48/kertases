@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Pro V15.3 - Production Flow (GitHub Ready)</title>
+    <title>Kertases Pro V15.3 - Professional Production Flow</title>
 
     <!-- Library Lokal & CDN (Lengkap) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -14,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet">
     
     <style>
-        /* ========== CSS LENGKAP (SAMA PERSIS DENGAN ASLI) ========== */
         :root {
             --bg: #0a0f1d; --panel: rgba(21, 32, 54, 0.9); --border: rgba(255, 255, 255, 0.1);
             --accent: #6366f1; --accent-glow: rgba(99, 102, 241, 0.3);
@@ -205,7 +204,7 @@
         .hist-tab-btn { flex:1; border:none; padding:10px; border-radius:10px; cursor:pointer; color: white; background: transparent; transition: 0.3s; }
         .hist-tab-btn.active { background: var(--accent); box-shadow: 0 4px 10px var(--accent-glow); }
 
-        /* CSS MANUAL LAYOUTER */
+        /* CSS BARU: MANUAL LAYOUTER */
         #modal-manual-layout { 
             display: none; 
             position: fixed; 
@@ -423,10 +422,10 @@
     </style>
 </head>
 <body>
-    <!-- Audio Files - GitHub Version: Menggunakan Base64 dummy agar tidak error -->
-    <audio id="notif-sound" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTG9uZ2VzdCBQcmV2aWV3AFd3dy5CaWdTb3VuZEJhbmsuY29tAAA="></audio>
-    <audio id="conn-sound" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTG9uZ2VzdCBQcmV2aWV3AFd3dy5CaWdTb3VuZEJhbmsuY29tAAA="></audio>
-    <audio id="done-sound" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTG9uZ2VzdCBQcmV2aWV3AFd3dy5CaWdTb3VuZEJhbmsuY29tAAA="></audio>
+    <!-- Audio Files (Disesuaikan untuk GitHub Pages) -->
+    <audio id="notif-sound" src="notif.mp3"></audio>
+    <audio id="conn-sound" src="conn.mp3"></audio>
+    <audio id="done-sound" src="done.mp3"></audio>
 
     <!-- LOGOUT CONFIRM MODAL -->
     <div id="logout-confirm">
@@ -543,20 +542,17 @@
     <!-- MODAL: MANUAL LAYOUTER (OPERATOR) -->
     <div id="modal-manual-layout">
         <div class="layout-sidebar glass-panel" style="padding: 15px; width: 300px;">
-            <!-- HEADER -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid var(--border);">
                 <button class="btn btn-mini btn-outline" style="padding:4px 8px; font-size:0.6rem;" onclick="closeManualLayouter()">⬅️ BACK</button>
                 <span style="font-family:'Outfit'; color:var(--accent); font-weight:bold; font-size:0.8rem;">LAYOUTER</span>
             </div>
 
-            <!-- UPLOAD -->
             <div class="upload-zone" onclick="document.getElementById('manual-upload-in').click()">
                 <span class="upload-icon">📂</span>
                 <span class="upload-text">IMPORT IMAGES</span>
                 <input type="file" id="manual-upload-in" hidden multiple onchange="handleManualUpload(this)">
             </div>
 
-            <!-- UKURAN & ROTASI -->
             <div style="display:grid; grid-template-columns: 1fr 1fr 0.8fr; gap:5px; margin-bottom:8px;">
                 <div>
                     <label>WIDTH (CM)</label>
@@ -577,7 +573,6 @@
                 </div>
             </div>
 
-            <!-- GAP & KRES -->
             <div style="background:rgba(255,255,255,0.03); padding:8px; border-radius:8px; border:1px solid var(--border); margin-bottom:10px;">
                 <div style="display:flex; align-items:flex-end; gap:5px; margin-bottom:8px;">
                     <div style="flex:1;">
@@ -599,13 +594,11 @@
                 </div>
             </div>
 
-            <!-- ASSETS GALLERY -->
             <div style="flex:1; overflow-y:auto; border-top:1px solid var(--border); padding-top:10px;">
                 <label style="color:var(--accent); font-weight:bold; margin-bottom:5px;">ASSETS GALLERY:</label>
                 <div id="manual-source-list"></div>
             </div>
 
-            <!-- TOMBOL PRINT -->
             <button class="btn btn-success" style="width:100%; margin-top:10px; height:35px; font-size:0.75rem;" onclick="printManualCanvas()">🖨️ PRINT LAYOUT</button>
         </div>
 
@@ -732,9 +725,16 @@
 
     <script>
         // ============================================
-        // KERTASES PRO V15.3 - GITHUB OPTIMIZED
+        // KERTASES PRO V15.3 - GITHUB PAGES READY
         // ============================================
         
+        // Re-routing audio path untuk web standar
+        const audioFiles = {
+            notif: 'notif.mp3',
+            conn: 'conn.mp3',
+            done: 'done.mp3'
+        };
+
         // ============= GLOBAL VARIABLES =============
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
         let myId = localStorage.getItem('kts_id') || 'KTS-' + Math.floor(Math.random()*9999);
@@ -743,7 +743,6 @@
         let currentPromptTask = null;
         let postLogoutMode = false;
         
-        // STATE MANUAL LAYOUTER
         let manualSources = [], canvasItems = [], currentX = 0, currentY = 0, maxRowH = 0;
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -760,25 +759,12 @@
             checkAutoLogin(); 
         };
 
-        // ============= AUDIO HANDLER (Browser Only) =============
-        function playNotification() {
-            const audio = document.getElementById('notif-sound');
-            if (audio) {
-                audio.play().catch(e => console.log("Audio play suppressed (browser policy)"));
-            }
-        }
-
-        function playConnectionSound() {
-            const audio = document.getElementById('conn-sound');
-            if (audio) {
-                audio.play().catch(e => console.log("Audio play suppressed"));
-            }
-        }
-
-        function playDoneSound() {
-            const audio = document.getElementById('done-sound');
-            if (audio) {
-                audio.play().catch(e => console.log("Audio play suppressed"));
+        // ============= AUDIO HANDLER =============
+        function playSfx(type) {
+            const sound = document.getElementById(type + '-sound');
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.warn("Browser block audio, user interaction required first."));
             }
         }
 
@@ -792,61 +778,20 @@
         }
 
         function confirmLogout() {
-            console.log("LOGOUT: Memulai proses logout...");
             closeLogoutConfirm();
-            
-            if (peer) {
-                peer.destroy();
-                peer = null;
-            }
-            
+            if (peer) { peer.destroy(); peer = null; }
             const highestId = setTimeout(() => {}, 0);
-            for (let i = highestId; i >= 0; i--) {
-                clearTimeout(i);
-                clearInterval(i);
-            }
-            
+            for (let i = highestId; i >= 0; i--) { clearTimeout(i); clearInterval(i); }
             localStorage.removeItem('kts_active_role');
-            
-            role = null;
-            tempJobs = [];
-            activeConns = [];
-            activeJobIdx = null;
-            selectedInboxes = [];
-            currentPromptTask = null;
-            manualSources = [];
-            canvasItems = [];
-            currentX = 0;
-            currentY = 0;
-            maxRowH = 0;
-            
+            role = null; tempJobs = []; activeConns = []; activeJobIdx = null;
+            selectedInboxes = []; currentPromptTask = null; manualSources = [];
+            canvasItems = []; currentX = 0; currentY = 0; maxRowH = 0;
             document.getElementById('app-layout').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
-            
-            document.querySelectorAll('.modal, #kts-prompt, #modal-manual-layout').forEach(m => {
-                m.style.display = 'none';
-                if (m.id === 'kts-prompt') {
-                    m.classList.remove('post-logout');
-                }
-            });
-            
-            document.querySelectorAll('.cyber-input').forEach(input => {
-                input.value = '';
-            });
-            
+            document.querySelectorAll('.modal, #kts-prompt, #modal-manual-layout').forEach(m => m.style.display = 'none');
             postLogoutMode = true;
             window.postLogoutMode = true;
-            
-            setTimeout(() => {
-                reinitializeLoginListeners();
-                
-                const loginBox = document.querySelector('.login-box');
-                loginBox.style.animation = 'none';
-                loginBox.offsetHeight;
-                loginBox.style.animation = 'fadeIn 0.5s';
-            }, 100);
-            
-            console.log("LOGOUT: Selesai, siap login kembali");
+            setTimeout(reinitializeLoginListeners, 100);
         }
 
         // ============= PROMPT FUNCTIONS =============
@@ -854,57 +799,23 @@
             document.getElementById('p-title').innerText = title;
             document.getElementById('p-desc').innerText = desc;
             const input = document.getElementById('p-val');
-            input.type = type; 
-            input.value = "";
-            
+            input.type = type; input.value = "";
             document.getElementById('kts-prompt').style.display = 'flex';
             currentPromptTask = callback;
-            
-            setTimeout(() => {
-                input.focus();
-                input.select();
-            }, 200);
+            setTimeout(() => { input.focus(); input.select(); }, 200);
         }
 
         function openKtsPromptPostLogout(title, desc, type, callback) {
-            console.log("MEMBUKA PROMPT POST-LOGOUT");
-            
             const modal = document.getElementById('kts-prompt');
             const input = document.getElementById('p-val');
-
             modal.style.display = 'flex';
-            modal.style.visibility = 'visible';
             modal.style.opacity = '1';
-            modal.style.pointerEvents = 'auto';
-            
             document.getElementById('p-title').innerText = title;
-            document.getElementById('p-desc').innerHTML = desc + 
-                '<br><span style="color:var(--accent); font-size:0.7rem;">✓ Input siap digunakan</span>';
-
-            input.type = type;
-            input.value = '';
-            input.disabled = false;
-            input.readOnly = false;
-            input.style.pointerEvents = 'auto';
-            
+            document.getElementById('p-desc').innerHTML = desc + '<br><span style="color:var(--accent); font-size:0.7rem;">✓ Ready for input</span>';
+            input.type = type; input.value = '';
             currentPromptTask = callback;
-
             modal.classList.add('post-logout');
-            
-            setTimeout(() => {
-                input.focus({ preventScroll: true });
-                input.select();
-                console.log("Fokus input:", document.activeElement === input);
-            }, 50);
-            
-            setTimeout(() => {
-                if (document.activeElement !== input) {
-                    console.warn("Fallback focus");
-                    input.focus();
-                    input.select();
-                    input.click();
-                }
-            }, 150);
+            setTimeout(() => { input.focus(); input.select(); }, 50);
         }
 
         function closeKtsPrompt() {
@@ -914,160 +825,92 @@
 
         function confirmKts() {
             const val = document.getElementById('p-val').value.trim();
-            if (val && currentPromptTask) {
-                currentPromptTask(val);
-            }
+            if (val && currentPromptTask) currentPromptTask(val);
             closeKtsPrompt();
         }
 
         // ============= LOGIN HANDLER =============
         function enterRole(r) {
-            console.log("Enter role called for:", r, "Post-logout:", postLogoutMode);
-            
             if (postLogoutMode || !localStorage.getItem('kts_active_role')) {
-                openKtsPromptPostLogout(
-                    "Login " + r.toUpperCase(),
-                    "Masukkan Kode Akses:",
-                    "password",
-                    (pass) => {
-                        if (pass === ROLES_KEYS[r]) {
-                            localStorage.setItem('kts_active_role', r);
-                            loadInterface(r);
-                        } else {
-                            alert("SALAH KODE!");
-                            setTimeout(() => enterRole(r), 300);
-                        }
+                openKtsPromptPostLogout("Login " + r.toUpperCase(), "Masukkan Kode Akses:", "password", (pass) => {
+                    if (pass === ROLES_KEYS[r]) {
+                        localStorage.setItem('kts_active_role', r);
+                        loadInterface(r);
+                    } else {
+                        alert("SALAH KODE!");
+                        setTimeout(() => enterRole(r), 300);
                     }
-                );
+                });
             } else {
-                openKtsPrompt(
-                    "Login " + r.toUpperCase(),
-                    "Masukkan Kode Akses:",
-                    "password",
-                    (pass) => {
-                        if (pass === ROLES_KEYS[r]) {
-                            localStorage.setItem('kts_active_role', r);
-                            loadInterface(r);
-                        } else {
-                            alert("SALAH KODE!");
-                        }
-                    }
-                );
+                openKtsPrompt("Login " + r.toUpperCase(), "Masukkan Kode Akses:", "password", (pass) => {
+                    if (pass === ROLES_KEYS[r]) {
+                        localStorage.setItem('kts_active_role', r);
+                        loadInterface(r);
+                    } else { alert("SALAH KODE!"); }
+                });
             }
         }
 
         function reinitializeLoginListeners() {
-            console.log("Re-initializing login listeners...");
-            
             const roleGrid = document.querySelector('.role-grid');
             const newRoleGrid = roleGrid.cloneNode(false);
-            
-            const roles = ['ADMIN', 'DESIGNER', 'OPERATOR'];
-            const icons = ['🕶️', '🎨', '🖨️'];
-            
+            const roles = ['ADMIN', 'DESIGNER', 'OPERATOR'], icons = ['🕶️', '🎨', '🖨️'];
             roles.forEach((r, i) => {
                 const card = document.createElement('div');
                 card.className = 'role-card';
-                card.tabIndex = 0;
                 card.innerHTML = `<i>${icons[i]}</i><span>${r}</span>`;
-                
-                card.onclick = function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const role = this.querySelector('span').textContent.toLowerCase();
-                    enterRole(role);
-                };
-                
-                card.onkeypress = function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this.click();
-                    }
-                };
-                
+                card.onclick = function() { enterRole(this.querySelector('span').textContent.toLowerCase()); };
                 newRoleGrid.appendChild(card);
             });
-            
             roleGrid.parentNode.replaceChild(newRoleGrid, roleGrid);
-            
-            document.getElementById('btn-cloud').onclick = function() { 
-                setMode('cloud'); 
-            };
-            document.getElementById('btn-local').onclick = function() { 
-                setMode('local'); 
-            };
+            document.getElementById('btn-cloud').onclick = () => setMode('cloud');
+            document.getElementById('btn-local').onclick = () => setMode('local');
         }
 
         function checkAutoLogin() {
             const savedRole = localStorage.getItem('kts_active_role');
-            if (savedRole) {
-                loadInterface(savedRole);
-            }
+            if (savedRole) loadInterface(savedRole);
         }
 
         function loadInterface(r) {
             role = r;
-            
             document.getElementById('kts-prompt').classList.remove('post-logout');
-            
-            postLogoutMode = false;
-            window.postLogoutMode = false;
-            
+            postLogoutMode = false; window.postLogoutMode = false;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-layout').style.display = 'flex';
             document.getElementById('active-role-display').innerText = role.toUpperCase();
             document.getElementById('my-id-display').innerText = myId;
-            
             if (role === 'operator') {
                 document.getElementById('batch-bar').style.display = 'flex';
                 document.getElementById('btn-open-layouter').style.display = 'inline-flex';
             }
-            
-            initPeer(); 
-            addNewJob(); 
+            initPeer(); addNewJob(); 
             setTimeout(renderStream, 500);
         }
 
-        // ============= MODE SETUP =============
         function setMode(m) {
             if (m === 'local') {
-                openKtsPrompt(
-                    "Local LAN Setup", 
-                    "Masukkan IP Server Lokal (Operator):", 
-                    "text", 
-                    (ip) => {
-                        localStorage.setItem('kts_mode', 'local'); 
-                        localStorage.setItem('kts_ip', ip); 
-                        location.reload();
-                    }
-                );
+                openKtsPrompt("Local LAN Setup", "IP Server Lokal (Operator):", "text", (ip) => {
+                    localStorage.setItem('kts_mode', 'local'); 
+                    localStorage.setItem('kts_ip', ip); 
+                    location.reload();
+                });
             } else { 
                 localStorage.setItem('kts_mode', 'cloud'); 
                 location.reload(); 
             }
         }
 
-        // ============= PEER CONNECTION =============
         function initPeer() {
             const mode = localStorage.getItem('kts_mode') || 'cloud';
             const savedIp = localStorage.getItem('kts_ip') || 'localhost';
-            const opts = (mode === 'local') ? { 
-                host: savedIp, 
-                port: 9000, 
-                path: '/kertases-app', 
-                secure: false 
-            } : { debug: 1 };
-            
+            const opts = (mode === 'local') ? { host: savedIp, port: 9000, path: '/kertases-app', secure: false } : { debug: 1 };
             document.getElementById('btn-local').className = (mode === 'local') ? 'btn btn-primary' : 'btn btn-outline';
             document.getElementById('btn-cloud').className = (mode === 'cloud') ? 'btn btn-primary' : 'btn btn-outline';
-
             peer = new Peer(myId, opts);
             peer.on('open', () => updateStatus('ready'));
             peer.on('connection', c => setupConn(c));
-            peer.on('error', err => { 
-                if (err.type === 'peer-unavailable') alert("Partner Offline!"); 
-                updateStatus('offline'); 
-            });
+            peer.on('error', err => { if (err.type === 'peer-unavailable') alert("Partner Offline!"); updateStatus('offline'); });
         }
 
         function connectMulti() {
@@ -1081,32 +924,17 @@
             c.on('open', () => {
                 if (!activeConns.find(x => x.peer === c.peer)) {
                     activeConns.push(c); 
-                    updateStatus('online'); 
-                    updateConnUI();
-                    playConnectionSound();
+                    updateStatus('online'); updateConnUI();
+                    playSfx('conn');
                 }
             });
-
             c.on('data', d => {
-                if (d.type === 'job') {
-                    handleIncoming(d, c.peer);
-                }
-                if (d.type === 'status_update') {
-                    handleStatusUpdate(d);
-                }
+                if (d.type === 'job') handleIncoming(d, c.peer);
+                if (d.type === 'status_update') handleStatusUpdate(d);
             });
-
             c.on('close', () => { 
                 activeConns = activeConns.filter(x => x.peer !== c.peer); 
-                updateConnUI(); 
-                if (!activeConns.length) {
-                    updateStatus('ready');
-                }
-            });
-
-            c.on('error', err => {
-                console.error("Aya masalah koneksi:", err);
-                updateStatus('offline');
+                updateConnUI(); if (!activeConns.length) updateStatus('ready');
             });
         }
 
@@ -1123,24 +951,14 @@
         }
 
         // ============= CONTROL PANEL =============
-        function addNewJob() { 
-            tempJobs.push({ files: [], inv: '', cap: '', selected: true }); 
-            renderJobs(); 
-        }
+        function addNewJob() { tempJobs.push({ files: [], inv: '', cap: '', selected: true }); renderJobs(); }
         
         function removeJobRow(idx) {
-            if (tempJobs.length > 1) {
-                tempJobs.splice(idx, 1);
-                renderJobs();
-            } else { 
-                alert("Minimal 1 baris!"); 
-            }
+            if (tempJobs.length > 1) { tempJobs.splice(idx, 1); renderJobs(); }
+            else alert("Minimal 1 baris!"); 
         }
 
-        function triggerFileSelect(idx) { 
-            activeJobIdx = idx; 
-            document.getElementById('job-file-in').click(); 
-        }
+        function triggerFileSelect(idx) { activeJobIdx = idx; document.getElementById('job-file-in').click(); }
 
         async function handleFileSelect(input) {
             if (!input.files.length || activeJobIdx === null) return;
@@ -1150,13 +968,11 @@
                 let thumb = isPdf ? await getPdfPreview(data) : data;
                 tempJobs[activeJobIdx].files.push({ data, thumb, isPdf, name: f.name });
             }
-            renderJobs(); 
-            input.value = '';
+            renderJobs(); input.value = '';
         }
 
         function renderJobs() {
-            const list = document.getElementById('job-list'); 
-            list.innerHTML = '';
+            const list = document.getElementById('job-list'); list.innerHTML = '';
             tempJobs.forEach((job, jIdx) => {
                 let row = document.createElement('div');
                 row.className = `job-row ${job.selected ? 'checked' : ''}`;
@@ -1167,105 +983,44 @@
                         <div onclick="removeFile(${jIdx}, ${fIdx})" style="position:absolute; top:2px; left:2px; background:var(--danger); color:white; font-size:10px; padding:2px; cursor:pointer; border-radius:50%; width:16px; height:16px; text-align:center; line-height:12px;">×</div>
                     </div>`
                 ).join('');
-                
-                row.innerHTML = `
-                    <div onclick="removeJobRow(${jIdx})" style="position:absolute; top:12px; left:12px; background:var(--danger); color:white; font-size:0.6rem; font-weight:bold; padding:2px 6px; border-radius:6px; cursor:pointer; z-index:10;">HAPUS BARIS</div>
-                    <input type="checkbox" style="position:absolute; top:15px; right:15px; transform:scale(1.4);" ${job.selected ? 'checked' : ''} onchange="tempJobs[${jIdx}].selected=this.checked; renderJobs()">
-                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; padding-top:20px;">
-                        ${thumbs}
-                        <div class="thumb-box" style="cursor:pointer; border:1px dashed var(--accent); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.5rem;" onclick="triggerFileSelect(${jIdx})">+</div>
-                    </div>
-                    <input type="text" class="cyber-input" placeholder="INV #" value="${job.inv}" oninput="tempJobs[${jIdx}].inv=this.value" style="margin-bottom:8px; font-weight:700;">
-                    <textarea class="cyber-input" placeholder="KETERANGAN..." oninput="tempJobs[${jIdx}].cap=this.value">${job.cap}</textarea>
-                `;
+                row.innerHTML = `<div onclick="removeJobRow(${jIdx})" style="position:absolute; top:12px; left:12px; background:var(--danger); color:white; font-size:0.6rem; font-weight:bold; padding:2px 6px; border-radius:6px; cursor:pointer; z-index:10;">HAPUS BARIS</div><input type="checkbox" style="position:absolute; top:15px; right:15px; transform:scale(1.4);" ${job.selected ? 'checked' : ''} onchange="tempJobs[${jIdx}].selected=this.checked; renderJobs()"><div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; padding-top:20px;">${thumbs}<div class="thumb-box" style="cursor:pointer; border:1px dashed var(--accent); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:1.5rem;" onclick="triggerFileSelect(${jIdx})">+</div></div><input type="text" class="cyber-input" placeholder="INV #" value="${job.inv}" oninput="tempJobs[${jIdx}].inv=this.value" style="margin-bottom:8px; font-weight:700;"><textarea class="cyber-input" placeholder="KETERANGAN..." oninput="tempJobs[${jIdx}].cap=this.value">${job.cap}</textarea>`;
                 list.appendChild(row);
             });
         }
 
-        function removeFile(jIdx, fIdx) { 
-            tempJobs[jIdx].files.splice(fIdx, 1); 
-            renderJobs(); 
-        }
+        function removeFile(jIdx, fIdx) { tempJobs[jIdx].files.splice(fIdx, 1); renderJobs(); }
 
-        function toggleSelectAllRows() { 
-            let all = tempJobs.every(j => j.selected); 
-            tempJobs.forEach(j => j.selected = !all); 
-            renderJobs(); 
-        }
+        function toggleSelectAllRows() { let all = tempJobs.every(j => j.selected); tempJobs.forEach(j => j.selected = !all); renderJobs(); }
 
         function mainAction() {
             const sel = tempJobs.filter(j => j.selected);
             if (!sel.length) return alert("Pilih data!");
-            
             if (role === 'operator') {
-                let files = []; 
-                sel.forEach(j => j.files.forEach(f => files.push({...f, inv: j.inv})));
+                let files = []; sel.forEach(j => j.files.forEach(f => files.push({...f, inv: j.inv})));
                 if (!files.length) return alert("Kosong!");
                 openPrintLogic({ files, internalId: null }); 
             } else {
                 if (!activeConns.length) return alert("Koneksikan Partner!");
-                let d = { 
-                    type: 'job', 
-                    jobs: sel, 
-                    id: Date.now(), 
-                    senderRole: role, 
-                    senderId: myId, 
-                    status: 'pending' 
-                };
+                let d = { type: 'job', jobs: sel, id: Date.now(), senderRole: role, senderId: myId, status: 'pending' };
                 activeConns.forEach(c => { if (c.open) c.send(d); });
                 saveStream({ ...d, direction: 'out', hidden: false });
-                sel.forEach(job => saveHistory({ 
-                    inv: job.inv, 
-                    cap: job.cap, 
-                    thumb: job.files[0]?.thumb, 
-                    typeLabel: role === 'admin' ? 'ADM_SEND' : 'DSN_SEND', 
-                    partner: activeConns.map(c => c.peer).join(', ') 
-                }));
-                alert("TERKIRIM!"); 
-                tempJobs = tempJobs.filter(j => !j.selected); 
-                if (!tempJobs.length) addNewJob(); 
-                renderJobs(); 
-                renderStream();
+                sel.forEach(job => saveHistory({ inv: job.inv, cap: job.cap, thumb: job.files[0]?.thumb, typeLabel: role === 'admin' ? 'ADM_SEND' : 'DSN_SEND', partner: activeConns.map(c => c.peer).join(', ') }));
+                alert("TERKIRIM!"); tempJobs = tempJobs.filter(j => !j.selected); if (!tempJobs.length) addNewJob(); renderJobs(); renderStream();
             }
         }
 
         function handleIncoming(d, from) {
             let label = (role === 'designer') ? "DSN_RECV" : "OP_RECV";
-            
-            let streamData = { 
-                ...d, 
-                direction: 'in', 
-                from: from, 
-                hidden: false, 
-                reprintCount: 0, 
-                status: 'pending' 
-            };
-
+            let streamData = { ...d, direction: 'in', from: from, hidden: false, reprintCount: 0, status: 'pending' };
             saveStream(streamData);
-
-            if (d.jobs && Array.isArray(d.jobs)) {
-                d.jobs.forEach(job => {
-                    saveHistory({ 
-                        inv: job.inv || '-', 
-                        cap: job.cap || '-', 
-                        thumb: job.files[0]?.thumb || null, 
-                        typeLabel: label, 
-                        partner: from 
-                    });
-                });
-            }
-
-            renderStream(); 
-            playNotification();
+            if (d.jobs) { d.jobs.forEach(job => { saveHistory({ inv: job.inv || '-', cap: job.cap || '-', thumb: job.files[0]?.thumb || null, typeLabel: label, partner: from }); }); }
+            renderStream(); playSfx('notif');
         }
 
         function handleStatusUpdate(d) {
             db.transaction("stream", "readwrite").objectStore("stream").get(d.msgId).onsuccess = e => {
                 let data = e.target.result;
-                if (data) {
-                    data.status = 'printed';
-                    db.transaction("stream", "readwrite").objectStore("stream").put(data).onsuccess = () => renderStream();
-                }
+                if (data) { data.status = 'printed'; db.transaction("stream", "readwrite").objectStore("stream").put(data).onsuccess = () => renderStream(); }
             };
         }
 
@@ -1278,81 +1033,35 @@
         }
 
         function renderStream() {
-            const area = document.getElementById('stream-area');
-            area.innerHTML = '';
-
+            const area = document.getElementById('stream-area'); area.innerHTML = '';
             db.transaction("stream").objectStore("stream").getAll().onsuccess = e => {
                 const results = e.target.result;
-
                 results.forEach(msg => {
                     if (msg.hidden) return;
-
-                    if (timelineFilter === 'printed') {
-                        if (msg.status !== 'printed') return;
-                    } else {
-                        if (msg.status === 'printed') return;
-                        if (timelineFilter === 'admin' && msg.senderRole !== 'admin') return;
-                        if (timelineFilter === 'designer' && msg.senderRole !== 'designer') return;
-                    }
-
+                    if (timelineFilter === 'printed') { if (msg.status !== 'printed') return; }
+                    else { if (msg.status === 'printed') return; if (timelineFilter === 'admin' && msg.senderRole !== 'admin') return; if (timelineFilter === 'designer' && msg.senderRole !== 'designer') return; }
                     if (role === 'admin' && msg.direction === 'in') return;
-
                     const isSelected = selectedInboxes.includes(msg.id);
                     let card = document.createElement('div');
                     card.className = `msg-card ${msg.direction} ${msg.status === 'printed' ? 'printed' : ''} ${isSelected ? 'selected' : ''}`;
-                    
                     let printedMark = msg.status === 'printed' ? `<div class="printed-badge">DICETAK</div>` : '';
                     let reprintMark = (msg.reprintCount > 0) ? `<div class="printed-badge" style="background:var(--warning); margin-left:5px;">REPRINT [${msg.reprintCount}x]</div>` : '';
-                    
-                    let header = `
-                        <div class="msg-header">
-                            <div style="display:flex; align-items:center;">
-                                <span>FROM: ${msg.from || 'ME'} <span class="role-tag">${msg.senderRole}</span></span> 
-                                ${printedMark} ${reprintMark}
-                            </div>
-                            <span onclick="hideStream(${msg.id})" style="cursor:pointer; color:var(--danger); font-weight:bold; padding:0 5px;">×</span>
-                        </div>`;
-                    
-                    let body = document.createElement('div'); 
-                    body.className = 'msg-body';
+                    let header = `<div class="msg-header"><div style="display:flex; align-items:center;"><span>FROM: ${msg.from || 'ME'} <span class="role-tag">${msg.senderRole}</span></span> ${printedMark} ${reprintMark}</div><span onclick="hideStream(${msg.id})" style="cursor:pointer; color:var(--danger); font-weight:bold; padding:0 5px;">×</span></div>`;
+                    let body = document.createElement('div'); body.className = 'msg-body';
                     msg.jobs.forEach((job, jIdx) => {
-                        let jobWrap = document.createElement('div');
-                        jobWrap.style.marginBottom = "15px";
+                        let jobWrap = document.createElement('div'); jobWrap.style.marginBottom = "15px";
                         jobWrap.innerHTML = `<input type="text" class="card-edit-inv" value="${job.inv || ''}" onchange="updateStreamContent(${msg.id}, ${jIdx}, 'inv', this.value)"><textarea class="card-edit-cap" onchange="updateStreamContent(${msg.id}, ${jIdx}, 'cap', this.value)">${job.cap || ''}</textarea>`;
                         job.files.forEach((f, fIdx) => {
-                            jobWrap.innerHTML += `<div class="thumb-row-wrap">
-                                <div class="thumb-box">
-                                    <img src="${f.thumb}">
-                                    ${f.isPdf ? '<div class="pdf-tag">PDF</div>' : ''}
-                                </div>
-                                <div style="flex:1; display:flex; flex-direction:column; gap:5px;">
-                                    <span style="font-size:0.6rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:150px;">${f.name || 'file_asset'}</span>
-                                    <button class="btn btn-mini btn-outline" style="color:var(--success); border-color:rgba(16,185,129,0.3);" onclick="downloadAsset('${f.data}', '${job.inv || 'file'}_${fIdx}')">💾 SAVE</button>
-                                </div>
-                            </div>`;
+                            jobWrap.innerHTML += `<div class="thumb-row-wrap"><div class="thumb-box"><img src="${f.thumb}">${f.isPdf ? '<div class="pdf-tag">PDF</div>' : ''}</div><div style="flex:1; display:flex; flex-direction:column; gap:5px;"><span style="font-size:0.6rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:150px;">${f.name || 'file_asset'}</span><button class="btn btn-mini btn-outline" style="color:var(--success); border-color:rgba(16,185,129,0.3);" onclick="downloadAsset('${f.data}', '${job.inv || 'file'}_${fIdx}')">💾 SAVE</button></div></div>`;
                         });
                         body.appendChild(jobWrap);
                     });
-                    
-                    let footer = document.createElement('div'); 
-                    footer.style.cssText = "padding:12px; display:flex; gap:10px; border-top:1px solid rgba(255,255,255,0.05);";
-                    
+                    let footer = document.createElement('div'); footer.style.cssText = "padding:12px; display:flex; gap:10px; border-top:1px solid rgba(255,255,255,0.05);";
                     if (msg.direction === 'in' && role === 'operator') {
-                        if (msg.status !== 'printed') {
-                            footer.innerHTML = `
-                                <button class="btn btn-success btn-mini" style="flex:2;" onclick="openPrintSingle(${msg.id})">🖨️ CETAK</button>
-                                <button class="btn ${isSelected ? 'btn-primary' : 'btn-outline'} btn-mini" onclick="toggleSelect(${msg.id})">${isSelected ? '✅ READY' : '➕ BATCH'}</button>
-                            `;
-                        } else {
-                            footer.innerHTML = `
-                                <button class="btn btn-outline btn-mini" style="flex:1; border-color:var(--warning); color:var(--warning);" onclick="openPrintSingle(${msg.id})">🔄 CETAK ULANG</button>
-                            `;
-                        }
+                        if (msg.status !== 'printed') footer.innerHTML = `<button class="btn btn-success btn-mini" style="flex:2;" onclick="openPrintSingle(${msg.id})">🖨️ CETAK</button><button class="btn ${isSelected ? 'btn-primary' : 'btn-outline'} btn-mini" onclick="toggleSelect(${msg.id})">${isSelected ? '✅ READY' : '➕ BATCH'}</button>`;
+                        else footer.innerHTML = `<button class="btn btn-outline btn-mini" style="flex:1; border-color:var(--warning); color:var(--warning);" onclick="openPrintSingle(${msg.id})">🔄 CETAK ULANG</button>`;
                     }
-                    
-                    card.innerHTML = header; 
-                    card.appendChild(body); 
-                    if (footer.innerHTML !== "") card.appendChild(footer);
+                    card.innerHTML = header; card.appendChild(body); if (footer.innerHTML !== "") card.appendChild(footer);
                     area.appendChild(card);
                 });
                 area.scrollTop = area.scrollHeight;
@@ -1361,8 +1070,7 @@
 
         function updateStreamContent(msgId, jobIdx, field, value) {
             db.transaction("stream", "readwrite").objectStore("stream").get(msgId).onsuccess = e => {
-                let d = e.target.result; 
-                d.jobs[jobIdx][field] = value;
+                let d = e.target.result; d.jobs[jobIdx][field] = value;
                 db.transaction("stream", "readwrite").objectStore("stream").put(d);
             };
         }
@@ -1385,694 +1093,229 @@
         }
 
         function openPrintLogic(job) {
-            activeJob = job;
-            document.getElementById('modal-print').style.display = 'flex';
+            activeJob = job; document.getElementById('modal-print').style.display = 'flex';
             document.getElementById('p-img').src = job.files[0].thumb;
             document.getElementById('p-pdf-badge').style.display = job.files[0].isPdf ? 'block' : 'none';
             document.getElementById('p-inv-edit').value = job.files[0].inv;
             switchPrintMode(job.files[0].isPdf ? 'full' : 'grid');
         }
 
-        function toggleCustomPaper(val) { 
-            document.getElementById('custom-paper-box').style.display = (val === 'custom') ? 'flex' : 'none'; 
-            calcGrid(); 
-        }
+        function toggleCustomPaper(val) { document.getElementById('custom-paper-box').style.display = (val === 'custom') ? 'flex' : 'none'; calcGrid(); }
 
         function calcGrid() {
-            if (currentPrintMode !== 'grid') { 
-                document.getElementById('grid-res-box').innerText = "FULL PAGE MODE"; 
-                return; 
-            }
+            if (currentPrintMode !== 'grid') { document.getElementById('grid-res-box').innerText = "FULL PAGE MODE"; return; }
             let pw, ph;
             if (document.getElementById('p-pdf-paper').value === 'custom') {
-                pw = parseFloat(document.getElementById('p-custom-w').value) || 0; 
-                ph = parseFloat(document.getElementById('p-custom-h').value) || 0;
-            } else {
-                let p = document.getElementById('p-pdf-paper').value.split(','); 
-                pw = parseFloat(p[0]); 
-                ph = parseFloat(p[1]);
-            }
-            let w = parseFloat(document.getElementById('p-grid-w').value) || 1, 
-                h = parseFloat(document.getElementById('p-grid-h').value) || 1, 
-                gap = parseFloat(document.getElementById('p-grid-gap').value) || 0, 
-                target = parseInt(document.getElementById('p-pdf-target').value) || 1;
-            let nx = Math.floor((pw + gap) / (w + gap)), 
-                ny = Math.floor((ph + gap) / (h + gap));
+                pw = parseFloat(document.getElementById('p-custom-w').value) || 0; ph = parseFloat(document.getElementById('p-custom-h').value) || 0;
+            } else { let p = document.getElementById('p-pdf-paper').value.split(','); pw = parseFloat(p[0]); ph = parseFloat(p[1]); }
+            let w = parseFloat(document.getElementById('p-grid-w').value) || 1, h = parseFloat(document.getElementById('p-grid-h').value) || 1, gap = parseFloat(document.getElementById('p-grid-gap').value) || 0, target = parseInt(document.getElementById('p-pdf-target').value) || 1;
+            let nx = Math.floor((pw + gap) / (w + gap)), ny = Math.floor((ph + gap) / (h + gap));
             document.getElementById('grid-res-box').innerText = `HASIL: ${nx * ny} pcs/lbr | TOTAL: ${nx * ny * target} PCS`;
         }
 
         async function physicalRotate() {
-            let f = activeJob.files[0]; 
-            if (f.isPdf) return;
-            let img = new Image(); 
-            img.src = f.data; 
-            await img.decode();
-            let cvs = document.createElement('canvas'); 
-            cvs.width = img.height; 
-            cvs.height = img.width;
-            let ctx = cvs.getContext('2d'); 
-            ctx.translate(cvs.width / 2, cvs.height / 2); 
-            ctx.rotate(90 * Math.PI / 180);
-            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            let f = activeJob.files[0]; if (f.isPdf) return;
+            let img = new Image(); img.src = f.data; await img.decode();
+            let cvs = document.createElement('canvas'); cvs.width = img.height; cvs.height = img.width;
+            let ctx = cvs.getContext('2d'); ctx.translate(cvs.width / 2, cvs.height / 2); ctx.rotate(90 * Math.PI / 180); ctx.drawImage(img, -img.width / 2, -img.height / 2);
             f.data = f.thumb = cvs.toDataURL('image/jpeg', 0.9);
             document.getElementById('p-img').src = f.thumb;
             let ow = document.getElementById('p-grid-w').value;
-            document.getElementById('p-grid-w').value = document.getElementById('p-grid-h').value;
-            document.getElementById('p-grid-h').value = ow;
+            document.getElementById('p-grid-w').value = document.getElementById('p-grid-h').value; document.getElementById('p-grid-h').value = ow;
             calcGrid();
         }
 
-        function executePrint() { 
-            if (currentPrintMode === 'full') executeFullPrint(); 
-            else executeGridPrint(); 
-        }
+        function executePrint() { if (currentPrintMode === 'full') executeFullPrint(); else executeGridPrint(); }
 
         async function executeFullPrint() {
-            const btn = document.getElementById('btn-do-print'); 
-            btn.innerText = "RENDERING..."; 
-            btn.disabled = true;
+            const btn = document.getElementById('btn-do-print'); btn.innerText = "RENDERING..."; btn.disabled = true;
             try {
                 let pw, ph;
-                if (document.getElementById('p-pdf-paper').value === 'custom') {
-                    pw = document.getElementById('p-custom-w').value; 
-                    ph = document.getElementById('p-custom-h').value;
-                } else {
-                    let p = document.getElementById('p-pdf-paper').value.split(','); 
-                    pw = p[0]; 
-                    ph = p[1];
-                }
-                let target = parseInt(document.getElementById('p-pdf-target').value) || 1, 
-                    mat = document.getElementById('p-mat').value, 
-                    inv = document.getElementById('p-inv-edit').value;
-                let html = `<style>
-                    @page { size: ${pw}cm ${ph}cm; margin: 0; } 
-                    body { margin: 0; } 
-                    .sheet { width: ${pw}cm; height: ${ph}cm; page-break-after: always; display: flex; flex-direction: column; align-items: center; justify-content: center; } 
-                    .p-img { width: 100%; height: calc(100% - 1.2cm); object-fit: contain; } 
-                    .footer { height: 1.2cm; font-size: 11pt; font-family: sans-serif; font-weight: bold; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }
-                </style>`;
+                if (document.getElementById('p-pdf-paper').value === 'custom') { pw = document.getElementById('p-custom-w').value; ph = document.getElementById('p-custom-h').value; }
+                else { let p = document.getElementById('p-pdf-paper').value.split(','); pw = p[0]; ph = p[1]; }
+                let target = parseInt(document.getElementById('p-pdf-target').value) || 1, mat = document.getElementById('p-mat').value, inv = document.getElementById('p-inv-edit').value;
+                let html = `<style>@page { size: ${pw}cm ${ph}cm; margin: 0; } body { margin: 0; } .sheet { width: ${pw}cm; height: ${ph}cm; page-break-after: always; display: flex; flex-direction: column; align-items: center; justify-content: center; } .p-img { width: 100%; height: calc(100% - 1.2cm); object-fit: contain; } .footer { height: 1.2cm; font-size: 11pt; font-family: sans-serif; font-weight: bold; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; }</style>`;
                 let content = "";
                 for (let f of activeJob.files) {
                     const img = f.isPdf ? await getPdfPreview(f.data, true) : f.data;
                     for (let i = 0; i < target; i++) content += `<div class="sheet"><img src="${img}" class="p-img"><div class="footer">${inv} - ${mat}</div></div>`;
                 }
                 finishPrint(html + content, inv, target, 'FULL PAGE');
-            } catch(e) { 
-                alert("Error!"); 
-                btn.innerText = "MULAI CETAK"; 
-                btn.disabled = false; 
-            }
+            } catch(e) { alert("Error!"); btn.innerText = "MULAI CETAK"; btn.disabled = false; }
         }
 
         function executeGridPrint() {
-            const btn = document.getElementById('btn-do-print'); 
-            btn.innerText = "PROSES GRID..."; 
-            btn.disabled = true;
-            
+            const btn = document.getElementById('btn-do-print'); btn.innerText = "PROSES GRID..."; btn.disabled = true;
             let pw, ph;
-            if (document.getElementById('p-pdf-paper').value === 'custom') {
-                pw = parseFloat(document.getElementById('p-custom-w').value); 
-                ph = parseFloat(document.getElementById('p-custom-h').value);
-            } else {
-                let p = document.getElementById('p-pdf-paper').value.split(','); 
-                pw = parseFloat(p[0]); 
-                ph = parseFloat(p[1]);
-            }
-
-            let w = parseFloat(document.getElementById('p-grid-w').value), 
-                h = parseFloat(document.getElementById('p-grid-h').value), 
-                gap = parseFloat(document.getElementById('p-grid-gap').value) || 0, 
-                target = parseInt(document.getElementById('p-pdf-target').value) || 1, 
-                inv = document.getElementById('p-inv-edit').value, 
-                mat = document.getElementById('p-mat').value;
-
-            let kresTebal = parseFloat(document.getElementById('p-grid-kres-thick').value) || 0.2;
-            let kresPanjang = parseFloat(document.getElementById('p-grid-kres-len').value) || 5;
-
-            let nx = Math.floor((pw + gap) / (w + gap)), 
-                ny = Math.floor((ph + gap) / (h + gap)), 
-                halfGap = gap / 2;
-
+            if (document.getElementById('p-pdf-paper').value === 'custom') { pw = parseFloat(document.getElementById('p-custom-w').value); ph = parseFloat(document.getElementById('p-custom-h').value); }
+            else { let p = document.getElementById('p-pdf-paper').value.split(','); pw = parseFloat(p[0]); ph = parseFloat(p[1]); }
+            let w = parseFloat(document.getElementById('p-grid-w').value), h = parseFloat(document.getElementById('p-grid-h').value), gap = parseFloat(document.getElementById('p-grid-gap').value) || 0, target = parseInt(document.getElementById('p-pdf-target').value) || 1, inv = document.getElementById('p-inv-edit').value, mat = document.getElementById('p-mat').value;
+            let kresTebal = parseFloat(document.getElementById('p-grid-kres-thick').value) || 0.2, kresPanjang = parseFloat(document.getElementById('p-grid-kres-len').value) || 5;
+            let nx = Math.floor((pw + gap) / (w + gap)), ny = Math.floor((ph + gap) / (h + gap)), halfGap = gap / 2;
             const mk = (t, l, dir) => {
                 let halfTebal = kresTebal / 2;
-                
-                let hStyle = `position:absolute; top:-${halfTebal}mm; width:${kresPanjang}mm; height:${kresTebal}mm; background:#000;`;
-                let vStyle = `position:absolute; left:-${halfTebal}mm; width:${kresTebal}mm; height:${kresPanjang}mm; background:#000;`;
-                
+                let hStyle = `position:absolute; top:-${halfTebal}mm; width:${kresPanjang}mm; height:${kresTebal}mm; background:#000;`, vStyle = `position:absolute; left:-${halfTebal}mm; width:${kresTebal}mm; height:${kresPanjang}mm; background:#000;`;
                 let parts = "";
-                
                 if (dir.includes('r')) parts += `<div style="${hStyle} left:0;"></div>`;
                 if (dir.includes('l')) parts += `<div style="${hStyle} left:-${kresPanjang}mm;"></div>`; 
                 if (dir.includes('d')) parts += `<div style="${vStyle} top:0;"></div>`;
                 if (dir.includes('u')) parts += `<div style="${vStyle} top:-${kresPanjang}mm;"></div>`;
-
                 return `<div style="position:absolute; top:${t}; left:${l}; width:0; height:0; z-index:100;">${parts}</div>`;
             };
-
-            let html = `<style>
-                @page { size: ${pw}cm ${ph}cm; margin: 0; } 
-                body { margin: 0; } 
-                .sheet { width: ${pw}cm; height: ${ph}cm; display: flex; align-items: center; justify-content: center; page-break-after: always; position: relative; } 
-                .grid-container { display: grid; grid-template-columns: repeat(${nx}, ${w}cm); grid-gap: ${gap}cm; position: relative; } 
-                .cell { position: relative; width: ${w}cm; height: ${h}cm; } 
-                .cell img { width: 100%; height: 100%; object-fit: fill; } 
-                .footer { position: absolute; bottom: 0.3cm; width: 100%; text-align: center; font-weight: bold; font-family: sans-serif; font-size: 10pt; }
-            </style>`;
-
+            let html = `<style>@page { size: ${pw}cm ${ph}cm; margin: 0; } body { margin: 0; } .sheet { width: ${pw}cm; height: ${ph}cm; display: flex; align-items: center; justify-content: center; page-break-after: always; position: relative; } .grid-container { display: grid; grid-template-columns: repeat(${nx}, ${w}cm); grid-gap: ${gap}cm; position: relative; } .cell { position: relative; width: ${w}cm; height: ${h}cm; } .cell img { width: 100%; height: 100%; object-fit: fill; } .footer { position: absolute; bottom: 0.3cm; width: 100%; text-align: center; font-weight: bold; font-family: sans-serif; font-size: 10pt; }</style>`;
             let cells = ""; 
             for (let row = 0; row < ny; row++) {
                 for (let col = 0; col < nx; col++) {
                     let offset = halfGap > 0 ? `-${halfGap}cm` : "0";
-                    
-                    const getType = (r, c) => { 
-                        if (r === 0 && c === 0) return "rd"; 
-                        if (r === 0 && c === nx) return "ld"; 
-                        if (r === ny && c === 0) return "ru"; 
-                        if (r === ny && c === nx) return "lu"; 
-                        if (r === 0) return "lrd"; 
-                        if (r === ny) return "lru"; 
-                        if (c === 0) return "rdu"; 
-                        if (c === nx) return "ldu"; 
-                        return "lrdu"; 
-                    };
-                    
+                    const getType = (r, c) => { if (r === 0 && c === 0) return "rd"; if (r === 0 && c === nx) return "ld"; if (r === ny && c === 0) return "ru"; if (r === ny && c === nx) return "lu"; if (r === 0) return "lrd"; if (r === ny) return "lru"; if (c === 0) return "rdu"; if (c === nx) return "ldu"; return "lrdu"; };
                     let marks = mk(offset, offset, getType(row, col));
-                    
                     if (col === nx - 1) marks += mk(offset, `calc(100% + ${halfGap}cm)`, getType(row, col + 1));
-                    
-                    if (row === ny - 1) {
-                        marks += mk(`calc(100% + ${halfGap}cm)`, offset, getType(row + 1, col));
-                        if (col === nx - 1) marks += mk(`calc(100% + ${halfGap}cm)`, `calc(100% + ${halfGap}cm)`, getType(row + 1, col + 1));
-                    }
+                    if (row === ny - 1) { marks += mk(`calc(100% + ${halfGap}cm)`, offset, getType(row + 1, col)); if (col === nx - 1) marks += mk(`calc(100% + ${halfGap}cm)`, `calc(100% + ${halfGap}cm)`, getType(row + 1, col + 1)); }
                     cells += `<div class="cell"><img src="${activeJob.files[0].data}">${marks}</div>`;
                 }
             }
-            
-            let content = ""; 
-            for (let i = 0; i < target; i++) content += `<div class="sheet"><div class="grid-container">${cells}</div><div class="footer">${inv} - ${mat}</div></div>`;
-            
+            let content = ""; for (let i = 0; i < target; i++) content += `<div class="sheet"><div class="grid-container">${cells}</div><div class="footer">${inv} - ${mat}</div></div>`;
             finishPrint(html + content, inv, target, `GRID (${nx * ny}x${target})`);
         }
 
         function finishPrint(fullHtml, inv, qty, mode) {
             let f = document.getElementById('p-frame');
             f.style.display = "block";
-            f.contentWindow.document.open();
-            f.contentWindow.document.write(fullHtml);
-            f.contentWindow.document.close();
-
+            f.contentWindow.document.open(); f.contentWindow.document.write(fullHtml); f.contentWindow.document.close();
             setTimeout(() => {
-                f.contentWindow.print();
-                f.style.display = "none";
-                
-                document.getElementById('btn-do-print').innerText = "MULAI CETAK";
-                document.getElementById('btn-do-print').disabled = false;
-                
+                f.contentWindow.print(); f.style.display = "none";
+                document.getElementById('btn-do-print').innerText = "MULAI CETAK"; document.getElementById('btn-do-print').disabled = false;
                 if (activeJob.internalId) {
                     db.transaction("stream", "readwrite").objectStore("stream").get(activeJob.internalId).onsuccess = e => {
-                        let d = e.target.result;
-                        
-                        if (d.status === 'printed') {
-                            d.reprintCount = (d.reprintCount || 0) + 1;
-                        } else {
-                            d.status = 'printed';
-                            d.reprintCount = 0;
-                        }
-                        
+                        let d = e.target.result; d.status = 'printed'; d.reprintCount = (d.reprintCount || 0) + 1;
                         db.transaction("stream", "readwrite").objectStore("stream").put(d).onsuccess = () => renderStream();
                     };
-                    
                     let conn = activeConns.find(x => x.peer === activeJob.senderId);
                     if (conn) conn.send({ type: 'status_update', msgId: activeJob.internalId });
                 } else if (role === 'operator') {
-                    let localJob = {
-                        id: Date.now(), 
-                        direction: 'in', 
-                        from: 'LOKAL (MANUAL)', 
-                        senderRole: 'operator', 
-                        senderId: myId, 
-                        status: 'printed', 
-                        reprintCount: 0,
-                        jobs: [{ inv: inv, cap: mode, files: activeJob.files }], 
-                        hidden: false
-                    };
-                    saveStream(localJob);
-                    renderStream();
+                    let localJob = { id: Date.now(), direction: 'in', from: 'LOKAL', senderRole: 'operator', senderId: myId, status: 'printed', jobs: [{ inv, cap: mode, files: activeJob.files }], hidden: false };
+                    saveStream(localJob); renderStream();
                 }
-
-                saveHistory({ 
-                    inv, 
-                    typeLabel: 'PRODUKSI_SELESAI', 
-                    qty, 
-                    cap: mode, 
-                    thumb: activeJob.files[0].thumb, 
-                    partner: activeJob.internalId ? activeJob.senderId : 'MANUAL' 
-                });
-
-                playDoneSound();
-                closeModal();
+                saveHistory({ inv, typeLabel: 'PRODUKSI_SELESAI', qty, cap: mode, thumb: activeJob.files[0].thumb, partner: activeJob.internalId ? activeJob.senderId : 'MANUAL' });
+                playSfx('done'); closeModal();
             }, 1000);
         }
 
         // ============= HISTORY & UTILS =============
-        function saveHistory(obj) { 
-            db.transaction("history", "readwrite").objectStore("history").add({ 
-                time: new Date().toLocaleString('id-ID'), 
-                inv: obj.inv || '-', 
-                cap: obj.cap || '-', 
-                partner: obj.partner || '?', 
-                typeLabel: obj.typeLabel, 
-                role: role, 
-                qty: obj.qty || 1, 
-                thumb: obj.thumb || null 
-            }); 
-        }
+        function saveHistory(obj) { db.transaction("history", "readwrite").objectStore("history").add({ time: new Date().toLocaleString('id-ID'), inv: obj.inv || '-', cap: obj.cap || '-', partner: obj.partner || '?', typeLabel: obj.typeLabel, role: role, qty: obj.qty || 1, thumb: obj.thumb || null }); }
         
         function refreshHistBody() {
-            const b = document.getElementById('hist-body'); 
-            b.innerHTML = '';
-            const labelMap = {
-                'ADM_SEND': '📤 Terkirim ke Desainer', 
-                'DSN_RECV': '📥 Diterima dari Admin',
-                'DSN_SEND': '📤 Terkirim ke Operator', 
-                'OP_RECV': '📥 Diterima dari Desainer',
-                'PRODUKSI_SELESAI': '✅ Produksi Selesai', 
-                'OP_PROD': '✅ Produksi Selesai'
-            };
-
+            const b = document.getElementById('hist-body'); b.innerHTML = '';
+            const labelMap = { 'ADM_SEND': '📤 Terkirim ke Desainer', 'DSN_RECV': '📥 Diterima dari Admin', 'DSN_SEND': '📤 Terkirim ke Operator', 'OP_RECV': '📥 Diterima dari Desainer', 'PRODUKSI_SELESAI': '✅ Produksi Selesai' };
             db.transaction("history").objectStore("history").getAll().onsuccess = e => {
                 e.target.result.reverse().forEach(h => {
                     let show = false;
                     if (role === 'admin' && h.typeLabel === 'ADM_SEND') show = true;
-                    else if (role === 'designer') {
-                        if (currentTab === 1 && h.typeLabel === 'DSN_RECV') show = true;
-                        if (currentTab === 2 && h.typeLabel === 'DSN_SEND') show = true;
-                    } else if (role === 'operator') {
-                        if (currentTab === 1 && h.typeLabel === 'OP_RECV') show = true;
-                        if (currentTab === 2 && (h.typeLabel === 'PRODUKSI_SELESAI' || h.typeLabel === 'OP_PROD')) show = true;
-                    }
-
+                    else if (role === 'designer') { if (currentTab === 1 && h.typeLabel === 'DSN_RECV') show = true; if (currentTab === 2 && h.typeLabel === 'DSN_SEND') show = true; }
+                    else if (role === 'operator') { if (currentTab === 1 && h.typeLabel === 'OP_RECV') show = true; if (currentTab === 2 && h.typeLabel === 'PRODUKSI_SELESAI') show = true; }
                     if (show) {
-                        let statusText = labelMap[h.typeLabel] || h.typeLabel;
                         let im = h.thumb ? `<img src="${h.thumb}" style="width:40px; height:40px; object-fit:contain; background:#000; border-radius:6px; border:1px solid var(--border);">` : '-';
-                        b.innerHTML += `<tr>
-                            <td style="font-size:0.7rem;">${h.time}</td>
-                            <td>${im}</td>
-                            <td style="color:var(--accent); font-weight:700;">${h.inv}</td>
-                            <td style="color:var(--success); font-weight:800;">${h.qty}</td>
-                            <td style="text-align:left; font-size:0.75rem;">
-                                <div style="font-weight:bold; color:var(--text);">${statusText}</div>
-                                <div style="color:var(--text-dim); font-size:0.65rem;">${h.cap}</div>
-                            </td>
-                            <td style="color:var(--text-dim);">${h.partner}</td>
-                            <td><button class="btn btn-mini btn-danger btn-outline" style="border:none;" onclick="deleteHistory(${h.id})">DEL</button></td>
-                        </tr>`;
+                        b.innerHTML += `<tr><td>${h.time}</td><td>${im}</td><td style="color:var(--accent); font-weight:700;">${h.inv}</td><td style="color:var(--success); font-weight:800;">${h.qty}</td><td style="text-align:left;"><b>${labelMap[h.typeLabel] || h.typeLabel}</b><br><small>${h.cap}</small></td><td>${h.partner}</td><td><button class="btn btn-mini btn-danger" onclick="deleteHistory(${h.id})">DEL</button></td></tr>`;
                     }
                 });
             };
         }
 
-        function switchHistTab(n) { 
-            currentTab = n; 
-            document.querySelectorAll('.hist-tab-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1)); 
-            refreshHistBody(); 
-        }
+        function switchHistTab(n) { currentTab = n; document.querySelectorAll('.hist-tab-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1)); refreshHistBody(); }
 
-        function toggleHistory() { 
-            let m = document.getElementById('modal-hist'); 
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; 
-            if (m.style.display === 'flex') { 
-                document.getElementById('hist-role-title').innerText = role.toUpperCase(); 
-                switchHistTab(1); 
-            } 
-        }
+        function toggleHistory() { let m = document.getElementById('modal-hist'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; if (m.style.display === 'flex') { document.getElementById('hist-role-title').innerText = role.toUpperCase(); switchHistTab(1); } }
 
         async function getPdfPreview(base64, high = false) {
             try {
                 const pdfData = atob(base64.split(',')[1]);
                 const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-                const page = await pdf.getPage(1);
-                const viewport = page.getViewport({ scale: high ? 3.0 : 0.5 });
-                const cvs = document.createElement('canvas'); 
-                cvs.height = viewport.height; 
-                cvs.width = viewport.width;
-                await page.render({ 
-                    canvasContext: cvs.getContext('2d'), 
-                    viewport: viewport 
-                }).promise;
+                const page = await pdf.getPage(1); const viewport = page.getViewport({ scale: high ? 3.0 : 0.5 });
+                const cvs = document.createElement('canvas'); cvs.height = viewport.height; cvs.width = viewport.width;
+                await page.render({ canvasContext: cvs.getContext('2d'), viewport }).promise;
                 return cvs.toDataURL('image/jpeg', high ? 0.9 : 0.5);
-            } catch(e) { 
-                return null; 
-            }
+            } catch(e) { return null; }
         }
 
-        function clearAllHistory() { 
-            if (confirm("Hapus log?")) { 
-                let tx = db.transaction("history", "readwrite"); 
-                tx.objectStore("history").openCursor().onsuccess = e => { 
-                    let c = e.target.result; 
-                    if (c && c.value.role === role) c.delete(); 
-                    c?.continue(); 
-                }; 
-                setTimeout(refreshHistBody, 300); 
-            } 
-        }
+        function clearAllHistory() { if (confirm("Hapus log?")) { let tx = db.transaction("history", "readwrite"); tx.objectStore("history").openCursor().onsuccess = e => { let c = e.target.result; if (c && c.value.role === role) c.delete(); c?.continue(); }; setTimeout(refreshHistBody, 300); } }
 
-        function deleteHistory(id) { 
-            db.transaction("history", "readwrite").objectStore("history").delete(id).onsuccess = () => refreshHistBody(); 
-        }
+        function deleteHistory(id) { db.transaction("history", "readwrite").objectStore("history").delete(id).onsuccess = () => refreshHistBody(); }
 
-        function downloadAsset(data, name) { 
-            const a = document.createElement('a'); 
-            a.href = data; 
-            a.download = name; 
-            a.click(); 
-        }
+        function downloadAsset(data, name) { const a = document.createElement('a'); a.href = data; a.download = name; a.click(); }
 
-        function clearTimeline() { 
-            if (confirm("Hapus Timeline?")) { 
-                db.transaction("stream", "readwrite").objectStore("stream").clear().onsuccess = () => renderStream(); 
-            } 
-        }
+        function clearTimeline() { if (confirm("Hapus Timeline?")) { db.transaction("stream", "readwrite").objectStore("stream").clear().onsuccess = () => renderStream(); } }
 
-        function saveStream(o) { 
-            db.transaction("stream", "readwrite").objectStore("stream").put(o); 
-        }
+        function saveStream(o) { db.transaction("stream", "readwrite").objectStore("stream").put(o); }
 
-        function closeModal() { 
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
-        }
+        function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
-        function hideStream(id) { 
-            db.transaction("stream", "readwrite").objectStore("stream").get(id).onsuccess = e => { 
-                let d = e.target.result; 
-                d.hidden = true; 
-                db.transaction("stream", "readwrite").objectStore("stream").put(d); 
-                renderStream(); 
-            }; 
-        }
+        function hideStream(id) { db.transaction("stream", "readwrite").objectStore("stream").get(id).onsuccess = e => { let d = e.target.result; d.hidden = true; db.transaction("stream", "readwrite").objectStore("stream").put(d); renderStream(); }; }
 
-        function toBase64(f) { 
-            return new Promise(r => { 
-                let fr = new FileReader(); 
-                fr.onload = () => r(fr.result); 
-                fr.readAsDataURL(f); 
-            }); 
-        }
+        function toBase64(f) { return new Promise(r => { let fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); }); }
 
-        function toggleSelect(id) { 
-            if (selectedInboxes.includes(id)) 
-                selectedInboxes = selectedInboxes.filter(x => x !== id); 
-            else 
-                selectedInboxes.push(id); 
-            document.getElementById('batch-count').innerText = `${selectedInboxes.length} ITEM DIPILIH`; 
-            renderStream(); 
-        }
+        function toggleSelect(id) { if (selectedInboxes.includes(id)) selectedInboxes = selectedInboxes.filter(x => x !== id); else selectedInboxes.push(id); document.getElementById('batch-count').innerText = `${selectedInboxes.length} ITEM DIPILIH`; renderStream(); }
 
         function openBatchPrint() { 
             if (!selectedInboxes.length) return; 
             let all = [], count = 0; 
             selectedInboxes.forEach(id => { 
                 db.transaction("stream").objectStore("stream").get(id).onsuccess = e => { 
-                    e.target.result.jobs.forEach(j => j.files.forEach(f => { 
-                        if (f.isPdf) all.push({...f, inv: j.inv}); 
-                    })); 
-                    count++; 
-                    if (count === selectedInboxes.length) openPrintLogic({ files: all, internalId: null }); 
+                    e.target.result.jobs.forEach(j => j.files.forEach(f => { if (f.isPdf) all.push({...f, inv: j.inv}); })); 
+                    count++; if (count === selectedInboxes.length) openPrintLogic({ files: all, internalId: null }); 
                 } 
             }); 
         }
 
-        function changeId() { 
-            openKtsPrompt("Admin Access", "Masukkan kode reset:", "password", (code) => { 
-                if (code === "4869") { 
-                    openKtsPrompt("Ganti ID", "Masukkan ID Baru:", "text", (nid) => { 
-                        if (nid) { 
-                            localStorage.setItem('kts_id', nid); 
-                            location.reload(); 
-                        } 
-                    }); 
-                } 
-            }); 
-        }
+        function changeId() { openKtsPrompt("Admin Access", "Masukkan kode reset:", "password", (code) => { if (code === "4869") { openKtsPrompt("Ganti ID", "Masukkan ID Baru:", "text", (nid) => { if (nid) { localStorage.setItem('kts_id', nid); location.reload(); } }); } }); }
 
-        async function exportLogToPDF() { 
-            const { jsPDF } = window.jspdf; 
-            const doc = new jsPDF(); 
-            doc.text("KERTASES PRODUCTION LOG - " + role.toUpperCase(), 14, 15); 
-            doc.autoTable({ 
-                html: '#hist-table-real', 
-                columns: [
-                    { header: 'WAKTU', dataKey: 'time' }, 
-                    { header: 'INV', dataKey: 'inv' }, 
-                    { header: 'QTY', dataKey: 'qty' }, 
-                    { header: 'KET', dataKey: 'cap' }, 
-                    { header: 'PARTNER', dataKey: 'partner' }
-                ], 
-                margin: { top: 25 } 
-            }); 
-            doc.save('log_kertases.pdf'); 
-        }
+        async function exportLogToPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("KERTASES PRODUCTION LOG - " + role.toUpperCase(), 14, 15); doc.autoTable({ html: '#hist-table-real', margin: { top: 25 } }); doc.save('log_kertases.pdf'); }
 
         // ============= MANUAL LAYOUTER =============
-        function openManualLayouter() { 
-            document.getElementById('modal-manual-layout').style.display = 'grid'; 
-            updatePaperCanvas(); 
-        }
-
-        function closeManualLayouter() { 
-            document.getElementById('modal-manual-layout').style.display = 'none'; 
-        }
-
-        async function handleManualUpload(input) {
-            for (let f of input.files) {
-                let data = await toBase64(f);
-                manualSources.push({ id: Date.now() + Math.random(), data, name: f.name });
-            }
-            renderManualSourceList();
-        }
-
+        function openManualLayouter() { document.getElementById('modal-manual-layout').style.display = 'grid'; updatePaperCanvas(); }
+        function closeManualLayouter() { document.getElementById('modal-manual-layout').style.display = 'none'; }
+        async function handleManualUpload(input) { for (let f of input.files) { let data = await toBase64(f); manualSources.push({ id: Date.now() + Math.random(), data, name: f.name }); } renderManualSourceList(); }
         function renderManualSourceList() {
-            const list = document.getElementById('manual-source-list'); 
-            list.innerHTML = ''; 
-
-            if (manualSources.length === 0) {
-                list.innerHTML = `
-                    <div style="grid-column: 1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; opacity:0.3;">
-                        <span style="font-size:2rem; margin-bottom:10px;">🖼️</span>
-                        <span style="font-size:0.7rem; color:var(--text);">NO ASSETS</span>
-                    </div>
-                `;
-                return;
-            }
-
+            const list = document.getElementById('manual-source-list'); list.innerHTML = ''; 
             manualSources.forEach((src, idx) => {
-                let card = document.createElement('div');
-                card.className = 'asset-card';
-                card.onclick = () => addToCanvas(src.id);
-                
-                card.innerHTML = `
-                    <div class="asset-thumb">
-                        <img src="${src.data}">
-                    </div>
-                    <div class="asset-info">
-                        <span class="asset-name" title="${src.name}">${src.name}</span>
-                        <span class="asset-del" onclick="event.stopPropagation(); manualSources.splice(${idx}, 1); renderManualSourceList();" title="Hapus">🗑️</span>
-                    </div>
-                `;
+                let card = document.createElement('div'); card.className = 'asset-card'; card.onclick = () => addToCanvas(src.id);
+                card.innerHTML = `<div class="asset-thumb"><img src="${src.data}"></div><div class="asset-info"><span class="asset-name">${src.name}</span><span class="asset-del" onclick="event.stopPropagation(); manualSources.splice(${idx},1); renderManualSourceList();">🗑️</span></div>`;
                 list.appendChild(card);
             });
         }
-
         function updatePaperCanvas() {
-            const paper = document.getElementById('paper-canvas');
-            const dim = document.getElementById('m-paper').value.split(',');
-            const scale = 10;
-            paper.style.width = (dim[0] * scale) + 'px';
-            paper.style.minHeight = (dim[1] * scale) + 'px';
-            paper.style.height = 'auto';
+            const paper = document.getElementById('paper-canvas'), dim = document.getElementById('m-paper').value.split(','), scale = 10;
+            paper.style.width = (dim[0] * scale) + 'px'; paper.style.minHeight = (dim[1] * scale) + 'px';
             renderCanvasItems();
         }
-
         function addToCanvas(srcId) {
-            const src = manualSources.find(s => s.id === srcId);
-            const w = parseFloat(document.getElementById('m-w').value);
-            const h = parseFloat(document.getElementById('m-h').value);
-            const rot = parseInt(document.getElementById('m-rot').value);
-            const gap = parseFloat(document.getElementById('m-gap').value) || 0;
-            const paperDim = document.getElementById('m-paper').value.split(',');
-            const pW = parseFloat(paperDim[0]);
-
-            let renderW = (rot === 90 || rot === 270) ? h : w;
-            let renderH = (rot === 90 || rot === 270) ? w : h;
-
-            if (currentX + renderW > pW) { 
-                currentX = 0; 
-                currentY += maxRowH + gap; 
-                maxRowH = 0; 
-            }
-            
-            canvasItems.push({ 
-                id: Date.now(), 
-                srcId, 
-                data: src.data, 
-                x: currentX, 
-                y: currentY, 
-                w, 
-                h, 
-                rot, 
-                renderW, 
-                renderH 
-            });
-            
-            currentX += renderW + gap;
-            if (renderH > maxRowH) maxRowH = renderH;
-            
+            const src = manualSources.find(s => s.id === srcId), w = parseFloat(document.getElementById('m-w').value), h = parseFloat(document.getElementById('m-h').value), rot = parseInt(document.getElementById('m-rot').value), gap = parseFloat(document.getElementById('m-gap').value) || 0, pW = parseFloat(document.getElementById('m-paper').value.split(',')[0]);
+            let rW = (rot === 90 || rot === 270) ? h : w, rH = (rot === 90 || rot === 270) ? w : h;
+            if (currentX + rW > pW) { currentX = 0; currentY += maxRowH + gap; maxRowH = 0; }
+            canvasItems.push({ id: Date.now(), srcId, data: src.data, x: currentX, y: currentY, w, h, rot, renderW: rW, renderH: rH });
+            currentX += rW + gap; if (rH > maxRowH) maxRowH = rH;
             renderCanvasItems();
         }
-
         function renderCanvasItems() {
-            const paper = document.getElementById('paper-canvas');
-            const scale = 10;
-            paper.innerHTML = '';
+            const paper = document.getElementById('paper-canvas'), scale = 10; paper.innerHTML = '';
             canvasItems.forEach((item, idx) => {
-                let div = document.createElement('div');
-                div.className = 'canvas-item';
-                div.style.left = (item.x * scale) + 'px';
-                div.style.top = (item.y * scale) + 'px';
-                div.style.width = (item.renderW * scale) + 'px';
-                div.style.height = (item.renderH * scale) + 'px';
-                
-                div.innerHTML = `
-                    <div style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:visible;">
-                        <img src="${item.data}" style="
-                            width:${item.w * scale}px; 
-                            height:${item.h * scale}px; 
-                            transform:rotate(${item.rot}deg);
-                            object-fit:fill;
-                        ">
-                        <div class="item-del" onclick="canvasItems.splice(${idx}, 1); renderCanvasItems();">×</div>
-                    </div>
-                `;
+                let div = document.createElement('div'); div.className = 'canvas-item'; div.style.left = (item.x * scale) + 'px'; div.style.top = (item.y * scale) + 'px'; div.style.width = (item.renderW * scale) + 'px'; div.style.height = (item.renderH * scale) + 'px';
+                div.innerHTML = `<div style="position:relative; width:100%; height:100%;"><img src="${item.data}" style="width:${item.w * scale}px; height:${item.h * scale}px; transform:rotate(${item.rot}deg); object-fit:fill;"><div class="item-del" onclick="canvasItems.splice(${idx},1); renderCanvasItems();">×</div></div>`;
                 paper.appendChild(div);
             });
         }
-
-        function clearManualCanvas() { 
-            canvasItems = []; 
-            currentX = 0; 
-            currentY = 0; 
-            maxRowH = 0; 
-            renderCanvasItems(); 
-        }
-
+        function clearManualCanvas() { canvasItems = []; currentX = 0; currentY = 0; maxRowH = 0; renderCanvasItems(); }
         function printManualCanvas() {
             if (!canvasItems.length) return alert("Canvas kosong!");
-            
-            const dim = document.getElementById('m-paper').value.split(',');
-            const pw = parseFloat(dim[0]), ph = parseFloat(dim[1]); 
-            const useKres = document.getElementById('m-use-kres').checked;
-            
-            const tebalVal = document.getElementById('m-kres-tebal').value || 0.2;
-            const panjangVal = document.getElementById('m-kres-panjang').value || 5;
-            
-            const kThick = tebalVal + 'mm';
-            const kLen = panjangVal + 'mm';
-            const kOff = '2mm';
-
-            let html = `<style>
-                @page { size: ${pw}cm ${ph}cm; margin: 0; } 
-                body { margin: 0; padding: 0; background: white; width: ${pw}cm; min-height: ${ph}cm; }
-                .page-container { position: relative; width: ${pw}cm; height: ${ph}cm; overflow: hidden; }
-                .k-mark { position: absolute; background: #000; z-index: 999; }
-                .k-v { width: ${kThick}; height: ${kLen}; }
-                .k-h { height: ${kThick}; width: ${kLen}; }
-                .tl-v { bottom: 100%; left: 0; margin-bottom: ${kOff}; } 
-                .tl-h { right: 100%; top: 0; margin-right: ${kOff}; }
-                .tr-v { bottom: 100%; right: 0; margin-bottom: ${kOff}; }
-                .tr-h { left: 100%; top: 0; margin-left: ${kOff}; }
-                .bl-v { top: 100%; left: 0; margin-top: ${kOff}; }
-                .bl-h { right: 100%; bottom: 0; margin-right: ${kOff}; }
-                .br-v { top: 100%; right: 0; margin-top: ${kOff}; }
-                .br-h { left: 100%; bottom: 0; margin-left: ${kOff}; }
-                .img-wrap { position: absolute; display: flex; align-items: center; justify-content: center; }
-            </style>`;
-
-            html += `<div class="page-container">`;
-
+            const dim = document.getElementById('m-paper').value.split(','), pw = parseFloat(dim[0]), ph = parseFloat(dim[1]), useKres = document.getElementById('m-use-kres').checked;
+            let html = `<style>@page { size: ${pw}cm ${ph}cm; margin: 0; } body { margin: 0; position: relative; width:${pw}cm; height:${ph}cm; } .k-mark { position: absolute; background: #000; } .k-v { width:0.3mm; height:5mm; } .k-h { height:0.3mm; width:5mm; }</style>`;
             canvasItems.forEach(item => {
-                let marks = '';
-                
-                if (useKres) {
-                    marks += `<div class="k-mark k-v tl-v"></div><div class="k-mark k-h tl-h"></div>`;
-                    marks += `<div class="k-mark k-v tr-v"></div><div class="k-mark k-h tr-h"></div>`;
-                    marks += `<div class="k-mark k-v bl-v"></div><div class="k-mark k-h bl-h"></div>`;
-                    marks += `<div class="k-mark k-v br-v"></div><div class="k-mark k-h br-h"></div>`;
-                }
-
-                html += `
-                    <div class="img-wrap" style="left:${item.x}cm; top:${item.y}cm; width:${item.renderW}cm; height:${item.renderH}cm;">
-                        ${marks}
-                        <img src="${item.data}" style="width:${item.w}cm; height:${item.h}cm; transform:rotate(${item.rot}deg); object-fit:fill; display:block;">
-                    </div>`;
+                let mk = useKres ? `<div class="k-mark k-v" style="left:${item.x}cm; top:${item.y-0.6}cm;"></div><div class="k-mark k-h" style="left:${item.x-0.6}cm; top:${item.y}cm;"></div>` : '';
+                html += `<div style="position:absolute; left:${item.x}cm; top:${item.y}cm; width:${item.renderW}cm; height:${item.renderH}cm; display:flex; align-items:center; justify-content:center;">${mk}<img src="${item.data}" style="width:${item.w}cm; height:${item.h}cm; transform:rotate(${item.rot}deg); object-fit:fill;"></div>`;
             });
-
-            html += `</div>`;
-
-            const f = document.getElementById('p-frame');
-            f.style.display = "block";
-            f.contentWindow.document.open();
-            f.contentWindow.document.write(html);
-            f.contentWindow.document.close();
-            
-            const btn = document.querySelector('#modal-manual-layout .btn-success');
-            const oldText = btn.innerText;
-            btn.innerText = "RENDERING...";
-            
-            setTimeout(() => { 
-                f.contentWindow.print(); 
-                f.style.display = "none"; 
-                btn.innerText = oldText;
-            }, 1000);
+            const f = document.getElementById('p-frame'); f.style.display = "block"; f.contentWindow.document.open(); f.contentWindow.document.write(html); f.contentWindow.document.close();
+            setTimeout(() => { f.contentWindow.print(); f.style.display = "none"; }, 1000);
         }
 
-        // ============= EVENT LISTENERS =============
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM Content Loaded - Initializing GitHub Version...");
-            
-            if (!localStorage.getItem('kts_active_role')) {
-                console.log("Fresh start - no active role");
-                postLogoutMode = true;
-                window.postLogoutMode = true;
-            }
-            
-            reinitializeLoginListeners();
-            
-            const promptInput = document.getElementById('p-val');
-            if (promptInput) {
-                promptInput.addEventListener('keypress', function(event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        confirmKts();
-                    }
-                });
-            }
-            
-            document.getElementById('p-val').addEventListener('mousedown', e => e.stopPropagation());
-        });
-
-        window.addEventListener('online', function() {
-            console.log('Internet tersambung - mode cloud ready');
-            if (localStorage.getItem('kts_mode') === 'cloud' && peer) {
-                peer.reconnect?.();
-            }
-        });
-
-        window.addEventListener('offline', function() {
-            console.log('Internet putus - mode local siap dipakai');
-            alert('Internet putus. Gunakan mode LOCAL LAN jika perlu.');
-        });
-    
+        document.addEventListener('DOMContentLoaded', () => { reinitializeLoginListeners(); document.getElementById('p-val').addEventListener('keypress', e => { if (e.key === 'Enter') confirmKts(); }); });
     </script>
 </body>
 </html>
