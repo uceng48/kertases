@@ -131,8 +131,31 @@
         .online .status-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
 
         #kts-prompt { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
-        .kts-prompt-box { background:#152036; padding:30px; border-radius:24px !important; border:1px solid #6366f1; width:350px; text-align:center; box-shadow: 0 0 30px rgba(99,102,241,0.2); }
+        #kts-prompt input {
+    font-size: 1rem !important;
+    padding: 12px 15px !important;
+    text-align: center;
+    letter-spacing: 2px;
+}
+        /* Style untuk post-logout prompt */
+#kts-prompt.post-logout .kts-prompt-box {
+    border: 2px solid var(--success);
+    animation: glow-pulse 2s infinite;
+}
 
+@keyframes glow-pulse {
+    0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
+}
+
+/* Highlight input khusus post-logout */
+#kts-prompt.post-logout input {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 2px dashed var(--success) !important;
+}
+        .kts-prompt-box { background:#152036; padding:30px; border-radius:24px !important; border:1px solid #6366f1; width:350px; text-align:center; box-shadow: 0 0 30px rgba(99,102,241,0.2); }
+        
         .hist-tab-btn { flex:1; border:none; padding:10px; border-radius:10px; cursor:pointer; color: white; background: transparent; transition: 0.3s; }
         .hist-tab-btn.active { background: var(--accent); box-shadow: 0 4px 10px var(--accent-glow); }
 
@@ -671,6 +694,27 @@
     <iframe id="p-frame" style="display:none;"></iframe>
 
     <script>
+        // Di bagian paling atas, setelah deklarasi variabel
+let postLogoutMode = false;
+
+// Pada akhir script, panggil ini:
+document.addEventListener('DOMContentLoaded', function() {
+    // Cek jika ini session baru atau setelah logout
+    if (!localStorage.getItem('kts_active_role') && 
+        window.performance &&
+        performance.navigation &&
+        performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        
+        console.log("Detected reload after logout");
+        postLogoutMode = true;
+        
+        // Tambahkan class khusus
+        document.getElementById('kts-prompt').classList.add('post-logout');
+    }
+    
+    // Initialize listeners
+    reinitializeLoginListeners();
+});
         const { ipcRenderer } = require('electron');
 
 let audioFiles = {};
@@ -714,21 +758,87 @@ function playNotification() {
         }
 
         function doLogout() {
-            if(confirm("Logout from system?")) {
-                localStorage.removeItem('kts_active_role');
-                location.reload();
-            }
+    if(confirm("Logout from system?")) {
+        // 1. Hentikan semua koneksi peer terlebih dahulu
+        if (peer) {
+            peer.destroy();
+            peer = null;
         }
+        
+        // 2. Hapus localStorage
+        localStorage.removeItem('kts_active_role');
+        
+        // 3. Reset semua state aplikasi
+        tempJobs = [];
+        activeConns = [];
+        activeJobIdx = null;
+        selectedInboxes = [];
+        currentPromptTask = null;
+        manualSources = [];
+        canvasItems = [];
+        role = null;
+        
+        // 4. Hapus semua interval/timeout yang mungkin masih berjalan
+        const highestId = setTimeout(() => {}, 0);
+        for (let i = highestId; i >= 0; i--) {
+            clearTimeout(i);
+            clearInterval(i);
+        }
+        
+        // 5. Reset DOM ke state awal
+        document.getElementById('app-layout').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+        
+        // 6. TUTUP SEMUA MODAL yang mungkin masih terbuka
+        document.querySelectorAll('.modal').forEach(m => {
+            m.style.display = 'none';
+        });
+        document.getElementById('kts-prompt').style.display = 'none';
+        document.getElementById('modal-manual-layout').style.display = 'none';
+        
+        // 7. **PENTING**: Reset input fields login screen
+        document.querySelectorAll('.cyber-input').forEach(input => {
+            input.value = '';
+            input.blur();
+        });
+        
+        // 8. Force reload event listeners pada role cards
+        setTimeout(() => {
+            reinitializeLoginListeners();
+        }, 100);
+        
+        // 9. Fokus ke window utama
+        setTimeout(() => {
+            if (typeof require !== 'undefined') {
+                const { ipcRenderer } = require('electron');
+                ipcRenderer.send('request-focus');
+            }
+            document.body.focus();
+        }, 200);
+        
+        console.log("Logout successful, login screen ready");
+    }
+}
 
         function openKtsPrompt(title, desc, type, callback) {
-            document.getElementById('p-title').innerText = title;
-            document.getElementById('p-desc').innerText = desc;
-            const input = document.getElementById('p-val');
-            input.type = type; input.value = "";
-            document.getElementById('kts-prompt').style.display = 'flex';
-            input.focus(); currentPromptTask = callback;
-        }
-
+    document.getElementById('p-title').innerText = title;
+    document.getElementById('p-desc').innerText = desc;
+    const input = document.getElementById('p-val');
+    input.type = type; 
+    input.value = "";
+    
+    // Tampilkan modal terlebih dahulu
+    document.getElementById('kts-prompt').style.display = 'flex';
+    
+    // Reset callback
+    currentPromptTask = callback;
+    
+    // Beri jeda lebih lama agar DOM benar-benar siap
+    setTimeout(() => {
+        input.focus();
+        input.select(); // Optional: seleksi teks yang ada
+    }, 200); // Naikkan dari 100ms ke 200ms
+}
         function confirmKts() {
             const val = document.getElementById('p-val').value;
             if(val && currentPromptTask) currentPromptTask(val);
@@ -736,28 +846,175 @@ function playNotification() {
         }
 
         function enterRole(r) {
-            openKtsPrompt("Login " + r.toUpperCase(), "Masukkan Kode Akses:", "password", (pass) => {
-                if(pass === ROLES_KEYS[r]) {
-                    localStorage.setItem('kts_active_role', r);
-                    loadInterface(r);
-                } else { alert("SALAH KODE!"); }
-            });
+    console.log("Enter role called for:", r, "| Post-logout:", !localStorage.getItem('kts_active_role'));
+    
+    // **KHUSUS untuk setelah logout**: Gunakan approach berbeda
+    if (!localStorage.getItem('kts_active_role')) {
+        openKtsPromptPostLogout("Login " + r.toUpperCase(), 
+                               "Masukkan Kode Akses:", 
+                               "password", 
+                               (pass) => {
+            if(pass === ROLES_KEYS[r]) {
+                localStorage.setItem('kts_active_role', r);
+                loadInterface(r);
+            } else { 
+                alert("SALAH KODE!"); 
+                // Coba lagi dengan simulated interaction
+                setTimeout(() => simulateUserInteraction(() => enterRole(r)), 300);
+            }
+        });
+    } else {
+        // Normal flow untuk pertama kali
+        openKtsPrompt("Login " + r.toUpperCase(), 
+                     "Masukkan Kode Akses:", 
+                     "password", 
+                     (pass) => {
+            if(pass === ROLES_KEYS[r]) {
+                localStorage.setItem('kts_active_role', r);
+                loadInterface(r);
+            } else { 
+                alert("SALAH KODE!"); 
+            }
+        });
+    }
+}
+
+// **FUNGSI BARU KHUSUS UNTUK POST-LOGOUT**
+function openKtsPromptPostLogout(title, desc, type, callback) {
+    console.log("Opening prompt POST-LOGOUT...");
+    
+    // 1. Reset modal sepenuhnya
+    const modal = document.getElementById('kts-prompt');
+    const input = document.getElementById('p-val');
+    
+    // 2. Pastikan modal benar-benar clean
+    modal.style.display = 'none';
+    setTimeout(() => {
+        modal.style.display = 'flex';
+    }, 10);
+    
+    // 3. Reset input
+    input.value = '';
+    input.type = type;
+    input.placeholder = "Ketik kode akses...";
+    
+    // 4. Update teks
+    document.getElementById('p-title').innerText = title;
+    document.getElementById('p-desc').innerHTML = desc + 
+        '<br><span style="color:var(--accent); font-size:0.7rem; margin-top:5px; display:block;">' +
+        '(Input siap digunakan)</span>';
+    
+    // 5. Simpan callback
+    currentPromptTask = callback;
+    
+    // 6. **TRICK PENTING**: Buat fake click event pada document
+    setTimeout(() => {
+        // Trigger synthetic click event untuk bypass autoplay policy
+        const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        });
+        document.dispatchEvent(clickEvent);
+        
+        // Juga trigger keydown event
+        const keyEvent = new KeyboardEvent('keydown', {
+            key: ' ',
+            code: 'Space'
+        });
+        document.dispatchEvent(keyEvent);
+        
+        console.log("Synthetic events dispatched");
+    }, 100);
+    
+    // 7. **FOKUS DENGAN CARA AGGRESIF**
+    setTimeout(() => {
+        // Attempt 1: Normal focus
+        input.focus();
+        input.select();
+        
+        // Attempt 2: Dengan requestAnimationFrame
+        requestAnimationFrame(() => {
+            input.focus();
+            input.select();
+            
+            // Attempt 3: Dengan execCommand (legacy)
+            setTimeout(() => {
+                try {
+                    document.execCommand('selectAll', false, null);
+                } catch(e) {}
+                
+                // Attempt 4: Paksa dengan blur() lalu focus()
+                input.blur();
+                setTimeout(() => {
+                    input.focus();
+                    input.select();
+                    
+                    // Visual feedback
+                    input.style.borderColor = 'var(--success)';
+                    input.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
+                    
+                    console.log("Aggressive focus completed");
+                }, 20);
+            }, 50);
+        });
+    }, 150);
+    
+    // 8. **FALLBACK**: Jika setelah 500ms masih belum fokus
+    setTimeout(() => {
+        if (document.activeElement !== input) {
+            console.warn("Fallback: menggunakan click-to-focus method");
+            
+            // Tambahkan petunjuk visual
+            const promptBox = document.querySelector('.kts-prompt-box');
+            promptBox.style.animation = 'pulse 1s infinite';
+            
+            // CSS untuk pulse animation
+            if (!document.querySelector('#pulse-style')) {
+                const style = document.createElement('style');
+                style.id = 'pulse-style';
+                style.textContent = `
+                    @keyframes pulse {
+                        0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+                        70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+                        100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Auto-remove animation setelah beberapa detik
+            setTimeout(() => {
+                promptBox.style.animation = '';
+            }, 3000);
         }
+    }, 500);
+}
 
         function loadInterface(r) {
-            role = r;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-layout').style.display = 'flex';
-            document.getElementById('active-role-display').innerText = role.toUpperCase();
-            document.getElementById('my-id-display').innerText = myId;
-            if(role === 'operator') {
-                document.getElementById('batch-bar').style.display = 'flex';
-                document.getElementById('btn-open-layouter').style.display = 'inline-flex';
-            }
-            initPeer(); 
-            addNewJob(); 
-            setTimeout(renderStream, 500);
-        }
+    role = r;
+    
+    // Hapus post-logout class jika ada
+    document.getElementById('kts-prompt').classList.remove('post-logout');
+    
+    // Normal flow
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-layout').style.display = 'flex';
+    document.getElementById('active-role-display').innerText = role.toUpperCase();
+    document.getElementById('my-id-display').innerText = myId;
+    
+    if(role === 'operator') {
+        document.getElementById('batch-bar').style.display = 'flex';
+        document.getElementById('btn-open-layouter').style.display = 'inline-flex';
+    }
+    
+    initPeer(); 
+    addNewJob(); 
+    setTimeout(renderStream, 500);
+    
+    // Reset post-logout flag
+    window.postLogoutMode = false;
+}
 
         function setMode(m) {
             if(m === 'local') {
@@ -1617,6 +1874,87 @@ function printManualCanvas() {
         f.style.display="none"; 
         btn.innerText = oldText;
     }, 1000);
+}
+// Listener agar bisa tekan ENTER di kotak password
+document.getElementById('p-val').addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Mencegah perilaku default form jika ada
+        confirmKts(); // Panggil fungsi konfirmasi (tombol OK)
+    }
+});
+function reinitializeLoginListeners() {
+    console.log("Re-initializing login listeners...");
+    
+    // Hapus semua event listener lama dari role cards
+    const roleCards = document.querySelectorAll('.role-card');
+    roleCards.forEach(card => {
+        // Buat element baru untuk benar-benar reset listeners
+        const newCard = card.cloneNode(true);
+        card.parentNode.replaceChild(newCard, card);
+    });
+    
+    // Tambahkan listener baru
+    document.querySelectorAll('.role-card').forEach(card => {
+        card.addEventListener('click', function handleRoleClick() {
+            const role = this.querySelector('span').textContent.toLowerCase();
+            console.log("Role selected after logout:", role);
+            
+            // **TRICK PENTING**: Simulasikan user interaction sebelum buka prompt
+            simulateUserInteraction(() => {
+                enterRole(role);
+            });
+        });
+        
+        // Untuk accessibility
+        card.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const role = this.querySelector('span').textContent.toLowerCase();
+                simulateUserInteraction(() => {
+                    enterRole(role);
+                });
+            }
+        });
+        
+        card.tabIndex = 0;
+        card.style.cursor = 'pointer';
+    });
+    
+    // Juga reset button mode (cloud/local)
+    document.getElementById('btn-cloud').onclick = function() { 
+        simulateUserInteraction(() => setMode('cloud')); 
+    };
+    document.getElementById('btn-local').onclick = function() { 
+        simulateUserInteraction(() => setMode('local')); 
+    };
+    
+    console.log("Login listeners re-initialized");
+}
+
+// Fungsi untuk simulate user interaction (PENTING!)
+function simulateUserInteraction(callback) {
+    console.log("Simulating user interaction...");
+    
+    // Buat invisible button dan klik secara programatik
+    const fakeButton = document.createElement('button');
+    fakeButton.style.position = 'absolute';
+    fakeButton.style.width = '1px';
+    fakeButton.style.height = '1px';
+    fakeButton.style.opacity = '0';
+    fakeButton.style.pointerEvents = 'none';
+    document.body.appendChild(fakeButton);
+    
+    // Fokus dan klik secara programatik
+    fakeButton.focus();
+    fakeButton.click();
+    
+    // Hapus setelah digunakan
+    setTimeout(() => {
+        document.body.removeChild(fakeButton);
+        
+        // Jalankan callback setelah simulated interaction
+        setTimeout(callback, 50);
+    }, 10);
 }
     </script>
 </body>
