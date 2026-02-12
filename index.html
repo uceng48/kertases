@@ -849,6 +849,14 @@
             addNewJob();
             makeMyIdEditable(); // enable inline edit MY ID
             setTimeout(() => renderStream(true), 500);
+
+            // Muat gambar dari folder img/ (hanya untuk Operator? Atau untuk semua role)
+if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
+    loadImagesFromManifest();
+} else {
+    // Jika Anda ingin gambar juga tampil untuk Designer/Admin, hapus pengecekan if
+    // loadImagesFromManifest();
+}
         }
 
         // ---------- MY-ID EDITABLE (INLINE) ----------
@@ -2004,9 +2012,13 @@
 
         // ---------- MANUAL LAYOUTER ----------
         function openManualLayouter() {
-            document.getElementById('modal-manual-layout').style.display = 'grid';
-            updatePaperCanvas();
-        }
+    // Muat gambar dari manifest jika belum ada
+    if (manualSources.length === 0) {
+        loadImagesFromManifest();
+    }
+    document.getElementById('modal-manual-layout').style.display = 'grid';
+    updatePaperCanvas();
+}
         function closeManualLayouter() { document.getElementById('modal-manual-layout').style.display = 'none'; }
 
         async function handleManualUpload(input) {
@@ -2157,6 +2169,34 @@
             if (localStorage.getItem('kts_mode') === 'cloud' && peer) peer.reconnect?.();
         });
         window.addEventListener('offline', () => alert('⚠️ Internet putus. Gunakan mode LOCAL LAN.'));
+
+        // -----------------------------------------------------
+// 📁 Muat gambar dari manifest.json di folder img/
+// -----------------------------------------------------
+async function loadImagesFromManifest() {
+    try {
+        const response = await fetch('img/manifest.json');
+        if (!response.ok) throw new Error('Manifest tidak ditemukan');
+        
+        const fileNames = await response.json();
+        
+        fileNames.forEach(fileName => {
+            // Buat objek asset dengan format yang sama seperti hasil upload
+            manualSources.push({
+                id: Date.now() + Math.random(),
+                data: `img/${fileName}`,     // path relatif
+                name: fileName
+            });
+        });
+        
+        // Tampilkan di galeri (manual-source-list)
+        renderManualSourceList();
+        console.log(`✅ ${fileNames.length} gambar dimuat dari manifest.`);
+    } catch (error) {
+        console.warn('Gagal memuat manifest:', error);
+        // Opsional: fallback ke daftar kosong atau hardcode
+    }
+}
     </script>
 </body>
 </html>
