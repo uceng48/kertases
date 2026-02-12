@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet">
 
     <style>
-        /* ========== GLOBAL STYLE (SAMA SEPERTI SEBELUMNYA, DIOPTIMASI) ========== */
+        /* ========== GLOBAL STYLE ========== */
         :root {
             --bg: #0a0f1d;
             --panel: rgba(21, 32, 54, 0.9);
@@ -478,6 +478,25 @@
                     </div>
                     <button class="btn btn-mini btn-outline" onclick="toggleSelectAllRows()">✅ ALL</button>
                 </div>
+                <!-- GALLERY ASSETS DARI FOLDER img/ -->
+                <div class="gallery-assets" style="margin-bottom:20px; padding:10px; background:rgba(0,0,0,0.2); border-radius:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-weight:700; font-family:'Outfit'; display:flex; align-items:center; gap:5px;">
+                            🖼️ GALERI ASET (img/)
+                        </span>
+                        <button class="btn btn-mini btn-outline" onclick="refreshGallery()" title="Refresh dari manifest">
+                            ⟳ MUAT ULANG
+                        </button>
+                    </div>
+                    <!-- Container thumbnail -->
+                    <div id="gallery-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(70px,1fr)); gap:8px; max-height:220px; overflow-y:auto; padding:5px; border-top:1px solid var(--border);">
+                        <!-- Akan diisi oleh JavaScript -->
+                    </div>
+                    <div style="font-size:0.65rem; color:var(--text-dim); margin-top:8px; text-align:center;">
+                        Klik gambar untuk tambah ke baris aktif
+                    </div>
+                </div>
+
                 <div id="job-list"></div>
                 <button class="btn btn-outline" style="border-style:dashed; width:100%; border-radius:12px;" onclick="addNewJob()">➕ ADD DATA ROW</button>
                 <button id="btn-action-main" class="btn btn-primary" style="width:100%; margin-top:15px; height:50px;" onclick="mainAction()">⚡ PROCESS DATA</button>
@@ -644,13 +663,12 @@
 
     <script>
         // ============================================
-        // KERTASES FLOW - WEB EDITION (FULLY FUNCTIONAL)
+        // KERTASES FLOW - WEB EDITION (FINAL - DENGAN GALERI ASET)
         // ============================================
 
         // ---------- GLOBAL VARIABLES ----------
         const ROLES_KEYS = { admin: "calik", designer: "melengkung", operator: "nangtung" };
 
-        // ID MANAGEMENT (PERSISTEN)
         let myId = localStorage.getItem('kts_id');
         if (!myId) {
             myId = 'KTS-' + Math.floor(Math.random() * 9000 + 1000);
@@ -662,7 +680,7 @@
         let db = null;
         let activeConns = [];
         let currentTab = 1;
-        let timelineFilter = 'outbox'; // default sementara, akan disesuaikan per role
+        let timelineFilter = 'outbox';
         let tempJobs = [];
         let activeJobIdx = null;
         let selectedInboxes = [];
@@ -671,8 +689,9 @@
         let currentPromptTask = null;
         let postLogoutMode = false;
 
-        // ---------- MANUAL LAYOUT ----------
+        // ---------- MANUAL LAYOUT & GALLERY ----------
         let manualSources = [];
+        let galleryAssets = [];
         let canvasItems = [];
         let currentX = 0, currentY = 0, maxRowH = 0;
 
@@ -692,12 +711,8 @@
         let openRequest = indexedDB.open(DB_NAME, DB_VERSION);
         openRequest.onupgradeneeded = e => {
             let db = e.target.result;
-            if (!db.objectStoreNames.contains('stream')) {
-                db.createObjectStore('stream', { keyPath: 'id' });
-            }
-            if (!db.objectStoreNames.contains('history')) {
-                db.createObjectStore('history', { keyPath: 'id', autoIncrement: true });
-            }
+            if (!db.objectStoreNames.contains('stream')) db.createObjectStore('stream', { keyPath: 'id' });
+            if (!db.objectStoreNames.contains('history')) db.createObjectStore('history', { keyPath: 'id', autoIncrement: true });
         };
         openRequest.onsuccess = e => {
             db = e.target.result;
@@ -757,6 +772,7 @@
             activeConns = [];
             selectedInboxes = [];
             manualSources = [];
+            galleryAssets = [];
             canvasItems = [];
             streamCache = [];
             timelineFilteredData = [];
@@ -828,7 +844,6 @@
             if (role === 'operator') {
                 document.getElementById('batch-bar').style.display = 'flex';
                 document.getElementById('btn-open-layouter').style.display = 'inline-flex';
-                // Ubah judul tab history
                 document.getElementById('tab-2').innerText = '📊 DATA HASIL PENCETAKAN';
             } else {
                 document.getElementById('tab-2').innerText = '📤 OUTBOX / RIWAYAT';
@@ -847,19 +862,17 @@
 
             initPeer();
             addNewJob();
-            makeMyIdEditable(); // enable inline edit MY ID
-            setTimeout(() => renderStream(true), 500);
+            makeMyIdEditable();
 
-            // Muat gambar dari folder img/ (hanya untuk Operator? Atau untuk semua role)
-if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
-    loadImagesFromManifest();
-} else {
-    // Jika Anda ingin gambar juga tampil untuk Designer/Admin, hapus pengecekan if
-    // loadImagesFromManifest();
-}
+            // Muat gambar dari folder img/ (untuk Operator & Designer)
+            if (role === 'operator' || role === 'designer') {
+                loadImagesFromManifest();
+            }
+
+            setTimeout(() => renderStream(true), 500);
         }
 
-        // ---------- MY-ID EDITABLE (INLINE) ----------
+        // ---------- MY-ID EDITABLE ----------
         function makeMyIdEditable() {
             const displaySpan = document.getElementById('my-id-display');
             const editorInput = document.getElementById('my-id-editor');
@@ -903,7 +916,7 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             });
         }
 
-        // ---------- FILTER BAR (ROLE BASED) ----------
+        // ---------- FILTER BAR ----------
         function initFilterBar() {
             let bar = document.getElementById('filter-bar');
             bar.innerHTML = '';
@@ -918,7 +931,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                 bar.innerHTML = `<button class="btn btn-mini btn-outline" onclick="setTimelineFilter('inbox_designer', this)">📥 INBOX (DESIGNER)</button>
                                  <button class="btn btn-mini btn-outline" onclick="setTimelineFilter('printed', this)">🖨️ DATA CETAK</button>`;
             }
-            // Aktifkan tombol sesuai timelineFilter saat ini
             activateFilterButton();
         }
 
@@ -1004,6 +1016,7 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
         // ---------- CONTROL PANEL ----------
         function addNewJob() {
             tempJobs.push({ files: [], inv: '', cap: '', selected: true });
+            activeJobIdx = tempJobs.length - 1;
             renderJobs();
         }
 
@@ -1096,7 +1109,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                 tempJobs = tempJobs.filter(j => !j.selected);
                 if (!tempJobs.length) addNewJob();
                 renderJobs();
-                // Insert card outbox langsung
                 let newCard = createMessageCard(outData);
                 let area = document.getElementById('stream-area');
                 let lm = area.querySelector('.load-more-container');
@@ -1125,7 +1137,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                     partner: from
                 }));
             }
-            // Insert card langsung
             let newCard = createMessageCard(streamData);
             let area = document.getElementById('stream-area');
             let lm = area.querySelector('.load-more-container');
@@ -1148,7 +1159,7 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             };
         }
 
-        // ---------- STREAM CACHE (CURSOR, LIMIT 200) ----------
+        // ---------- STREAM ----------
         function loadStreamCache() {
             if (!db) return;
             streamCache = [];
@@ -1177,7 +1188,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             }
         }
 
-        // ---------- RENDER STREAM (PAGINATION) ----------
         function renderStream(resetPage = true) {
             let area = document.getElementById('stream-area');
             if (!area) return;
@@ -1227,7 +1237,7 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             isLoadingMore = false;
         }
 
-        // ---------- CREATE MESSAGE CARD (TEMPLATE CLONE) ----------
+        // ---------- CREATE MESSAGE CARD ----------
         function createMessageCard(msg) {
             let tmpl = document.getElementById('msg-card-template');
             let card = tmpl.content.cloneNode(true).firstElementChild;
@@ -1235,7 +1245,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             card.className = `msg-card ${msg.direction} ${msg.status === 'printed' ? 'printed' : ''}`;
             if (selectedInboxes.includes(msg.id)) card.classList.add('selected');
 
-            // ----- HEADER -----
             let headerDiv = card.querySelector('.msg-header div');
             let closeBtn = card.querySelector('.msg-header span');
             closeBtn.onclick = () => hideStream(msg.id);
@@ -1249,7 +1258,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                 ${printedMark} ${reprintMark}
             `;
 
-            // ----- BODY -----
             let body = card.querySelector('.msg-body');
             body.innerHTML = '';
             if (msg.jobs && msg.jobs.length) {
@@ -1257,7 +1265,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                     let jobWrap = document.createElement('div');
                     jobWrap.style.marginBottom = '15px';
 
-                    // INV row
                     let invRow = document.createElement('div');
                     invRow.style.display = 'flex';
                     invRow.style.alignItems = 'center';
@@ -1279,7 +1286,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                     invRow.appendChild(invInput);
                     jobWrap.appendChild(invRow);
 
-                    // Keterangan
                     let capText = document.createElement('textarea');
                     capText.className = 'card-edit-cap';
                     capText.value = job.cap || '';
@@ -1288,7 +1294,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                     capText.dataset.field = 'cap';
                     jobWrap.appendChild(capText);
 
-                    // Thumbnail + tombol save
                     if (job.files && job.files.length) {
                         job.files.forEach((f, fIdx) => {
                             let wrap = document.createElement('div');
@@ -1312,7 +1317,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                 });
             }
 
-            // ----- FOOTER -----
             let footer = card.querySelector('.msg-footer');
             footer.innerHTML = '';
 
@@ -1723,7 +1727,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                 document.getElementById('btn-do-print').innerText = '🖨️ MULAI CETAK';
                 document.getElementById('btn-do-print').disabled = false;
 
-                // Cetak dari pesan (memiliki internalId)
                 if (activeJob.internalId) {
                     db.transaction('stream', 'readwrite').objectStore('stream').get(activeJob.internalId).onsuccess = e => {
                         let d = e.target.result;
@@ -1743,12 +1746,10 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                                 streamCache[idx].reprintCount = d.reprintCount;
                             }
                             updateMessageCardStatus(activeJob.internalId, d.status, d.reprintCount);
-                            // Hapus card inbox hanya jika job dari peer dan ini cetak pertama
                             if (!isLocalJob && previousStatus !== 'printed') {
                                 let card = document.getElementById(`msg-${activeJob.internalId}`);
                                 if (card) card.remove();
                             }
-                            // Tampilkan di DATA CETAK jika filter 'printed' aktif dan ini cetak pertama
                             if (timelineFilter === 'printed' && previousStatus !== 'printed') {
                                 let newCard = createMessageCard(d);
                                 let area = document.getElementById('stream-area');
@@ -1757,15 +1758,12 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                             showToast(`🖨️ Cetak berhasil${previousStatus === 'printed' ? ' (Reprint)' : ''}`, 'success');
                         };
                     };
-                    // Kirim status update ke pengirim
                     let conn = activeConns.find(x => x.peer === activeJob.senderId);
                     if (conn && activeJob.senderId && activeJob.senderId !== myId) {
                         conn.send({ type: 'status_update', msgId: activeJob.internalId });
                     }
                 }
-                // Cetak job lokal (manual)
                 else if (role === 'operator') {
-                    // Cari apakah job dengan file dan invoice yang sama sudah pernah dicetak
                     let existingLocalJob = streamCache.find(msg =>
                         msg.from === 'LOKAL (MANUAL)' &&
                         msg.jobs && msg.jobs[0] &&
@@ -1774,7 +1772,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                         msg.jobs[0].files[0].data === activeJob.files[0].data
                     );
                     if (existingLocalJob) {
-                        // Cetak ulang job lokal
                         existingLocalJob.reprintCount = (existingLocalJob.reprintCount || 0) + 1;
                         existingLocalJob.status = 'printed';
                         db.transaction('stream', 'readwrite').objectStore('stream').put(existingLocalJob);
@@ -1783,7 +1780,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                         updateMessageCardStatus(existingLocalJob.id, 'printed', existingLocalJob.reprintCount);
                         showToast(`🔄 Cetak ulang (reprint #${existingLocalJob.reprintCount}) untuk invoice ${inv}`, 'success');
                     } else {
-                        // Cetak pertama job lokal
                         let localJob = {
                             id: Date.now(),
                             direction: 'in',
@@ -1805,7 +1801,6 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
                     }
                 }
 
-                // Simpan history
                 saveHistory({
                     inv,
                     typeLabel: 'PRODUKSI_SELESAI',
@@ -2012,14 +2007,16 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
 
         // ---------- MANUAL LAYOUTER ----------
         function openManualLayouter() {
-    // Muat gambar dari manifest jika belum ada
-    if (manualSources.length === 0) {
-        loadImagesFromManifest();
-    }
-    document.getElementById('modal-manual-layout').style.display = 'grid';
-    updatePaperCanvas();
-}
-        function closeManualLayouter() { document.getElementById('modal-manual-layout').style.display = 'none'; }
+            if (manualSources.length === 0) {
+                loadImagesFromManifest();
+            }
+            document.getElementById('modal-manual-layout').style.display = 'grid';
+            updatePaperCanvas();
+        }
+
+        function closeManualLayouter() {
+            document.getElementById('modal-manual-layout').style.display = 'none';
+        }
 
         async function handleManualUpload(input) {
             for (let f of input.files) {
@@ -2047,6 +2044,51 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             });
         }
 
+        // ---------- GALLERY FUNCTIONS ----------
+        function renderGallery() {
+            const container = document.getElementById('gallery-container');
+            if (!container) return;
+            if (galleryAssets.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--text-dim);">📂 Belum ada gambar. <br> Periksa file manifest.json di folder img/.</div>';
+                return;
+            }
+            let html = '';
+            galleryAssets.forEach((asset, index) => {
+                html += `
+                    <div class="gallery-item" onclick="addGalleryImageToJob('${asset.url}', '${asset.name}')" 
+                         style="cursor:pointer; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:rgba(0,0,0,0.3); transition:0.2s; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; padding:4px;">
+                        <img src="${asset.url}" style="max-width:100%; max-height:100%; object-fit:contain;" 
+                             onerror="this.style.display='none'; this.parentNode.innerHTML='❌';" 
+                             title="${asset.name}">
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addGalleryImageToJob(imageUrl, fileName) {
+            let targetIdx = activeJobIdx;
+            if (targetIdx === null || targetIdx >= tempJobs.length) {
+                addNewJob();
+                targetIdx = tempJobs.length - 1;
+            }
+            const fakeFile = {
+                data: imageUrl,
+                thumb: imageUrl,
+                isPdf: false,
+                name: fileName
+            };
+            tempJobs[targetIdx].files.push(fakeFile);
+            renderJobs();
+            showToast(`🖼️ ${fileName} ditambahkan ke job #${targetIdx + 1}`, 'success');
+        }
+
+        function refreshGallery() {
+            loadImagesFromManifest();
+            showToast('📂 Memuat ulang galeri...', 'info');
+        }
+
+        // ---------- UPDATE PAPER CANVAS ----------
         function updatePaperCanvas() {
             let p = document.getElementById('paper-canvas');
             let dim = document.getElementById('m-paper').value.split(',');
@@ -2163,40 +2205,37 @@ if (role === 'operator') {   // gambar hanya diperlukan di mode layout operator
             }, 1000);
         }
 
+        // -----------------------------------------------------
+        // 📁 Muat gambar dari manifest.json di folder img/
+        // -----------------------------------------------------
+        async function loadImagesFromManifest() {
+            try {
+                const response = await fetch('img/manifest.json');
+                if (!response.ok) throw new Error('Manifest tidak ditemukan');
+                const fileNames = await response.json();
+                manualSources = [];
+                galleryAssets = [];
+                fileNames.forEach(fileName => {
+                    const imageUrl = `img/${fileName}`;
+                    manualSources.push({ id: Date.now() + Math.random(), data: imageUrl, name: fileName });
+                    galleryAssets.push({ id: Date.now() + Math.random(), url: imageUrl, name: fileName });
+                });
+                renderManualSourceList();
+                renderGallery();
+                console.log(`✅ ${fileNames.length} gambar dimuat dari manifest.`);
+            } catch (error) {
+                console.warn('Gagal memuat manifest:', error);
+                galleryAssets = [];
+                renderGallery();
+            }
+        }
+
         // ---------- INITIALIZATION ----------
         reinitializeLoginListeners();
         window.addEventListener('online', () => {
             if (localStorage.getItem('kts_mode') === 'cloud' && peer) peer.reconnect?.();
         });
         window.addEventListener('offline', () => alert('⚠️ Internet putus. Gunakan mode LOCAL LAN.'));
-
-        // -----------------------------------------------------
-// 📁 Muat gambar dari manifest.json di folder img/
-// -----------------------------------------------------
-async function loadImagesFromManifest() {
-    try {
-        const response = await fetch('img/manifest.json');
-        if (!response.ok) throw new Error('Manifest tidak ditemukan');
-        
-        const fileNames = await response.json();
-        
-        fileNames.forEach(fileName => {
-            // Buat objek asset dengan format yang sama seperti hasil upload
-            manualSources.push({
-                id: Date.now() + Math.random(),
-                data: `img/${fileName}`,     // path relatif
-                name: fileName
-            });
-        });
-        
-        // Tampilkan di galeri (manual-source-list)
-        renderManualSourceList();
-        console.log(`✅ ${fileNames.length} gambar dimuat dari manifest.`);
-    } catch (error) {
-        console.warn('Gagal memuat manifest:', error);
-        // Opsional: fallback ke daftar kosong atau hardcode
-    }
-}
     </script>
 </body>
 </html>
