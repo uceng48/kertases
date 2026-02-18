@@ -623,6 +623,12 @@
                     <button class="btn btn-mini btn-danger" onclick="clearAllHistory()">🗑️ CLEAR LOG</button>
                 </div>
             </div>
+            <!-- SEARCH BAR HISTORY -->
+<div style="margin-bottom: 15px;">
+    <input type="text" id="hist-search-input" class="cyber-input" 
+           placeholder="🔍 Cari Invoice, Partner, atau Keterangan..." 
+           onkeyup="filterHistoryTable()">
+</div>
             <div class="hist-tabs" style="display:flex; background:rgba(0,0,0,0.2); padding:5px; border-radius:12px; margin-bottom:15px;">
                 <button class="hist-tab-btn active" id="tab-1" onclick="switchHistTab(1)">📥 INBOX / DATA MASUK</button>
                 <button class="hist-tab-btn" id="tab-2" onclick="switchHistTab(2)">📤 OUTBOX / RIWAYAT</button>
@@ -632,6 +638,8 @@
                     <thead>
                         <tr>
                             <th style="width:12%;">WAKTU</th>
+                            <th style="width:8%;">FILE</th> <!-- TAMBAHAN BARU -->
+            
                             <th style="width:10%;">STATUS</th>
                             <th style="width:12%;">PARTNER</th>
                             <th style="width:12%;">INVOICE</th>
@@ -1100,11 +1108,13 @@
                 let outData = { ...d, direction: 'out', to: activeConns.map(c => c.peer).join(', '), hidden: false };
                 saveStream(outData);
                 sel.forEach(job => saveHistory({
-                    inv: job.inv,
-                    cap: job.cap,
-                    typeLabel: role === 'admin' ? 'ADM_SEND' : 'DSN_SEND',
-                    partner: activeConns.map(c => c.peer).join(', ')
-                }));
+    inv: job.inv,
+    cap: job.cap,
+    fileData: job.files[0] ? job.files[0].thumb : null, // AMBIL THUMBNAIL FILE PERTAMA
+    isPdf: job.files[0] ? job.files[0].isPdf : false,
+    typeLabel: role === 'admin' ? 'ADM_SEND' : 'DSN_SEND',
+    partner: activeConns.map(c => c.peer).join(', ')
+}));
                 showToast(`📤 Data terkirim ke ${role === 'admin' ? 'Designer' : 'Operator'}`, 'success');
                 tempJobs = tempJobs.filter(j => !j.selected);
                 if (!tempJobs.length) addNewJob();
@@ -1130,13 +1140,15 @@
             };
             saveStream(streamData);
             if (data.jobs) {
-                data.jobs.forEach(job => saveHistory({
-                    inv: job.inv || '-',
-                    cap: job.cap || '-',
-                    typeLabel: label,
-                    partner: from
-                }));
-            }
+    data.jobs.forEach(job => saveHistory({
+        inv: job.inv || '-',
+        cap: job.cap || '-',
+        fileData: job.files[0] ? job.files[0].thumb : null, // TAMBAHAN
+        isPdf: job.files[0] ? job.files[0].isPdf : false,   // TAMBAHAN
+        typeLabel: label,
+        partner: from
+    }));
+}
             let newCard = createMessageCard(streamData);
             let area = document.getElementById('stream-area');
             let lm = area.querySelector('.load-more-container');
@@ -1517,11 +1529,11 @@
                 };
                 saveStream(outData);
                 msg.jobs.forEach(job => saveHistory({
-                    inv: job.inv,
-                    cap: job.cap,
-                    typeLabel: 'DSN_SEND',
-                    partner: activeConns.map(c => c.peer).join(', ')
-                }));
+    inv: job.inv,
+    cap: job.cap,
+    typeLabel: 'DSN_SEND',
+    partner: activeConns.map(c => c.peer).join(', ')
+}));
                 showToast('📤 Data diteruskan ke Operator!', 'success');
                 let card = createMessageCard(outData);
                 let area = document.getElementById('stream-area');
@@ -1801,13 +1813,15 @@
                     }
                 }
 
-                saveHistory({
-                    inv,
-                    typeLabel: 'PRODUKSI_SELESAI',
-                    qty,
-                    cap: mode,
-                    partner: activeJob.internalId ? activeJob.senderId : 'MANUAL'
-                });
+               saveHistory({
+    inv,
+    typeLabel: 'PRODUKSI_SELESAI',
+    qty,
+    cap: mode,
+    fileData: activeJob.files[0] ? activeJob.files[0].thumb : null, // TAMBAHAN
+    isPdf: activeJob.files[0] ? activeJob.files[0].isPdf : false,   // TAMBAHAN
+    partner: activeJob.internalId ? activeJob.senderId : 'MANUAL'
+});
 
                 playSound('done-sound');
                 closeModal();
@@ -1835,6 +1849,8 @@
         function saveHistory(obj) {
             db.transaction('history', 'readwrite').objectStore('history').add({
                 time: new Date().toLocaleString('id-ID'),
+                fileData: obj.fileData || null, // TAMBAHAN: Simpan gambar
+        isPdf: obj.isPdf || false,      // TAMBAHAN: Penanda PDF
                 inv: obj.inv || '-',
                 cap: obj.cap || '-',
                 partner: obj.partner || '?',
@@ -1863,6 +1879,43 @@
             };
         }
 
+function filterHistoryTable() {
+    // 1. Ambil nilai input
+    let input = document.getElementById('hist-search-input');
+    let filter = input.value.toUpperCase();
+    
+    // 2. Ambil tbody tabel
+    let tbody = document.getElementById('hist-body');
+    let tr = tbody.getElementsByTagName('tr');
+
+    // 3. Loop semua baris
+    for (let i = 0; i < tr.length; i++) {
+        // Abaikan baris "Belum ada data"
+        if(tr[i].innerText.includes("Belum ada data")) continue;
+
+        // Ambil kolom target pencarian:
+        // Index kolom berubah karena penambahan kolom FILE sebelumnya:
+        // 0: Waktu, 1: File, 2: Status, 3: Partner, 4: Invoice, 5: Ket, 6: Qty, 7: Aksi
+        
+        let tdPartner = tr[i].getElementsByTagName('td')[3]; // Kolom Partner
+        let tdInv     = tr[i].getElementsByTagName('td')[4]; // Kolom Invoice
+        let tdCap     = tr[i].getElementsByTagName('td')[5]; // Kolom Keterangan
+
+        if (tdInv || tdCap || tdPartner) {
+            // Gabungkan teks dari ketiga kolom tersebut
+            let txtValue = (tdPartner.textContent || tdPartner.innerText) + " " + 
+                           (tdInv.textContent || tdInv.innerText) + " " + 
+                           (tdCap.textContent || tdCap.innerText);
+            
+            // Cek apakah mengandung kata kunci
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = ""; // Tampilkan
+            } else {
+                tr[i].style.display = "none"; // Sembunyikan
+            }
+        }       
+    }
+}
         function refreshHistBody() {
             let tbody = document.getElementById('hist-body');
             tbody.innerHTML = '';
@@ -1891,6 +1944,15 @@
                     let row = tbody.insertRow();
                     row.style.fontSize = '0.75rem';
                     row.insertCell().innerHTML = h.time || '';
+                    let fileCell = row.insertCell();
+    if (h.fileData) {
+        // Tampilkan thumbnail kecil, jika diklik akan download/buka
+        fileCell.innerHTML = `<div style="width:40px; height:40px; background:#000; border-radius:4px; overflow:hidden; cursor:pointer; border:1px solid var(--border);" onclick="downloadAsset('${h.fileData}', '${h.inv}.png')">
+            <img src="${h.fileData}" style="width:100%; height:100%; object-fit:cover;">
+        </div>`;
+    } else {
+        fileCell.innerHTML = '<span style="color:var(--text-dim)">-</span>';
+    }
                     let statusCell = row.insertCell();
                     statusCell.innerHTML = (h.typeLabel === 'PRODUKSI_SELESAI' || h.typeLabel === 'OP_PROD') ? '' : (statusMap[h.typeLabel] || h.typeLabel);
                     let partnerCell = row.insertCell();
@@ -1909,6 +1971,10 @@
 
         function switchHistTab(n) {
             currentTab = n;
+          // --- TAMBAHAN: Reset input search saat ganti tab ---
+    let searchInput = document.getElementById('hist-search-input');
+    if(searchInput) searchInput.value = ''; 
+    // --------------------------------------------------  
             document.querySelectorAll('.hist-tab-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
             refreshHistBody();
         }
