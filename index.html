@@ -624,10 +624,18 @@
                 </div>
             </div>
             <!-- SEARCH BAR HISTORY -->
-<div style="margin-bottom: 15px;">
+<!-- SEARCH BAR & DATE FILTER -->
+<div style="margin-bottom: 15px; display: flex; gap: 10px;">
+    <!-- Input Teks (Invoice/Partner) -->
     <input type="text" id="hist-search-input" class="cyber-input" 
-           placeholder="🔍 Cari Invoice, Partner, atau Keterangan..." 
+           style="flex: 2;" 
+           placeholder="🔍 Cari Invoice, Partner, atau Ket..." 
            onkeyup="filterHistoryTable()">
+           
+    <!-- Input Tanggal -->
+    <input type="date" id="hist-search-date" class="cyber-input" 
+           style="flex: 1; color-scheme: dark;" 
+           onchange="filterHistoryTable()">
 </div>
             <div class="hist-tabs" style="display:flex; background:rgba(0,0,0,0.2); padding:5px; border-radius:12px; margin-bottom:15px;">
                 <button class="hist-tab-btn active" id="tab-1" onclick="switchHistTab(1)">📥 INBOX / DATA MASUK</button>
@@ -1880,38 +1888,74 @@
         }
 
 function filterHistoryTable() {
-    // 1. Ambil nilai input
-    let input = document.getElementById('hist-search-input');
-    let filter = input.value.toUpperCase();
+    // 1. Ambil nilai input Teks & Tanggal
+    let textInput = document.getElementById('hist-search-input');
+    let dateInput = document.getElementById('hist-search-date');
     
-    // 2. Ambil tbody tabel
+    let textFilter = textInput.value.toUpperCase();
+    let dateFilter = dateInput.value; // Format: YYYY-MM-DD (misal: 2026-02-18)
+
+    // Konversi format tanggal input (YYYY-MM-DD) agar cocok dengan format tabel (DD/MM/YYYY)
+    // Format id-ID biasanya: 18/02/2026 atau 18/2/2026
+    let dateMatchString = "";
+    if (dateFilter) {
+        let parts = dateFilter.split('-'); // [2026, 02, 18]
+        // Kita cari string "18/02/2026" atau "18/2/2026"
+        // Karena toLocaleString bisa beda-beda sedikit, kita ambil bagian tanggalnya saja
+        dateMatchString = `${parts[2]}/${parts[1]}/${parts[0]}`; 
+    }
+
     let tbody = document.getElementById('hist-body');
     let tr = tbody.getElementsByTagName('tr');
 
-    // 3. Loop semua baris
+    // 2. Loop semua baris
     for (let i = 0; i < tr.length; i++) {
         // Abaikan baris "Belum ada data"
         if(tr[i].innerText.includes("Belum ada data")) continue;
 
-        // Ambil kolom target pencarian:
-        // Index kolom berubah karena penambahan kolom FILE sebelumnya:
-        // 0: Waktu, 1: File, 2: Status, 3: Partner, 4: Invoice, 5: Ket, 6: Qty, 7: Aksi
+        // Ambil kolom-kolom penting
+        // Index kolom (sesuai penambahan kolom File sebelumnya):
+        // 0: Waktu, 1: File, 2: Status, 3: Partner, 4: Invoice, 5: Ket
         
-        let tdPartner = tr[i].getElementsByTagName('td')[3]; // Kolom Partner
-        let tdInv     = tr[i].getElementsByTagName('td')[4]; // Kolom Invoice
-        let tdCap     = tr[i].getElementsByTagName('td')[5]; // Kolom Keterangan
+        let tdTime    = tr[i].getElementsByTagName('td')[0]; // Kolom Waktu
+        let tdPartner = tr[i].getElementsByTagName('td')[3];
+        let tdInv     = tr[i].getElementsByTagName('td')[4];
+        let tdCap     = tr[i].getElementsByTagName('td')[5];
 
-        if (tdInv || tdCap || tdPartner) {
-            // Gabungkan teks dari ketiga kolom tersebut
-            let txtValue = (tdPartner.textContent || tdPartner.innerText) + " " + 
-                           (tdInv.textContent || tdInv.innerText) + " " + 
-                           (tdCap.textContent || tdCap.innerText);
-            
-            // Cek apakah mengandung kata kunci
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                tr[i].style.display = ""; // Tampilkan
+        if (tdTime && tdInv) {
+            // A. Cek Filter Teks
+            let textContent = (tdPartner.innerText + " " + tdInv.innerText + " " + tdCap.innerText).toUpperCase();
+            let textMatch = textContent.indexOf(textFilter) > -1;
+
+            // B. Cek Filter Tanggal
+            let timeContent = tdTime.innerText; // Contoh: "18/02/2026, 13.30.00"
+            let dateMatch = true; // Default true jika tanggal tidak dipilih
+
+            if (dateFilter) {
+                // Kita cek apakah kolom waktu MENGANDUNG tanggal yang dipilih (DD/MM/YYYY)
+                // Kita gunakan teknik 'includes' agar fleksibel terhadap jam
+                
+                // Perbaikan logika untuk handling "02" vs "2" pada bulan/hari
+                let d = parseInt(dateFilter.split('-')[2]);
+                let m = parseInt(dateFilter.split('-')[1]);
+                let y = dateFilter.split('-')[0];
+                
+                // Buat variasi string tanggal untuk dicocokkan (misal: 18/2/2026 atau 18/02/2026)
+                let check1 = `${d}/${m}/${y}`;      // 18/2/2026
+                let check2 = dateMatchString;       // 18/02/2026 (dari split input langsung)
+                
+                if (timeContent.includes(check1) || timeContent.includes(check2)) {
+                    dateMatch = true;
+                } else {
+                    dateMatch = false;
+                }
+            }
+
+            // C. Tampilkan jika KEDUANYA cocok (AND Logic)
+            if (textMatch && dateMatch) {
+                tr[i].style.display = "";
             } else {
-                tr[i].style.display = "none"; // Sembunyikan
+                tr[i].style.display = "none";
             }
         }       
     }
@@ -1975,6 +2019,9 @@ function filterHistoryTable() {
     let searchInput = document.getElementById('hist-search-input');
     if(searchInput) searchInput.value = ''; 
     // --------------------------------------------------  
+    // --- TAMBAHAN: Reset input tanggal ---
+    let dateInput = document.getElementById('hist-search-date');
+    if(dateInput) dateInput.value = ''; 
             document.querySelectorAll('.hist-tab-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
             refreshHistBody();
         }
