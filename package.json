@@ -1,33 +1,41 @@
 {
-  "name": "kertases-pro",
-  "version": "14.2.0",
-  "description": "Data_Sync_Hybrid",
-  "author": "Kertases Pro",
+  "name": "data-manage",
+  "version": "1.0.0",
   "main": "main.js",
+  "description": "Aplikasi transfer Data - Local & Cloud",
+  "author": "Think",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "build": {
-    "appId": "com.kertases.pro",
-    "productName": "Kertases Pro V14.2",
-    "asar": true,
+    "appId": "com.Think.flow",
+    "productName": "Think Flow",
     "directories": {
       "output": "dist"
     },
-    "extraResources": [
-      {
-        "from": "build",
-        "to": "build",
-        "filter": [
-          "**/*"
-        ]
-      }
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!node_modules/**/.cache",
+      "!**/*.map"
     ],
     "win": {
-      "icon": "build/icon.ico",
+      "icon": "img/icon.png",
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -35,14 +43,20 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Kertases Pro"
+      "shortcutName": "Think Flow"
+    },
+    "portable": {
+      "artifactName": "${productName} Portable.exe"
     }
   },
   "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^24.13.3"
+    "electron": "^28.3.3",
+    "electron-builder": "^24.9.0"
   },
+  "keywords": [],
+  "license": "ISC",
+  "type": "commonjs",
   "dependencies": {
-    "peer": "0.6.1"
+    "peer": "^0.6.1"
   }
 }
