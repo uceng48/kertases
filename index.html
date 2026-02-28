@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kertases Flow · Web Edition</title>
+    <title>Think Flow · Web Edition</title>
 
-    <!-- Library CDN -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
+    <!-- Ganti CDN dengan file lokal -->
+<script src="libs/peerjs.min.js"></script>
+<script src="libs/pdf.min.js"></script>
+<script src="libs/jspdf.umd.min.js"></script>
+<script src="libs/jspdf.plugin.autotable.min.js"></script>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet">
 
@@ -408,7 +407,7 @@
     <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-box glass-panel">
-            <h1 style="font-family:'Outfit'; font-size:2.5rem; margin:0; background:linear-gradient(to right,#6366f1,#10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">KERTASES FLOW</h1>
+            <h1 style="font-family:'Outfit'; font-size:2.5rem; margin:0; background:linear-gradient(to right,#6366f1,#10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">THINK FLOW</h1>
             <p style="color:var(--text-dim); letter-spacing:3px;">WEB EDITION</p>
             <div class="role-grid">
                 <div class="role-card" data-role="admin"><i>🕶️</i><span>ADMIN</span></div>
@@ -679,7 +678,7 @@
 
     <script>
         // ============================================
-        // KERTASES FLOW - WEB EDITION (FINAL - DENGAN GALERI ASET)
+        // THINK FLOW - WEB EDITION (FINAL - DENGAN GALERI ASET)
         // ============================================
 
         // ---------- GLOBAL VARIABLES ----------
@@ -719,10 +718,12 @@
         let isLoadingMore = false;
 
         // PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        // PDF.js worker LOKAL
+// Pastikan file pdf.worker.min.js ada di folder libs
+pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.js';
 
         // ---------- INDEXED DB ----------
-        const DB_NAME = 'KertasesFlowWebDB';
+        const DB_NAME = 'ThinkFlowWebDB';
         const DB_VERSION = 1;
         let openRequest = indexedDB.open(DB_NAME, DB_VERSION);
         openRequest.onupgradeneeded = e => {
@@ -964,32 +965,77 @@
         }
 
         // ---------- MODE (CLOUD / LOCAL) ----------
-        function setMode(m) {
-            if (m === 'local') {
-                openKtsPrompt("🌐 Local LAN Setup", "Masukkan IP Server Lokal (contoh: 192.168.1.10):", "text", ip => {
-                    localStorage.setItem('kts_mode','local');
-                    localStorage.setItem('kts_ip', ip);
-                    location.reload();
-                });
-            } else {
-                localStorage.setItem('kts_mode','cloud');
-                location.reload();
-            }
-        }
+        // --- UBAH BAGIAN INI DI SCRIPT ANDA ---
 
-        // ---------- PEER CONNECTION ----------
-        function initPeer() {
-            let mode = localStorage.getItem('kts_mode') || 'cloud';
-            let ip = localStorage.getItem('kts_ip') || 'localhost';
-            let opts = mode === 'local' ? { host: ip, port: 9000, path: '/kertases', secure: false } : { debug: 1 };
-            peer = new Peer(myId, opts);
-            peer.on('open', () => updatePeerStatus('ready'));
-            peer.on('connection', conn => setupConn(conn));
-            peer.on('error', err => {
-                if (err.type === 'peer-unavailable') alert("❌ Partner tidak ditemukan!");
-                updatePeerStatus('offline');
-            });
+// Variabel baru untuk menampung IP
+let myLocalIp = 'localhost';
+
+// Saat aplikasi mulai, ambil IP Komputer ini
+window.addEventListener('DOMContentLoaded', async () => {
+    if (window.electronAPI) {
+        myLocalIp = await window.electronAPI.getLocalIp();
+        console.log("My Local IP:", myLocalIp);
+    }
+});
+
+function setMode(m) {
+    if (m === 'local') {
+        // Tanya user: Jadi HOST (Server) atau GUEST (Client)?
+        openKtsPrompt("🖥️ Local LAN Setup", "Ketik 'HOST' jika ini Server, atau masukkan IP Host jika Anda Client:", "text", val => {
+            if (val.toUpperCase() === 'HOST') {
+                localStorage.setItem('kts_mode', 'local-host');
+                localStorage.setItem('kts_host_ip', 'localhost'); // Connect ke diri sendiri
+                alert(`✅ Mode HOST Aktif.\nIP Anda: ${myLocalIp}\nBerikan IP ini ke partner.`);
+            } else {
+                localStorage.setItem('kts_mode', 'local-client');
+                localStorage.setItem('kts_host_ip', val); // Connect ke IP Host
+            }
+            location.reload();
+        });
+    } else {
+        localStorage.setItem('kts_mode', 'cloud');
+        location.reload();
+    }
+}
+
+function initPeer() {
+    let mode = localStorage.getItem('kts_mode') || 'cloud';
+    let hostIp = localStorage.getItem('kts_host_ip') || 'localhost';
+    
+    let opts = {};
+
+    if (mode === 'cloud') {
+        opts = { debug: 1 }; // Pakai Server Cloud Default PeerJS
+    } else {
+        // Mode Local (Host atau Client sama-sama connect ke Host IP port 9000)
+        // Karena di main.js kita sudah jalankan server di port 9000
+        opts = {
+            host: hostIp,
+            port: 9000,
+            path: '/Think',
+            secure: false, // Penting untuk LAN
+            debug: 1
+        };
+    }
+
+    peer = new Peer(myId, opts);
+    
+    peer.on('open', () => {
+        updatePeerStatus('ready');
+        // Tampilkan info IP jika mode Local Host
+        if(mode === 'local-host') {
+             showToast(`Server Jalan! IP Anda: ${myLocalIp}`, 'info');
         }
+    });
+
+    peer.on('connection', conn => setupConn(conn));
+    peer.on('error', err => {
+        console.error(err);
+        if (err.type === 'peer-unavailable') alert("❌ Partner tidak ditemukan!");
+        updatePeerStatus('offline');
+        if(mode.includes('local')) alert("Gagal konek ke Server Local. Pastikan IP benar dan Firewall mati.");
+    });
+}
 
         function connectMulti() {
             let tid = document.getElementById('target-id').value.trim();
@@ -2054,7 +2100,7 @@ function filterHistoryTable() {
         async function exportLogToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text(`KERTASES FLOW - PRODUCTION LOG (${role.toUpperCase()})`, 14, 15);
+            doc.text(`THINK FLOW - PRODUCTION LOG (${role.toUpperCase()})`, 14, 15);
             const table = document.getElementById('hist-table-real');
             const headers = [];
             const headerCells = table.querySelectorAll('thead tr th');
@@ -2074,7 +2120,7 @@ function filterHistoryTable() {
                 styles: { fontSize: 8 },
                 headStyles: { fillColor: [99, 102, 241] }
             });
-            doc.save('log_kertases.pdf');
+            doc.save('log_Think.pdf');
         }
 
         // ---------- UTILS ----------
@@ -2321,27 +2367,36 @@ function filterHistoryTable() {
         // -----------------------------------------------------
         // 📁 Muat gambar dari manifest.json di folder img/
         // -----------------------------------------------------
-        async function loadImagesFromManifest() {
-            try {
-                const response = await fetch('img/manifest.json');
-                if (!response.ok) throw new Error('Manifest tidak ditemukan');
-                const fileNames = await response.json();
-                manualSources = [];
-                galleryAssets = [];
-                fileNames.forEach(fileName => {
-                    const imageUrl = `img/${fileName}`;
-                    manualSources.push({ id: Date.now() + Math.random(), data: imageUrl, name: fileName });
-                    galleryAssets.push({ id: Date.now() + Math.random(), url: imageUrl, name: fileName });
-                });
-                renderManualSourceList();
-                renderGallery();
-                console.log(`✅ ${fileNames.length} gambar dimuat dari manifest.`);
-            } catch (error) {
-                console.warn('Gagal memuat manifest:', error);
-                galleryAssets = [];
-                renderGallery();
-            }
+   async function loadImagesFromManifest() {
+    try {
+        let fileNames = [];
+        
+        if (window.electronAPI) {
+            // Jika di Electron, baca folder langsung via Preload
+            fileNames = window.electronAPI.readImgFolder();
+        } else {
+            // Fallback untuk Web Browser biasa
+            const response = await fetch('img/manifest.json');
+            fileNames = await response.json();
         }
+
+        manualSources = [];
+        galleryAssets = [];
+        
+        fileNames.forEach(fileName => {
+            // Di Electron prod, path gambar relatif tetap jalan jika webSecurity: false
+            const imageUrl = `img/${fileName}`;
+            manualSources.push({ id: Date.now() + Math.random(), data: imageUrl, name: fileName });
+            galleryAssets.push({ id: Date.now() + Math.random(), url: imageUrl, name: fileName });
+        });
+
+        renderManualSourceList();
+        renderGallery();
+        console.log(`✅ ${fileNames.length} gambar dimuat.`);
+    } catch (error) {
+        console.warn('Gagal memuat galeri:', error);
+    }
+}
 
         // ---------- INITIALIZATION ----------
         reinitializeLoginListeners();
