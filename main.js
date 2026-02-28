@@ -1,64 +1,48 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { PeerServer } = require('peer');
 const path = require('path');
+const { PeerServer } = require('peer');
+const os = require('os');
 
-// Fungsi kanggo nangtoskeun lokasi file (Audio/Icon)
-// Upami tos jadi .exe, file aya dina folder 'resources/build'
-function getAssetPath(relativePath) {
-    return app.isPackaged 
-        ? path.join(process.resourcesPath, 'build', relativePath)
-        : path.join(__dirname, 'build', relativePath);
-}
+// 1. Setup Local Peer Server (Port 9000)
+// Ini membuat aplikasi Anda menjadi SERVER saat dijalankan
+const peerServer = PeerServer({ port: 9000, path: '/Think' });
 
-// Jalankeun Server Peer Lokal
-try {
-    PeerServer({ port: 9000, path: '/kertases-app' });
-    console.log("Server PeerJS jalan dina port 9000");
-} catch (e) { 
-    console.log("Server parantos jalan atanapi aya masalah."); 
-}
+let mainWindow;
 
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    title: "Kertases Pro V14.2",
-    icon: getAssetPath('icon.ico'), // Lokasi icon anu leres
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    }
-  });
-// Di main.js, setelah createWindow()
-
-// Handler untuk request focus dari renderer
-ipcMain.on('request-focus', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    if (win) {
-        win.focus();
-        win.show();
-        
-        // Juga force focus ke webContents
-        win.webContents.focus();
-        
-        console.log("Focus requested from renderer");
-    }
-});
-
-  win.setMenuBarVisibility(false);
-  win.loadFile('index.html');
-
-  // Ngirim informasi path audio ka renderer (index.html) upami diperyogikeun
-  win.webContents.on('did-finish-load', () => {
-    win.webContents.send('audio-path', {
-        notif: getAssetPath('notif.mp3'), // ganti ku ngaran file audio anjeun
-        done: getAssetPath('done.mp3')
+    mainWindow = new BrowserWindow({
+        width: 1280,
+        height: 800,
+        icon: path.join(__dirname, 'icon.png'), // Opsional
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+	// PENTING: Matikan sandbox agar bisa require('fs') di preload
+            sandbox: false, 
+            nodeIntegration: false, // Security best practice
+            contextIsolation: true,
+            webSecurity: false // Izinkan memuat gambar lokal (img/)
+        }
     });
-  });
+
+    mainWindow.loadFile('index.html');
 }
+
+// 2. Helper: Dapatkan IP Address Lokal komputer ini
+// Agar user tahu IP mereka untuk diberikan ke partner
+ipcMain.handle('get-local-ip', () => {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1';
+});
 
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => { 
-    if (process.platform !== 'darwin') app.quit(); 
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
 });
